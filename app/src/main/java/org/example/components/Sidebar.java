@@ -15,6 +15,8 @@ public class Sidebar extends VBox {
     @FXML
     private ToggleGroup navGroup;
 
+    private ToggleButton lastSelected;
+
     private final SimpleObjectProperty<String> currentView =
             new SimpleObjectProperty<>(this, "currentView", "Overview");
 
@@ -29,7 +31,10 @@ public class Sidebar extends VBox {
         }
 
         navGroup.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> {
-            if (newToggle instanceof ToggleButton button) {
+            if (newToggle == null) {
+                navGroup.selectToggle(lastSelected);
+            } else if (newToggle instanceof ToggleButton button) {
+                lastSelected = button;
                 currentView.set(button.getText());
             }
         });

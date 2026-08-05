@@ -19,7 +19,6 @@
         </VBox>
     </HBox>
 
-    <Label text="Menu" styleClass="section-label"/>
     <fx:define>
         <ToggleGroup fx:id="navGroup"/>
     </fx:define>

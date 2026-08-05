@@ -3,7 +3,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.StackPane?>
 <?import org.example.components.Sidebar?>
-<?import org.example.views.*?>
+<?import org.example.components.views.*?>
 <BorderPane xmlns:fx="http://javafx.com/fxml/1"
             xmlns="http://javafx.com/javafx/25"
             fx:controller="org.example.controllers.MainController"

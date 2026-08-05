@@ -1,4 +1,4 @@
-package org.example.views;
+package org.example.components.views;
 
 public class BudgetsView extends View {
 

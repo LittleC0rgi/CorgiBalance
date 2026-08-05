@@ -1,4 +1,4 @@
-package org.example.views;
+package org.example.components.views;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.VBox;

@@ -5,11 +5,11 @@ module javafx.demo {
 
     exports org.example;
     exports org.example.components;
-    exports org.example.views;
+    exports org.example.components.views;
 
     opens org.example to javafx.fxml;
     opens org.example.components to javafx.fxml;
-    opens org.example.views to javafx.fxml;
+    opens org.example.components.views to javafx.fxml;
     exports org.example.controllers;
     opens org.example.controllers to javafx.fxml;
 }

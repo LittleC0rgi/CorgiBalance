@@ -39,19 +39,19 @@ application {
 }
 
 jlink {
-    imageName.set("MyApp")
+    imageName.set("Corgi Balance")
 
     launcher {
-        name = "my-app"
+        name = "corgi-balance"
     }
 
     jpackage {
-        imageName = "CorgiNotes img"
-        installerName = "CorgiNotes name"
-        description = "CorgiNotes description"
+        imageName = "Corgi Balance"
+        installerName = "Corgi Balance"
+        description = "Corgi Balance is an open-source desktop application for personal finance management."
         installerType = "rpm"
-        appVersion = "1.0.0"
-        vendor = "Kirill"
+        appVersion = "0.1.0"
+        vendor = "Kirill Vasiliev"
         icon = "src/main/resources/icons/img.png"
         installerOptions = listOf(
             "--linux-shortcut",

@@ -1,4 +1,4 @@
-package org.example.navigation;
+package org.example.services;
 
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;

@@ -1,10 +1,10 @@
-package org.example;
+package org.example.controllers;
 
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.layout.StackPane;
 import org.example.components.Sidebar;
-import org.example.navigation.NavigationService;
+import org.example.services.NavigationService;
 
 public class MainController {
 

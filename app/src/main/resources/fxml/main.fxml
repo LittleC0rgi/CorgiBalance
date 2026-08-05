@@ -6,7 +6,7 @@
 <?import org.example.views.*?>
 <BorderPane xmlns:fx="http://javafx.com/fxml/1"
             xmlns="http://javafx.com/javafx/25"
-            fx:controller="org.example.MainController"
+            fx:controller="org.example.controllers.MainController"
             styleClass="root-pane">
 
     <left>

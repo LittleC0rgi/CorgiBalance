@@ -46,7 +46,7 @@ jlink {
     }
 
     jpackage {
-        imageName = "Corgi Balance"
+        imageName = "CorgiBalance"
         installerName = "Corgi Balance"
         description = "Corgi Balance is an open-source desktop application for personal finance management."
         installerType = "rpm"

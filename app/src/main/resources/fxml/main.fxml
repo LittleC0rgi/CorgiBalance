@@ -1,21 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.StackPane?>
 <?import org.example.components.Sidebar?>
+<?import org.example.views.*?>
 <BorderPane xmlns:fx="http://javafx.com/fxml/1"
-            xmlns:components="http://javafx.com/javafx/25"
             xmlns="http://javafx.com/javafx/25"
+            fx:controller="org.example.MainController"
             styleClass="root-pane">
 
     <left>
-        <Sidebar/>
+        <Sidebar fx:id="sidebar"/>
     </left>
 
     <center>
-        <StackPane styleClass="content-area">
-            <Label text="Добро пожаловать в Corgi Balance!" styleClass="content-greeting"/>
+        <StackPane fx:id="contentArea" styleClass="content-area">
+            <OverviewView/>
+            <TransactionsView/>
+            <CalendarView/>
+            <AccountsView/>
+            <BudgetsView/>
+            <AnalyticsView/>
+            <SettingsView/>
         </StackPane>
     </center>
 </BorderPane>

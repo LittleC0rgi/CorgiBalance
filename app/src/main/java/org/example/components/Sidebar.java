@@ -1,11 +1,22 @@
 package org.example.components;
 
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.VBox;
 
 import java.io.IOException;
 
 public class Sidebar extends VBox {
+
+    @FXML
+    private ToggleGroup navGroup;
+
+    private final SimpleObjectProperty<String> currentView =
+            new SimpleObjectProperty<>(this, "currentView", "Overview");
 
     public Sidebar() {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/components/sidebar.fxml"));
@@ -16,5 +27,19 @@ public class Sidebar extends VBox {
         } catch (IOException e) {
             throw new RuntimeException("Failed to load sidebar component", e);
         }
+
+        navGroup.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> {
+            if (newToggle instanceof ToggleButton button) {
+                currentView.set(button.getText());
+            }
+        });
+    }
+
+    public ReadOnlyObjectProperty<String> currentViewProperty() {
+        return currentView;
+    }
+
+    public String getCurrentView() {
+        return currentView.get();
     }
 }

@@ -1,0 +1,9 @@
+.placeholder-view {
+    -fx-alignment: CENTER;
+}
+
+.placeholder-title {
+    -fx-text-fill: #020618;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+}

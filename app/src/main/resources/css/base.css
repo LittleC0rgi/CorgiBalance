@@ -1,0 +1,14 @@
+.root-pane {
+    -fx-font-family: "Inter 18pt";
+    -fx-background-color: #F5F1ED;
+}
+
+.content-area {
+    -fx-background-color: #F5F1ED;
+    -fx-padding: 24;
+}
+
+.content-greeting {
+    -fx-text-fill: #020618;
+    -fx-font-size: 24px;
+}

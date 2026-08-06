@@ -13,16 +13,12 @@ import java.util.Objects;
 public class App extends Application {
 
     private void loadFonts() {
-        Font font = Font.loadFont(
+        Font.loadFont(
                 Objects.requireNonNull(
                         App.class.getResourceAsStream("/fonts/Inter_18pt-Regular.ttf")
                 ),
                 12
         );
-
-        System.out.println(font.getFamily());
-        System.out.println(font.getName());
-
 
         Font.loadFont(
                 Objects.requireNonNull(
@@ -45,7 +41,9 @@ public class App extends Application {
         FXMLLoader loader = new FXMLLoader(App.class.getResource("/fxml/main.fxml"));
         Parent root = loader.load();
         Scene scene = new Scene(root);
-        scene.getStylesheets().add(Objects.requireNonNull(App.class.getResource("/css/style.css")).toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(App.class.getResource("/css/base.css")).toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(App.class.getResource("/css/sidebar.css")).toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(App.class.getResource("/css/views.css")).toExternalForm());
         stage.setScene(scene);
         stage.setTitle("Corgi Balance");
         stage.setMaximized(true);

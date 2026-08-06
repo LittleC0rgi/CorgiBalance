@@ -17,6 +17,8 @@ dependencies {
     implementation("org.openjfx:javafx-controls:25.0.4")
     implementation("org.openjfx:javafx-fxml:25.0.4")
 
+    implementation("org.xerial:sqlite-jdbc:3.53.2.1")
+
     testImplementation(libs.junit)
     implementation(libs.guava)
 

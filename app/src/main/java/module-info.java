@@ -7,6 +7,7 @@ module javafx.demo {
 
     exports org.example;
     exports org.example.components;
+    exports org.example.components.inputs;
     exports org.example.components.table;
     exports org.example.components.views;
     exports org.example.repositories;

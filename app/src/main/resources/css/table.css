@@ -10,7 +10,7 @@
 
 .crud-table-title {
     -fx-text-fill: #020618;
-    -fx-font-size: 18px;
+    -fx-font-size: 20px;
     -fx-font-weight: bold;
 }
 
@@ -28,25 +28,25 @@
     -fx-background-color: #E09C0A;
 }
 
-.crud-delete-btn {
-    -fx-background-color: transparent;
-    -fx-text-fill: #C0392B;
+.crud-cancel-btn {
+    -fx-background-color: white;
+    -fx-text-fill: #020618;
+    -fx-font-weight: bold;
     -fx-font-size: 13px;
-    -fx-padding: 2 10;
-    -fx-background-radius: 6;
-    -fx-border-color: #C0392B;
-    -fx-border-radius: 6;
+    -fx-background-radius: 8;
+    -fx-padding: 6 18;
     -fx-cursor: hand;
+    -fx-border-color: white;
+    -fx-border-radius: 8;
 }
 
-.crud-delete-btn:hover {
-    -fx-background-color: #C0392B;
-    -fx-text-fill: white;
+.crud-cancel-btn:hover {
+    -fx-background-color: #F5F1ED;
 }
 
 .crud-table .table-view {
     -fx-background-color: transparent;
-    -fx-border-color: #ECECEC;
+    -fx-border-color: #27293220;
     -fx-border-radius: 8;
 }
 
@@ -68,7 +68,7 @@
 
 .crud-table .table-row-cell {
     -fx-background-color: transparent;
-    -fx-border-color: transparent transparent #ECECEC transparent;
+    -fx-border-color: transparent transparent #27293220 transparent;
     -fx-border-width: 0 0 1 0;
 }
 
@@ -81,7 +81,7 @@
 }
 
 .crud-table .table-row-cell:selected {
-    -fx-background-color: #F3A71230;
+    -fx-background-color: #27293220;
 }
 
 .crud-table .table-row-cell:selected .text {
@@ -94,6 +94,45 @@
 }
 
 .crud-form-required {
-    -fx-text-fill: #C0392B;
+    -fx-text-fill: #FA003F;
     -fx-font-weight: bold;
+}
+
+.crud-input {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-border-color: #ECECEC;
+    -fx-border-radius: 8;
+    -fx-padding: 6 10;
+    -fx-pref-height: 36;
+    -fx-font-size: 13px;
+}
+
+.crud-input:focused {
+    -fx-background-color: white;
+    -fx-border-color: #F3A712;
+}
+
+.crud-check-box {
+    -fx-padding: 0;
+}
+
+.crud-check-box .box {
+    -fx-background-color: #F5F1ED;
+    -fx-background-radius: 4;
+    -fx-border-color: #ECECEC;
+    -fx-border-radius: 4;
+}
+
+.crud-check-box .box:hover {
+    -fx-background-color: white;
+}
+
+.crud-check-box:selected .box {
+    -fx-background-color: #F3A712;
+    -fx-border-color: #F3A712;
+}
+
+.crud-check-box:selected .box .mark {
+    -fx-background-color: white;
 }

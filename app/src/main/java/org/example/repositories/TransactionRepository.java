@@ -36,6 +36,13 @@ public class TransactionRepository implements CrudRepository<Transaction> {
             "DELETE FROM transactions WHERE id = ?";
     private static final String DELETE_TRANSFER_PAIR_SQL =
             "DELETE FROM transactions WHERE transfer_id = ?";
+    private static final String UPDATE_TRANSFER_ID_SQL =
+            "UPDATE transactions SET transfer_id = ? WHERE id = ?";
+    private static final String BALANCE_OF_SQL =
+            "SELECT COALESCE((SELECT initial_balance FROM accounts WHERE id = ?), 0) "
+            + "+ COALESCE((SELECT SUM(amount) FROM transactions WHERE account_id = ?), 0)";
+    private static final String TARGET_MINOR_UNITS_SQL =
+            "SELECT c.minor_unit FROM accounts a JOIN currencies c ON c.id = a.currency_id WHERE a.id = ?";
 
     private final Database database;
 
@@ -286,8 +293,7 @@ public class TransactionRepository implements CrudRepository<Transaction> {
     }
 
     private void updateTransferId(Connection connection, long id, long transferId) throws SQLException {
-        try (PreparedStatement statement = connection.prepareStatement(
-                "UPDATE transactions SET transfer_id = ? WHERE id = ?")) {
+        try (PreparedStatement statement = connection.prepareStatement(UPDATE_TRANSFER_ID_SQL)) {
             statement.setLong(1, transferId);
             statement.setLong(2, id);
             statement.executeUpdate();
@@ -312,9 +318,7 @@ public class TransactionRepository implements CrudRepository<Transaction> {
     }
 
     private long balanceOf(Connection connection, long accountId) throws SQLException {
-        try (PreparedStatement statement = connection.prepareStatement(
-                "SELECT COALESCE((SELECT initial_balance FROM accounts WHERE id = ?), 0) "
-                + "+ COALESCE((SELECT SUM(amount) FROM transactions WHERE account_id = ?), 0)")) {
+        try (PreparedStatement statement = connection.prepareStatement(BALANCE_OF_SQL)) {
             statement.setLong(1, accountId);
             statement.setLong(2, accountId);
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -355,8 +359,7 @@ public class TransactionRepository implements CrudRepository<Transaction> {
     private int targetMinorUnits(long accountId) {
         try {
             Connection connection = database.getConnection();
-            try (PreparedStatement statement = connection.prepareStatement(
-                    "SELECT c.minor_unit FROM accounts a JOIN currencies c ON c.id = a.currency_id WHERE a.id = ?")) {
+            try (PreparedStatement statement = connection.prepareStatement(TARGET_MINOR_UNITS_SQL)) {
                 statement.setLong(1, accountId);
                 try (ResultSet resultSet = statement.executeQuery()) {
                     return resultSet.next() ? resultSet.getInt("minor_unit") : 0;

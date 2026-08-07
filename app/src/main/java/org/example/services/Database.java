@@ -21,6 +21,49 @@ public final class Database {
 
     private static final Database INSTANCE = new Database();
 
+    private static final String COUNT_EMPTY_SQL =
+            "SELECT COUNT(*) FROM (SELECT 1 FROM %s LIMIT 1)";
+    private static final String ADD_RATE_COLUMN_SQL =
+            "ALTER TABLE transactions ADD COLUMN rate TEXT";
+    private static final String TRANSACTIONS_SCHEMA_SQL =
+            "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'transactions'";
+    private static final String TRANSACTIONS_COLUMNS_SQL =
+            "PRAGMA table_info(transactions)";
+    private static final String RENAME_TRANSACTIONS_SQL =
+            "ALTER TABLE transactions RENAME TO transactions_migrate";
+    private static final String MIGRATE_TRANSACTIONS_SQL =
+            "INSERT INTO transactions (id, account_id, tag_id, amount, description, transaction_type, transaction_date, created_at, updated_at) "
+            + "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, created_at, updated_at "
+            + "FROM transactions_migrate";
+    private static final String DROP_TRANSACTIONS_MIGRATE_SQL =
+            "DROP TABLE transactions_migrate";
+    private static final String CREATE_INDEX_ACCOUNT_ID_SQL =
+            "CREATE INDEX IF NOT EXISTS idx_transactions_account_id ON transactions(account_id)";
+    private static final String CREATE_INDEX_TAG_ID_SQL =
+            "CREATE INDEX IF NOT EXISTS idx_transactions_tag_id ON transactions(tag_id)";
+    private static final String CREATE_INDEX_DATE_SQL =
+            "CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(transaction_date)";
+    private static final String CREATE_INDEX_ACCOUNT_DATE_SQL =
+            "CREATE INDEX IF NOT EXISTS idx_transactions_account_date ON transactions(account_id, transaction_date)";
+    private static final String TRANSACTIONS_SCHEMA =
+            "CREATE TABLE transactions ("
+            + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+            + "account_id INTEGER NOT NULL,"
+            + "tag_id INTEGER,"
+            + "to_account_id INTEGER,"
+            + "transfer_id INTEGER,"
+            + "rate TEXT,"
+            + "amount INTEGER NOT NULL,"
+            + "description TEXT,"
+            + "transaction_type TEXT NOT NULL CHECK (transaction_type IN ('INCOME', 'EXPENSE', 'TRANSFER')),"
+            + "transaction_date TEXT NOT NULL,"
+            + "created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,"
+            + "updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,"
+            + "FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE ON UPDATE CASCADE,"
+            + "FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE SET NULL ON UPDATE CASCADE,"
+            + "FOREIGN KEY (to_account_id) REFERENCES accounts(id) ON DELETE CASCADE ON UPDATE CASCADE"
+            + ")";
+
     private Connection connection;
 
     private Database() {
@@ -81,8 +124,7 @@ public final class Database {
 
     private boolean isTableEmpty(String table) throws SQLException {
         try (Statement statement = connection.createStatement();
-             ResultSet result = statement.executeQuery(
-                 "SELECT COUNT(*) FROM (SELECT 1 FROM " + table + " LIMIT 1)")) {
+             ResultSet result = statement.executeQuery(String.format(COUNT_EMPTY_SQL, table))) {
             return result.next() && result.getInt(1) == 0;
         }
     }
@@ -95,15 +137,14 @@ public final class Database {
         } else if (!transactionColumnNames().contains("rate")) {
             logger.info("Adding rate column to transactions table");
             try (Statement statement = connection.createStatement()) {
-                statement.execute("ALTER TABLE transactions ADD COLUMN rate TEXT");
+                statement.execute(ADD_RATE_COLUMN_SQL);
             }
         }
     }
 
     private String transactionsSchemaSql() throws SQLException {
         try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(
-                 "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'transactions'")) {
+             ResultSet resultSet = statement.executeQuery(TRANSACTIONS_SCHEMA_SQL)) {
             return resultSet.next() ? resultSet.getString(1) : null;
         }
     }
@@ -111,7 +152,7 @@ public final class Database {
     private Set<String> transactionColumnNames() throws SQLException {
         Set<String> columns = new HashSet<>();
         try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery("PRAGMA table_info(transactions)")) {
+             ResultSet resultSet = statement.executeQuery(TRANSACTIONS_COLUMNS_SQL)) {
             while (resultSet.next()) {
                 columns.add(resultSet.getString("name"));
             }
@@ -122,38 +163,16 @@ public final class Database {
     private void rebuildTransactionsTable() throws SQLException {
         logger.info("Migrating transactions table schema to support transfers");
         try (Statement statement = connection.createStatement()) {
-            statement.execute("ALTER TABLE transactions RENAME TO transactions_migrate");
+            statement.execute(RENAME_TRANSACTIONS_SQL);
             statement.execute(TRANSACTIONS_SCHEMA);
-            statement.execute(
-                    "INSERT INTO transactions (id, account_id, tag_id, amount, description, transaction_type, transaction_date, created_at, updated_at) "
-                    + "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, created_at, updated_at "
-                    + "FROM transactions_migrate");
-            statement.execute("DROP TABLE transactions_migrate");
-            statement.execute("CREATE INDEX IF NOT EXISTS idx_transactions_account_id ON transactions(account_id)");
-            statement.execute("CREATE INDEX IF NOT EXISTS idx_transactions_tag_id ON transactions(tag_id)");
-            statement.execute("CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(transaction_date)");
-            statement.execute("CREATE INDEX IF NOT EXISTS idx_transactions_account_date ON transactions(account_id, transaction_date)");
+            statement.execute(MIGRATE_TRANSACTIONS_SQL);
+            statement.execute(DROP_TRANSACTIONS_MIGRATE_SQL);
+            statement.execute(CREATE_INDEX_ACCOUNT_ID_SQL);
+            statement.execute(CREATE_INDEX_TAG_ID_SQL);
+            statement.execute(CREATE_INDEX_DATE_SQL);
+            statement.execute(CREATE_INDEX_ACCOUNT_DATE_SQL);
         }
     }
-
-    private static final String TRANSACTIONS_SCHEMA =
-            "CREATE TABLE transactions ("
-            + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-            + "account_id INTEGER NOT NULL,"
-            + "tag_id INTEGER,"
-            + "to_account_id INTEGER,"
-            + "transfer_id INTEGER,"
-            + "rate TEXT,"
-            + "amount INTEGER NOT NULL,"
-            + "description TEXT,"
-            + "transaction_type TEXT NOT NULL CHECK (transaction_type IN ('INCOME', 'EXPENSE', 'TRANSFER')),"
-            + "transaction_date TEXT NOT NULL,"
-            + "created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,"
-            + "updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,"
-            + "FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE ON UPDATE CASCADE,"
-            + "FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE SET NULL ON UPDATE CASCADE,"
-            + "FOREIGN KEY (to_account_id) REFERENCES accounts(id) ON DELETE CASCADE ON UPDATE CASCADE"
-            + ")";
 
     public synchronized void close() throws SQLException {
         if (connection != null && !connection.isClosed()) {

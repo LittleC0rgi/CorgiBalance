@@ -24,6 +24,9 @@ public class AccountRepository implements CrudRepository<Account> {
             "UPDATE accounts SET name = ?, initial_balance = ?, currency_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
     private static final String DELETE_SQL =
             "DELETE FROM accounts WHERE id = ?";
+    private static final String CURRENT_BALANCE_SQL =
+            "SELECT COALESCE((SELECT initial_balance FROM accounts WHERE id = ?), 0) "
+            + "+ COALESCE((SELECT SUM(amount) FROM transactions WHERE account_id = ?), 0)";
 
     private final Database database;
 
@@ -55,9 +58,7 @@ public class AccountRepository implements CrudRepository<Account> {
     public long currentBalance(long accountId) {
         try {
             Connection connection = database.getConnection();
-            try (PreparedStatement statement = connection.prepareStatement(
-                    "SELECT COALESCE((SELECT initial_balance FROM accounts WHERE id = ?), 0) "
-                    + "+ COALESCE((SELECT SUM(amount) FROM transactions WHERE account_id = ?), 0)")) {
+            try (PreparedStatement statement = connection.prepareStatement(CURRENT_BALANCE_SQL)) {
                 statement.setLong(1, accountId);
                 statement.setLong(2, accountId);
                 try (ResultSet resultSet = statement.executeQuery()) {

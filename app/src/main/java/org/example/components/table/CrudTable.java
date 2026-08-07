@@ -12,6 +12,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import lombok.Setter;
 import org.example.components.inputs.CrudFormDialog;
 import org.example.models.BaseModel;
 
@@ -30,6 +31,7 @@ public class CrudTable<T extends BaseModel> extends VBox {
     private final ObservableList<T> items = FXCollections.observableArrayList();
     private final TableView<T> table = new TableView<>();
     private final HBox toolbar;
+    @Setter
     private Consumer<T> afterCreate;
 
     public CrudTable(String title, CrudRepository<T> repository, Supplier<T> newInstance,
@@ -79,10 +81,6 @@ public class CrudTable<T extends BaseModel> extends VBox {
 
     public void refresh() {
         items.setAll(repository.findAll());
-    }
-
-    public void setAfterCreate(Consumer<T> afterCreate) {
-        this.afterCreate = afterCreate;
     }
 
     public void addToolbarButton(String text, EventHandler<ActionEvent> handler) {

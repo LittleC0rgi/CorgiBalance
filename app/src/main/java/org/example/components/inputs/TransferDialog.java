@@ -1,22 +1,16 @@
 package org.example.components.inputs;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.stage.Window;
 import javafx.util.Callback;
 import org.example.components.table.CrudTable;
+import org.example.repositories.AccountRepository;
 import org.example.repositories.ExchangeRateRepository;
 
 import java.math.BigDecimal;
@@ -27,26 +21,23 @@ import java.util.Objects;
 
 public class TransferDialog extends Dialog<TransferDialog.Result> {
 
-    public record Result(long fromAccountId, long toAccountId, long amount, String description,
-                         LocalDate date, BigDecimal rate, Long fromCurrencyId, Long toCurrencyId) {
-    }
-
     private final List<Long> accountIds;
     private final Map<Long, String> accountLabels;
     private final Map<Long, Long> accountCurrencyIds;
     private final Map<Long, String> currencyCodes;
     private final ExchangeRateRepository exchangeRateRepository = new ExchangeRateRepository();
-
+    private final AccountRepository accountRepository = new AccountRepository();
     private final CrudDatePicker datePicker = new CrudDatePicker();
     private final CrudComboBox<Long> fromCombo = new CrudComboBox<>();
     private final CrudComboBox<Long> toCombo = new CrudComboBox<>();
+    private final Label fromBalanceLabel = balanceLabel();
+    private final Label toBalanceLabel = balanceLabel();
     private final CrudTextField amountField = new CrudTextField();
     private final CrudTextField descriptionField = new CrudTextField();
     private final CrudTextField rateField = new CrudTextField();
     private Node rateLabel;
     private Long lastFromCurrencyId;
     private Long lastToCurrencyId;
-
     public TransferDialog(List<Long> accountIds, Map<Long, String> accountLabels,
                           Map<Long, Long> accountCurrencyIds, Map<Long, String> currencyCodes) {
         this.accountIds = accountIds;
@@ -55,7 +46,6 @@ public class TransferDialog extends Dialog<TransferDialog.Result> {
         this.currencyCodes = currencyCodes;
 
         setTitle("New Transfer");
-        setHeaderText("New Transfer");
 
         getDialogPane().getStylesheets()
                 .add(Objects.requireNonNull(
@@ -97,17 +87,24 @@ public class TransferDialog extends Dialog<TransferDialog.Result> {
         toCombo.getItems().setAll(accountIds);
         configureCombo(fromCombo);
         configureCombo(toCombo);
-        fromCombo.valueProperty().addListener((observable, oldValue, newValue) -> updateRateState());
-        toCombo.valueProperty().addListener((observable, oldValue, newValue) -> updateRateState());
+        fromCombo.valueProperty().addListener((observable, oldValue, newValue) -> {
+            updateBalanceLabel(fromBalanceLabel, newValue);
+            updateRateState();
+        });
+        toCombo.valueProperty().addListener((observable, oldValue, newValue) -> {
+            updateBalanceLabel(toBalanceLabel, newValue);
+            updateRateState();
+        });
 
         int row = 0;
         grid.add(label("Date", true), 0, row);
         grid.add(datePicker, 1, row++);
         grid.add(label("From account", true), 0, row);
-        grid.add(fromCombo, 1, row++);
+        grid.add(wrapCombo(fromCombo, fromBalanceLabel), 1, row++);
         grid.add(label("To account", true), 0, row);
-        grid.add(toCombo, 1, row++);
+        grid.add(wrapCombo(toCombo, toBalanceLabel), 1, row++);
         grid.add(label("Amount", true), 0, row);
+        amountField.setTextFormatter(digitsOnlyFormatter());
         grid.add(amountField, 1, row++);
         grid.add(label("Description", false), 0, row);
         grid.add(descriptionField, 1, row++);
@@ -180,6 +177,52 @@ public class TransferDialog extends Dialog<TransferDialog.Result> {
         combo.setButtonCell(cellFactory.call(null));
     }
 
+    private VBox wrapCombo(Node combo, Label balance) {
+        VBox box = new VBox(3, combo, balance);
+        box.setMaxWidth(Double.MAX_VALUE);
+        return box;
+    }
+
+    private Label balanceLabel() {
+        Label label = new Label();
+        label.getStyleClass().add("crud-balance-label");
+        label.setVisible(false);
+        label.setManaged(false);
+        return label;
+    }
+
+    private void updateBalanceLabel(Label label, Long accountId) {
+        if (accountId == null) {
+            label.setText("");
+            label.setVisible(false);
+            label.setManaged(false);
+            return;
+        }
+        long balance = accountRepository.currentBalance(accountId);
+        String currencyCode = currencyCodes.getOrDefault(accountCurrencyIds.get(accountId), "");
+        label.setText("Balance: " + balance + (currencyCode.isEmpty() ? "" : " " + currencyCode));
+        label.setVisible(true);
+        label.setManaged(true);
+        resizeToContent();
+    }
+
+    private TextFormatter<TextFormatter.Change> digitsOnlyFormatter() {
+        return new TextFormatter<>(change ->
+                change.getControlNewText().matches("\\d*") ? change : null);
+    }
+
+    private void resizeToContent() {
+        Platform.runLater(() -> {
+            if (getDialogPane().getScene() == null) {
+                return;
+            }
+            Window window = getDialogPane().getScene().getWindow();
+            if (window != null) {
+                window.sizeToScene();
+            }
+        });
+    }
+
     private String validate() {
         if (datePicker.getValue() == null) {
             return "Date is required";
@@ -236,5 +279,9 @@ public class TransferDialog extends Dialog<TransferDialog.Result> {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    public record Result(long fromAccountId, long toAccountId, long amount, String description,
+                         LocalDate date, BigDecimal rate, Long fromCurrencyId, Long toCurrencyId) {
     }
 }

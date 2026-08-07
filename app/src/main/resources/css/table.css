@@ -98,6 +98,12 @@
     -fx-font-weight: bold;
 }
 
+.crud-balance-label {
+    -fx-text-fill: #02061880;
+    -fx-font-size: 12px;
+    -fx-padding: 0 0 0 4;
+}
+
 .crud-input {
     -fx-background-color: white;
     -fx-background-radius: 8;

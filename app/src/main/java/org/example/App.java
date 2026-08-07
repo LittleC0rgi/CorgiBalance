@@ -7,11 +7,14 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Objects;
 
 
@@ -24,8 +27,23 @@ public class App extends Application {
             Path dbDir = Path.of(System.getProperty("user.home"), ".corgibalance");
             Files.createDirectories(dbDir);
             connection = DriverManager.getConnection("jdbc:sqlite:" + dbDir.resolve("corgibalance.db"));
+            initDatabase();
         } catch (SQLException | IOException e) {
             throw new RuntimeException("Failed to connect to the database", e);
+        }
+    }
+
+    private void initDatabase() throws SQLException {
+        try (InputStream input = App.class.getResourceAsStream("/db/init.sql")) {
+            if (input == null) {
+                throw new SQLException("Database initialization script /db/init.sql not found");
+            }
+            String script = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+            try (Statement statement = connection.createStatement()) {
+                statement.execute(script);
+            }
+        } catch (IOException e) {
+            throw new SQLException("Failed to read database initialization script", e);
         }
     }
 

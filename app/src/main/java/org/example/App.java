@@ -16,19 +16,26 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class App extends Application {
 
+    private static final Logger logger = Logger.getLogger(App.class.getName());
+
     private Connection connection;
-    
+
     private void connectDB() {
         try {
             Path dbDir = Path.of(System.getProperty("user.home"), ".corgibalance");
             Files.createDirectories(dbDir);
-            connection = DriverManager.getConnection("jdbc:sqlite:" + dbDir.resolve("corgibalance.db"));
+            Path dbPath = dbDir.resolve("corgibalance.db");
+            logger.info("Connecting to database: " + dbPath.toAbsolutePath());
+            connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
             initDatabase();
         } catch (SQLException | IOException e) {
+            logger.log(Level.SEVERE, "Failed to connect to the database", e);
             throw new RuntimeException("Failed to connect to the database", e);
         }
     }
@@ -39,9 +46,16 @@ public class App extends Application {
                 throw new SQLException("Database initialization script /db/init.sql not found");
             }
             String script = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+            logger.info("Applying database initialization script (" + script.length() + " chars)");
             try (Statement statement = connection.createStatement()) {
-                statement.execute(script);
+                for (String sql : script.split(";\\s*")) {
+                    if (sql.trim().isEmpty()) {
+                        continue;
+                    }
+                    statement.execute(sql);
+                }
             }
+            logger.info("Database initialization completed");
         } catch (IOException e) {
             throw new SQLException("Failed to read database initialization script", e);
         }

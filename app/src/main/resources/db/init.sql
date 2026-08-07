@@ -34,7 +34,11 @@ CREATE TABLE IF NOT EXISTS currencies (
     -- RUB/USD/EUR = 2
     -- JPY = 0
     minor_unit INTEGER NOT NULL DEFAULT 2
-        CHECK (minor_unit >= 0 AND minor_unit <= 8)
+        CHECK (minor_unit >= 0 AND minor_unit <= 8),
+
+
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 
@@ -54,7 +58,11 @@ CREATE TABLE IF NOT EXISTS tags (
 
     -- UI properties
     color TEXT,
-    icon TEXT
+    icon TEXT,
+
+
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 
@@ -175,6 +183,7 @@ CREATE TABLE IF NOT EXISTS transfers (
 
 
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
 
     CHECK (
@@ -340,6 +349,7 @@ CREATE TABLE IF NOT EXISTS exchange_rates (
 
 
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
 
     CHECK (

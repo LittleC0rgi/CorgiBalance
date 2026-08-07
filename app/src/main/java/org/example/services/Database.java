@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Level;
@@ -48,12 +49,19 @@ public final class Database {
     }
 
     private void initDatabase() throws SQLException {
-        try (InputStream input = Database.class.getResourceAsStream("/db/init.sql")) {
+        applyScript("/db/init.sql");
+        if (isTableEmpty("currencies")) {
+            applyScript("/db/seed.sql");
+        }
+    }
+
+    private void applyScript(String resource) throws SQLException {
+        try (InputStream input = Database.class.getResourceAsStream(resource)) {
             if (input == null) {
-                throw new SQLException("Database initialization script /db/init.sql not found");
+                throw new SQLException("Database script " + resource + " not found");
             }
             String script = new String(input.readAllBytes(), StandardCharsets.UTF_8);
-            logger.info("Applying database initialization script (" + script.length() + " chars)");
+            logger.info("Applying database script " + resource + " (" + script.length() + " chars)");
             try (Statement statement = connection.createStatement()) {
                 for (String sql : script.split(";\\s*")) {
                     if (sql.trim().isEmpty()) {
@@ -62,9 +70,17 @@ public final class Database {
                     statement.execute(sql);
                 }
             }
-            logger.info("Database initialization completed");
+            logger.info("Database script " + resource + " completed");
         } catch (IOException e) {
-            throw new SQLException("Failed to read database initialization script", e);
+            throw new SQLException("Failed to read database script " + resource, e);
+        }
+    }
+
+    private boolean isTableEmpty(String table) throws SQLException {
+        try (Statement statement = connection.createStatement();
+             ResultSet result = statement.executeQuery(
+                 "SELECT COUNT(*) FROM (SELECT 1 FROM " + table + " LIMIT 1)")) {
+            return result.next() && result.getInt(1) == 0;
         }
     }
 

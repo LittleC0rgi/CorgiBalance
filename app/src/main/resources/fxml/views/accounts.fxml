@@ -5,8 +5,10 @@
 <fx:root xmlns:fx="http://javafx.com/fxml/1"
          type="javafx.scene.layout.VBox"
          xmlns="http://javafx.com/javafx/25"
-         styleClass="placeholder-view"
-         alignment="CENTER">
+         styleClass="settings-view"
+         spacing="24">
 
-    <Label text="Accounts" styleClass="placeholder-title"/>
+    <Label text="Accounts" styleClass="settings-title"/>
+
+    <VBox fx:id="content" VBox.vgrow="ALWAYS"/>
 </fx:root>

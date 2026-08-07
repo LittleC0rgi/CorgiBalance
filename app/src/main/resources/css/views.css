@@ -7,3 +7,30 @@
     -fx-font-size: 28px;
     -fx-font-weight: bold;
 }
+
+.settings-title {
+    -fx-text-fill: #020618;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+}
+
+.settings-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+
+.settings-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.settings-section {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-padding: 16;
+}
+
+.settings-section-title {
+    -fx-text-fill: #020618;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}

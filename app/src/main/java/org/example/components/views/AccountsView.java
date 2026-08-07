@@ -28,6 +28,7 @@ public class AccountsView extends View {
 
     @FXML
     private void initialize() {
+        AccountRepository accountRepository = new AccountRepository();
         CurrencyRepository currencyRepository = new CurrencyRepository();
         Map<Long, String> currencyLabels = new HashMap<>();
         List<Long> currencyIds = new ArrayList<>();
@@ -50,6 +51,10 @@ public class AccountsView extends View {
                         (account, value) -> account.setInitialBalance(((Number) value).longValue()))
                 .form(FormSpec.number())
                 .build();
+        ColumnSpec<Account> currentBalance = ColumnSpec.<Account>builder("Balance")
+                .width(140)
+                .value(account -> accountRepository.currentBalance(account.getId()))
+                .build();
         ColumnSpec<Account> currency = ColumnSpec.<Account>builder("Currency")
                 .width(120)
                 .value(Account::getCurrencyId)
@@ -60,7 +65,7 @@ public class AccountsView extends View {
                 .build();
 
         CrudTable<Account> table = new CrudTable<>(
-                "Accounts", new AccountRepository(), Account::new, List.of(name, balance, currency));
+                "Accounts", accountRepository, Account::new, List.of(name, balance, currentBalance, currency));
         VBox.setVgrow(table, Priority.ALWAYS);
         content.getChildren().add(table);
     }

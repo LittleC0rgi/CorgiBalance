@@ -7,6 +7,7 @@ import javafx.util.Callback;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public final class ColumnSpec<T> {
 
@@ -18,6 +19,7 @@ public final class ColumnSpec<T> {
     private final BiConsumer<T, Object> onCommit;
     private final FormSpec formSpec;
     private final boolean required;
+    private final Supplier<Object> defaultValue;
 
     private ColumnSpec(Builder<T> builder) {
         this.title = builder.title;
@@ -28,6 +30,7 @@ public final class ColumnSpec<T> {
         this.onCommit = builder.onCommit;
         this.formSpec = builder.formSpec;
         this.required = builder.required;
+        this.defaultValue = builder.defaultValue;
     }
 
     public static <T> Builder<T> builder(String title) {
@@ -66,6 +69,10 @@ public final class ColumnSpec<T> {
         return required;
     }
 
+    public Supplier<Object> defaultValue() {
+        return defaultValue;
+    }
+
     public static final class Builder<T> {
 
         private final String title;
@@ -76,6 +83,7 @@ public final class ColumnSpec<T> {
         private BiConsumer<T, Object> onCommit;
         private FormSpec formSpec;
         private boolean required;
+        private Supplier<Object> defaultValue;
 
         private Builder(String title) {
             this.title = title;
@@ -113,6 +121,11 @@ public final class ColumnSpec<T> {
 
         public Builder<T> required() {
             this.required = true;
+            return this;
+        }
+
+        public Builder<T> defaultValue(Supplier<Object> defaultValue) {
+            this.defaultValue = defaultValue;
             return this;
         }
 

@@ -4,18 +4,7 @@ import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Control;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -26,6 +15,7 @@ import org.example.components.table.CrudTable;
 import org.example.components.table.FormSpec;
 import org.example.models.BaseModel;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -42,7 +32,6 @@ public class CrudFormDialog<T extends BaseModel> extends Dialog<T> {
         this.entity = newInstance.get();
 
         setTitle("Add " + title);
-        setHeaderText("Add " + title);
 
         getDialogPane().getStylesheets()
                 .add(Objects.requireNonNull(
@@ -92,12 +81,42 @@ public class CrudFormDialog<T extends BaseModel> extends Dialog<T> {
                 continue;
             }
             Control control = createControl(form);
+            applyDefault(control, spec, form.kind());
             grid.add(buildLabel(spec), 0, row);
             grid.add(control, 1, row);
             fields.add(new FieldEntry<>(spec, control));
             row++;
         }
         return grid;
+    }
+
+    private void applyDefault(Control control, ColumnSpec<T> spec, FormSpec.Kind kind) {
+        if (spec.defaultValue() == null) {
+            return;
+        }
+        Object value = spec.defaultValue().get();
+        if (value == null) {
+            return;
+        }
+        switch (kind) {
+            case TEXT:
+            case COLOR:
+            case NUMBER:
+                ((TextField) control).setText(String.valueOf(value));
+                break;
+            case DATE:
+                ((DatePicker) control).setValue((LocalDate) value);
+                break;
+            case ENUM:
+            case COMBO:
+                ((ComboBox<Object>) control).setValue(value);
+                break;
+            case BOOLEAN:
+                ((CheckBox) control).setSelected(Boolean.TRUE.equals(value));
+                break;
+            default:
+                throw new IllegalStateException("Unsupported form kind: " + kind);
+        }
     }
 
     private Node buildLabel(ColumnSpec<T> spec) {

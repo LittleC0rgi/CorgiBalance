@@ -52,6 +52,23 @@ public class AccountRepository implements CrudRepository<Account> {
         return accounts;
     }
 
+    public long currentBalance(long accountId) {
+        try {
+            Connection connection = database.getConnection();
+            try (PreparedStatement statement = connection.prepareStatement(
+                    "SELECT COALESCE((SELECT initial_balance FROM accounts WHERE id = ?), 0) "
+                    + "+ COALESCE((SELECT SUM(amount) FROM transactions WHERE account_id = ?), 0)")) {
+                statement.setLong(1, accountId);
+                statement.setLong(2, accountId);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    return resultSet.next() ? resultSet.getLong(1) : 0;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to load account balance", e);
+        }
+    }
+
     @Override
     public Account create(Account account) {
         try {

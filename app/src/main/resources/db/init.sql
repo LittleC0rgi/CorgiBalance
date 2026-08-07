@@ -116,6 +116,20 @@ CREATE TABLE IF NOT EXISTS transactions (
     tag_id INTEGER,
 
 
+    -- For TRANSFER transactions the account the money moved to.
+    to_account_id INTEGER,
+
+
+    -- Groups the two rows of a transfer (minus on source, plus on target).
+    transfer_id INTEGER,
+
+
+    -- Exchange rate used for a cross-currency transfer:
+    -- target_amount_minor = source_amount_minor * rate, each amount in its own
+    -- currency's minor units. Null means 1:1 (same-currency transfer).
+    rate TEXT,
+
+
     -- Stored in minor currency units.
     --
     -- Examples:
@@ -131,7 +145,8 @@ CREATE TABLE IF NOT EXISTS transactions (
         CHECK (
             transaction_type IN (
                 'INCOME',
-                'EXPENSE'
+                'EXPENSE',
+                'TRANSFER'
             )
         ),
 
@@ -152,6 +167,12 @@ CREATE TABLE IF NOT EXISTS transactions (
     FOREIGN KEY (tag_id)
         REFERENCES tags(id)
         ON DELETE SET NULL
+        ON UPDATE CASCADE,
+
+
+    FOREIGN KEY (to_account_id)
+        REFERENCES accounts(id)
+        ON DELETE CASCADE
         ON UPDATE CASCADE
 );
 

@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.VBox?>
 <fx:root xmlns:fx="http://javafx.com/fxml/1"
          type="javafx.scene.layout.VBox"
          xmlns="http://javafx.com/javafx/25"
-         styleClass="placeholder-view"
-         alignment="CENTER">
+         styleClass="settings-view"
+         spacing="24">
 
-    <Label text="Transactions" styleClass="placeholder-title"/>
+    <VBox fx:id="content" VBox.vgrow="ALWAYS"/>
 </fx:root>

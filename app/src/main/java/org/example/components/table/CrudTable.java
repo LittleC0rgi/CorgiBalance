@@ -3,6 +3,8 @@ package org.example.components.table;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
@@ -16,6 +18,7 @@ import org.example.models.BaseModel;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class CrudTable<T extends BaseModel> extends VBox {
@@ -26,6 +29,8 @@ public class CrudTable<T extends BaseModel> extends VBox {
     private final Supplier<T> newInstance;
     private final ObservableList<T> items = FXCollections.observableArrayList();
     private final TableView<T> table = new TableView<>();
+    private final HBox toolbar;
+    private Consumer<T> afterCreate;
 
     public CrudTable(String title, CrudRepository<T> repository, Supplier<T> newInstance,
                      List<ColumnSpec<T>> columns) {
@@ -50,6 +55,7 @@ public class CrudTable<T extends BaseModel> extends VBox {
         HBox toolbar = new HBox(titleLabel, spacer, addButton);
         toolbar.getStyleClass().add("crud-toolbar");
         toolbar.setAlignment(Pos.CENTER_LEFT);
+        this.toolbar = toolbar;
 
         table.setEditable(true);
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
@@ -73,6 +79,17 @@ public class CrudTable<T extends BaseModel> extends VBox {
 
     public void refresh() {
         items.setAll(repository.findAll());
+    }
+
+    public void setAfterCreate(Consumer<T> afterCreate) {
+        this.afterCreate = afterCreate;
+    }
+
+    public void addToolbarButton(String text, EventHandler<ActionEvent> handler) {
+        Button button = new Button(text);
+        button.getStyleClass().add("crud-btn");
+        button.setOnAction(handler);
+        toolbar.getChildren().add(toolbar.getChildren().size() - 1, button);
     }
 
     private void addColumn(ColumnSpec<T> spec) {
@@ -110,6 +127,7 @@ public class CrudTable<T extends BaseModel> extends VBox {
             } else {
                 repository.update(row);
             }
+            refresh();
         } catch (RuntimeException e) {
             showError("Failed to save row", e.getMessage());
             refresh();
@@ -122,6 +140,9 @@ public class CrudTable<T extends BaseModel> extends VBox {
         result.ifPresent(value -> {
             try {
                 repository.create(value);
+                if (afterCreate != null) {
+                    afterCreate.accept(value);
+                }
                 refresh();
             } catch (RuntimeException e) {
                 showError("Failed to create " + title.toLowerCase(), e.getMessage());
@@ -137,7 +158,7 @@ public class CrudTable<T extends BaseModel> extends VBox {
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
                 repository.delete(row);
-                items.remove(row);
+                refresh();
             } catch (RuntimeException e) {
                 showError("Failed to delete row", e.getMessage());
             }

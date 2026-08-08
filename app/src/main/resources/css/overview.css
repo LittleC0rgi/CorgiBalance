@@ -1,0 +1,42 @@
+.title {
+    -fx-text-fill: #272932;
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+}
+
+.subtitle {
+    -fx-text-fill: #27293250;
+    -fx-font-size: 11px;
+    -fx-font-weight: 500;
+}
+
+.grid {
+    -fx-hgap: 14px;
+    -fx-vgap: 14px;
+}
+
+.card {
+    -fx-background-color: white;
+    -fx-background-radius: 12px;
+    -fx-padding: 16px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 8, 0, 0, 2);
+}
+
+.card__value {
+    -fx-font-size: 20px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #272932;
+}
+
+.card__value--income {
+    -fx-text-fill: #00bc7d;
+}
+
+.card__value--expense {
+    -fx-text-fill: #FA003F;
+}
+
+.card__label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #27293250;
+}

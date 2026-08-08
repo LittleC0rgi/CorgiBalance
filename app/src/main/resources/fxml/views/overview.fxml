@@ -1,12 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <fx:root xmlns:fx="http://javafx.com/fxml/1"
          type="javafx.scene.layout.VBox"
-         xmlns="http://javafx.com/javafx/25"
-         styleClass="placeholder-view"
-         alignment="CENTER">
+         xmlns="http://javafx.com/javafx/25">
+    <VBox spacing="14.0">
+        <HBox alignment="CENTER_LEFT">
+            <VBox spacing="2.0">
+                <Label text="Overview" styleClass="title"/>
+                <Label text="Month Year" styleClass="subtitle"/>
+            </VBox>
+        </HBox>
+        <GridPane styleClass="grid">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="33.33" hgrow="ALWAYS"/>
+                <ColumnConstraints percentWidth="33.33" hgrow="ALWAYS"/>
+                <ColumnConstraints percentWidth="33.33" hgrow="ALWAYS"/>
+            </columnConstraints>
 
-    <Label text="Overview" styleClass="placeholder-title"/>
+            <VBox styleClass="card" spacing="2.0" GridPane.columnIndex="0">
+                <Label text="₽126 480" styleClass="card__value"/>
+                <Label text="Balance" styleClass="card__label"/>
+            </VBox>
+            <VBox styleClass="card" spacing="2.0" GridPane.columnIndex="1">
+                <Label text="+₽82 000" styleClass="card__value, card__value--income"/>
+                <Label text="Trend comment" styleClass="card__label"/>
+            </VBox>
+            <VBox styleClass="card" spacing="2.0" GridPane.columnIndex="2">
+                <Label text="-₽53 700" styleClass="card__value, card__value--expense"/>
+                <Label text="Trend comment" styleClass="card__label"/>
+            </VBox>
+        </GridPane>
+    </VBox>
 </fx:root>

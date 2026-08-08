@@ -2,6 +2,7 @@ package org.example.services;
 
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
+import org.example.components.views.Refreshable;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -40,5 +41,8 @@ public class NavigationService {
         target.setVisible(true);
         target.setManaged(true);
         currentView = target;
+        if (target instanceof Refreshable refreshable) {
+            refreshable.onShow();
+        }
     }
 }

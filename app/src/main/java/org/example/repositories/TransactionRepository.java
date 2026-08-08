@@ -43,6 +43,16 @@ public class TransactionRepository implements CrudRepository<Transaction> {
             + "+ COALESCE((SELECT SUM(amount) FROM transactions WHERE account_id = ?), 0)";
     private static final String TARGET_MINOR_UNITS_SQL =
             "SELECT c.minor_unit FROM accounts a JOIN currencies c ON c.id = a.currency_id WHERE a.id = ?";
+    private static final String SUM_BY_CURRENCY_SQL =
+            "SELECT a.currency_id AS currency_id, SUM(t.amount) AS total "
+            + "FROM transactions t JOIN accounts a ON a.id = t.account_id "
+            + "WHERE t.transaction_type = ? AND substr(t.transaction_date, 1, 7) = ? "
+            + "GROUP BY a.currency_id";
+    private static final String AVAILABLE_YEARS_SQL =
+            "SELECT DISTINCT substr(transaction_date, 1, 4) AS year FROM transactions ORDER BY year DESC";
+    private static final String LATEST_YEAR_MONTH_SQL =
+            "SELECT substr(transaction_date, 1, 7) AS year_month FROM transactions "
+            + "ORDER BY transaction_date DESC LIMIT 1";
 
     private final Database database;
 
@@ -69,6 +79,54 @@ public class TransactionRepository implements CrudRepository<Transaction> {
             throw new RuntimeException("Failed to load transactions", e);
         }
         return transactions;
+    }
+
+    public Map<Long, Long> sumByCurrency(TransactionType type, int year, int month) {
+        Map<Long, Long> totals = new HashMap<>();
+        String monthPrefix = String.format("%04d-%02d", year, month);
+        try {
+            Connection connection = database.getConnection();
+            try (PreparedStatement statement = connection.prepareStatement(SUM_BY_CURRENCY_SQL)) {
+                statement.setString(1, type.toString());
+                statement.setString(2, monthPrefix);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        totals.put(resultSet.getLong("currency_id"), resultSet.getLong("total"));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to load transaction sums", e);
+        }
+        return totals;
+    }
+
+    public List<Integer> availableYears() {
+        List<Integer> years = new ArrayList<>();
+        try {
+            Connection connection = database.getConnection();
+            try (PreparedStatement statement = connection.prepareStatement(AVAILABLE_YEARS_SQL);
+                 ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    years.add(resultSet.getInt("year"));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to load available years", e);
+        }
+        return years;
+    }
+
+    public String latestYearMonth() {
+        try {
+            Connection connection = database.getConnection();
+            try (PreparedStatement statement = connection.prepareStatement(LATEST_YEAR_MONTH_SQL);
+                 ResultSet resultSet = statement.executeQuery()) {
+                return resultSet.next() ? resultSet.getString("year_month") : null;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to load latest transaction month", e);
+        }
     }
 
     @Override

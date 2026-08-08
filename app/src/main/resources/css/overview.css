@@ -1,13 +1,7 @@
-.title {
+.overview__title {
     -fx-text-fill: #272932;
     -fx-font-size: 24px;
     -fx-font-weight: 800;
-}
-
-.subtitle {
-    -fx-text-fill: #27293250;
-    -fx-font-size: 11px;
-    -fx-font-weight: 500;
 }
 
 .grid {
@@ -39,4 +33,17 @@
 .card__label {
     -fx-font-size: 12px;
     -fx-text-fill: #27293250;
+}
+
+.overview__combo {
+    -fx-background-color: #F5F1ED;
+    -fx-background-radius: 8px;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #272932;
+    -fx-padding: 2 6;
+}
+
+.overview__combo .list-cell {
+    -fx-padding: 2 6;
 }

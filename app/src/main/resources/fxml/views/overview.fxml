@@ -6,11 +6,12 @@
          type="javafx.scene.layout.VBox"
          xmlns="http://javafx.com/javafx/25">
     <VBox spacing="14.0">
-        <HBox alignment="CENTER_LEFT">
-            <VBox spacing="2.0">
-                <Label text="Overview" styleClass="title"/>
-                <Label text="Month Year" styleClass="subtitle"/>
-            </VBox>
+        <HBox alignment="CENTER_LEFT" spacing="12.0">
+            <Label text="Overview" styleClass="overview__title"/>
+            <HBox alignment="CENTER_LEFT" spacing="6.0">
+                <ComboBox fx:id="monthCombo" styleClass="overview__combo"/>
+                <ComboBox fx:id="yearCombo" styleClass="overview__combo"/>
+            </HBox>
         </HBox>
         <GridPane styleClass="grid">
             <columnConstraints>
@@ -19,17 +20,20 @@
                 <ColumnConstraints percentWidth="33.33" hgrow="ALWAYS"/>
             </columnConstraints>
 
-            <VBox styleClass="card" spacing="2.0" GridPane.columnIndex="0">
-                <Label text="₽126 480" styleClass="card__value"/>
+            <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="0">
+                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                    <Label fx:id="balanceValue" styleClass="card__value"/>
+                    <ComboBox fx:id="baseCurrencyCombo" styleClass="overview__combo"/>
+                </HBox>
                 <Label text="Balance" styleClass="card__label"/>
             </VBox>
-            <VBox styleClass="card" spacing="2.0" GridPane.columnIndex="1">
-                <Label text="+₽82 000" styleClass="card__value, card__value--income"/>
-                <Label text="Trend comment" styleClass="card__label"/>
+            <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="1">
+                <Label fx:id="incomeValue" styleClass="card__value, card__value--income"/>
+                <Label text="Income" styleClass="card__label"/>
             </VBox>
-            <VBox styleClass="card" spacing="2.0" GridPane.columnIndex="2">
-                <Label text="-₽53 700" styleClass="card__value, card__value--expense"/>
-                <Label text="Trend comment" styleClass="card__label"/>
+            <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="2">
+                <Label fx:id="expenseValue" styleClass="card__value, card__value--expense"/>
+                <Label text="Expenses" styleClass="card__label"/>
             </VBox>
         </GridPane>
     </VBox>

@@ -406,6 +406,24 @@ CREATE TABLE IF NOT EXISTS exchange_rates (
 
 
 -- ============================================================
+-- Settings
+-- ============================================================
+
+
+CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+
+
+    value TEXT NOT NULL,
+
+
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
+
+-- ============================================================
 -- Indexes
 -- ============================================================
 

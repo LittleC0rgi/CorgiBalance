@@ -11,6 +11,7 @@ public final class FormSpec {
     public enum Kind {
         TEXT,
         NUMBER,
+        DECIMAL,
         DATE,
         ENUM,
         COMBO,
@@ -38,6 +39,10 @@ public final class FormSpec {
 
     public static FormSpec number() {
         return new FormSpec(Kind.NUMBER, null, null);
+    }
+
+    public static FormSpec decimal() {
+        return new FormSpec(Kind.DECIMAL, null, null);
     }
 
     public static FormSpec date() {

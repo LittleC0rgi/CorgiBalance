@@ -7,11 +7,18 @@ import org.example.components.table.ColumnSpec;
 import org.example.components.table.CrudTable;
 import org.example.components.table.FormSpec;
 import org.example.models.Currency;
+import org.example.models.ExchangeRate;
 import org.example.models.Tag;
 import org.example.repositories.CurrencyRepository;
+import org.example.repositories.ExchangeRateRepository;
 import org.example.repositories.TagRepository;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SettingsView extends View {
 
@@ -26,6 +33,7 @@ public class SettingsView extends View {
     private void initialize() {
         sections.getChildren().add(createTagsTable());
         sections.getChildren().add(createCurrenciesTable());
+        sections.getChildren().add(createExchangeRatesTable());
     }
 
     private CrudTable<Tag> createTagsTable() {
@@ -42,13 +50,13 @@ public class SettingsView extends View {
                 .editable(Cells.colorEditable(), (tag, value) -> tag.setColor((String) value))
                 .form(FormSpec.color())
                 .build();
-        ColumnSpec<Tag> icon = ColumnSpec.<Tag>builder("Icon")
-                .width(180)
-                .value(Tag::getIcon)
-                .editable(Cells.editableText(), (tag, value) -> tag.setIcon((String) value))
-                .form(FormSpec.text())
-                .build();
-        return new CrudTable<>("Tags", new TagRepository(), Tag::new, List.of(name, color, icon));
+//        ColumnSpec<Tag> icon = ColumnSpec.<Tag>builder("Icon")
+//                .width(180)
+//                .value(Tag::getIcon)
+//                .editable(Cells.editableText(), (tag, value) -> tag.setIcon((String) value))
+//                .form(FormSpec.text())
+//                .build();
+        return new CrudTable<>("Tags", new TagRepository(), Tag::new, List.of(name, color));
     }
 
     private CrudTable<Currency> createCurrenciesTable() {
@@ -82,5 +90,49 @@ public class SettingsView extends View {
                 .build();
         return new CrudTable<>("Currencies", new CurrencyRepository(), Currency::new,
                 List.of(code, name, symbol, minorUnit));
+    }
+
+    private CrudTable<ExchangeRate> createExchangeRatesTable() {
+        List<Long> currencyIds = new ArrayList<>();
+        Map<Long, String> currencyLabels = new HashMap<>();
+        for (Currency currency : new CurrencyRepository().findAll()) {
+            currencyIds.add(currency.getId());
+            currencyLabels.put(currency.getId(), currency.getCode());
+        }
+
+        ColumnSpec<ExchangeRate> from = ColumnSpec.<ExchangeRate>builder("From")
+                .width(120)
+                .value(ExchangeRate::getFromCurrencyId)
+                .editable(Cells.comboEditable(currencyIds, currencyLabels),
+                        (rate, value) -> rate.setFromCurrencyId((Long) value))
+                .form(FormSpec.combo(currencyIds, currencyLabels))
+                .required()
+                .build();
+        ColumnSpec<ExchangeRate> to = ColumnSpec.<ExchangeRate>builder("To")
+                .width(120)
+                .value(ExchangeRate::getToCurrencyId)
+                .editable(Cells.comboEditable(currencyIds, currencyLabels),
+                        (rate, value) -> rate.setToCurrencyId((Long) value))
+                .form(FormSpec.combo(currencyIds, currencyLabels))
+                .required()
+                .build();
+        ColumnSpec<ExchangeRate> rate = ColumnSpec.<ExchangeRate>builder("Rate")
+                .width(140)
+                .value(ExchangeRate::getRate)
+                .editable(Cells.decimalEditable(),
+                        (exchangeRate, value) -> exchangeRate.setRate((BigDecimal) value))
+                .form(FormSpec.decimal())
+                .required()
+                .build();
+        ColumnSpec<ExchangeRate> rateDate = ColumnSpec.<ExchangeRate>builder("Date")
+                .width(130)
+                .value(ExchangeRate::getRateDate)
+                .editable(Cells.dateEditable(),
+                        (exchangeRate, value) -> exchangeRate.setRateDate((LocalDate) value))
+                .form(FormSpec.date())
+                .required()
+                .build();
+        return new CrudTable<>("Exchange rates", new ExchangeRateRepository(), ExchangeRate::new,
+                List.of(from, to, rate, rateDate));
     }
 }

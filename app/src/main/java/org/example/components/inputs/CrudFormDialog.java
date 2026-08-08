@@ -15,6 +15,7 @@ import org.example.components.table.CrudTable;
 import org.example.components.table.FormSpec;
 import org.example.models.BaseModel;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -102,6 +103,7 @@ public class CrudFormDialog<T extends BaseModel> extends Dialog<T> {
             case TEXT:
             case COLOR:
             case NUMBER:
+            case DECIMAL:
                 ((TextField) control).setText(String.valueOf(value));
                 break;
             case DATE:
@@ -136,7 +138,8 @@ public class CrudFormDialog<T extends BaseModel> extends Dialog<T> {
         switch (form.kind()) {
             case TEXT:
             case COLOR:
-            case NUMBER: {
+            case NUMBER:
+            case DECIMAL: {
                 return new CrudTextField();
             }
             case DATE: {
@@ -175,7 +178,8 @@ public class CrudFormDialog<T extends BaseModel> extends Dialog<T> {
             }
             Object value = read(field.control(), spec.formSpec().kind());
             if (value == null) {
-                if (spec.formSpec().kind() == FormSpec.Kind.NUMBER) {
+                if (spec.formSpec().kind() == FormSpec.Kind.NUMBER
+                        || spec.formSpec().kind() == FormSpec.Kind.DECIMAL) {
                     errors.add(spec.title() + " must be a valid number");
                 } else {
                     errors.add(spec.title() + " is required");
@@ -211,6 +215,18 @@ public class CrudFormDialog<T extends BaseModel> extends Dialog<T> {
                 }
                 try {
                     return Long.parseLong(text);
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            }
+            case DECIMAL: {
+                String text = ((TextField) control).getText();
+                text = text == null ? "" : text.trim();
+                if (text.isEmpty()) {
+                    return null;
+                }
+                try {
+                    return new BigDecimal(text);
                 } catch (NumberFormatException e) {
                     return null;
                 }

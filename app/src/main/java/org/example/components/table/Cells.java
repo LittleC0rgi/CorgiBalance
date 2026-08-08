@@ -15,6 +15,7 @@ import javafx.scene.shape.Circle;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -33,6 +34,10 @@ public final class Cells {
 
     public static <T> Callback<TableColumn<T, Object>, TableCell<T, Object>> longEditable() {
         return column -> new NumberEditCell<>();
+    }
+
+    public static <T> Callback<TableColumn<T, Object>, TableCell<T, Object>> decimalEditable() {
+        return column -> new DecimalEditCell<>();
     }
 
     public static <T> Callback<TableColumn<T, Object>, TableCell<T, Object>> dateEditable() {
@@ -127,6 +132,68 @@ public final class Cells {
             }
             try {
                 commitEdit(Long.parseLong(text));
+            } catch (NumberFormatException e) {
+                cancelEdit();
+            }
+        }
+
+        @Override
+        protected void updateItem(Object item, boolean empty) {
+            super.updateItem(item, empty);
+            if (empty) {
+                setText(null);
+                setGraphic(null);
+            } else if (isEditing()) {
+                setText(null);
+                setGraphic(textField);
+            } else {
+                setText(item == null ? "" : String.valueOf(item));
+                setGraphic(null);
+            }
+        }
+
+        @Override
+        public void startEdit() {
+            if (!isEditable()) {
+                return;
+            }
+            super.startEdit();
+            textField.setText(getItem() == null ? "" : String.valueOf(getItem()));
+            setText(null);
+            setGraphic(textField);
+            textField.requestFocus();
+            textField.selectAll();
+        }
+
+        @Override
+        public void cancelEdit() {
+            super.cancelEdit();
+            setText(getItem() == null ? "" : String.valueOf(getItem()));
+            setGraphic(null);
+        }
+    }
+
+    private static final class DecimalEditCell<T> extends TableCell<T, Object> {
+
+        private final TextField textField = new TextField();
+
+        DecimalEditCell() {
+            textField.setOnAction(event -> commitDecimal());
+            textField.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
+                if (wasFocused && !isFocused) {
+                    commitDecimal();
+                }
+            });
+        }
+
+        private void commitDecimal() {
+            String text = textField.getText() == null ? "" : textField.getText().trim();
+            if (text.isEmpty()) {
+                cancelEdit();
+                return;
+            }
+            try {
+                commitEdit(new BigDecimal(text));
             } catch (NumberFormatException e) {
                 cancelEdit();
             }

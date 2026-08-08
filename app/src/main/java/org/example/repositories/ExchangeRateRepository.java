@@ -1,5 +1,6 @@
 package org.example.repositories;
 
+import org.example.components.table.CrudRepository;
 import org.example.models.ExchangeRate;
 import org.example.services.Database;
 
@@ -8,13 +9,20 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
-public class ExchangeRateRepository {
+public class ExchangeRateRepository implements CrudRepository<ExchangeRate> {
 
+    private static final String FIND_ALL_SQL =
+            "SELECT id, from_currency_id, to_currency_id, rate, rate_date, created_at, updated_at "
+            + "FROM exchange_rates "
+            + "ORDER BY rate_date DESC, from_currency_id, to_currency_id";
     private static final String FIND_LATEST_SQL =
             "SELECT id, from_currency_id, to_currency_id, rate, rate_date, created_at, updated_at "
             + "FROM exchange_rates "
@@ -25,6 +33,14 @@ public class ExchangeRateRepository {
             + "VALUES (?, ?, ?, ?) "
             + "ON CONFLICT (from_currency_id, to_currency_id, rate_date) "
             + "DO UPDATE SET rate = excluded.rate, updated_at = CURRENT_TIMESTAMP";
+    private static final String INSERT_SQL =
+            "INSERT INTO exchange_rates (from_currency_id, to_currency_id, rate, rate_date) "
+            + "VALUES (?, ?, ?, ?)";
+    private static final String UPDATE_SQL =
+            "UPDATE exchange_rates SET from_currency_id = ?, to_currency_id = ?, rate = ?, "
+            + "rate_date = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+    private static final String DELETE_SQL =
+            "DELETE FROM exchange_rates WHERE id = ?";
 
     private final Database database;
 
@@ -34,6 +50,76 @@ public class ExchangeRateRepository {
 
     public ExchangeRateRepository(Database database) {
         this.database = database;
+    }
+
+    @Override
+    public List<ExchangeRate> findAll() {
+        List<ExchangeRate> exchangeRates = new ArrayList<>();
+        try {
+            Connection connection = database.getConnection();
+            try (PreparedStatement statement = connection.prepareStatement(FIND_ALL_SQL);
+                 ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    exchangeRates.add(mapRow(resultSet));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to load exchange rates", e);
+        }
+        return exchangeRates;
+    }
+
+    @Override
+    public ExchangeRate create(ExchangeRate exchangeRate) {
+        try {
+            Connection connection = database.getConnection();
+            try (PreparedStatement statement = connection.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
+                bind(statement, exchangeRate);
+                statement.executeUpdate();
+                try (ResultSet keys = statement.getGeneratedKeys()) {
+                    if (keys.next()) {
+                        exchangeRate.setId(keys.getLong(1));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to create exchange rate", e);
+        }
+        return exchangeRate;
+    }
+
+    @Override
+    public void update(ExchangeRate exchangeRate) {
+        try {
+            Connection connection = database.getConnection();
+            try (PreparedStatement statement = connection.prepareStatement(UPDATE_SQL)) {
+                bind(statement, exchangeRate);
+                statement.setLong(5, exchangeRate.getId());
+                statement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to update exchange rate", e);
+        }
+    }
+
+    @Override
+    public void delete(ExchangeRate exchangeRate) {
+        try {
+            Connection connection = database.getConnection();
+            try (PreparedStatement statement = connection.prepareStatement(DELETE_SQL)) {
+                statement.setLong(1, exchangeRate.getId());
+                statement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to delete exchange rate", e);
+        }
+    }
+
+    private void bind(PreparedStatement statement, ExchangeRate exchangeRate) throws SQLException {
+        statement.setLong(1, exchangeRate.getFromCurrencyId());
+        statement.setLong(2, exchangeRate.getToCurrencyId());
+        statement.setString(3, exchangeRate.getRate().toPlainString());
+        statement.setString(4, exchangeRate.getRateDate().toString());
     }
 
     public Optional<ExchangeRate> findLatest(long fromCurrencyId, long toCurrencyId) {

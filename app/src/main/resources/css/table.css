@@ -6,6 +6,7 @@
 
 .crud-toolbar {
     -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 12;
 }
 
 .crud-table-title {

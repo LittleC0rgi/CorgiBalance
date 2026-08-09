@@ -34,7 +34,9 @@ public class CrudTable<T extends BaseModel> extends VBox {
     @Setter
     private Consumer<T> afterCreate;
 
-    public CrudTable(String title, CrudRepository<T> repository, Supplier<T> newInstance,
+    public CrudTable(String title,
+                     CrudRepository<T> repository,
+                     Supplier<T> newInstance,
                      List<ColumnSpec<T>> columns) {
         this.title = title;
         this.repository = repository;

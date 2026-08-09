@@ -45,7 +45,11 @@
             </columnConstraints>
 
             <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="0">
-                <Label text="Accounts" styleClass="card__label"/>
+                <HBox>
+                    <Label text="Accounts" styleClass="card__label"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Hyperlink fx:id="allAccountsLink" text="All" styleClass="card__link"/>
+                </HBox>
                 <VBox fx:id="accountList" spacing="4.0"/>
             </VBox>
             <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="1">

@@ -2,6 +2,7 @@ package org.example.components.views;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class OverviewView extends View implements Refreshable {
 
@@ -39,6 +41,8 @@ public class OverviewView extends View implements Refreshable {
     @FXML
     private VBox accountList;
     @FXML
+    private Hyperlink allAccountsLink;
+    @FXML
     private ComboBox<Long> baseCurrencyCombo;
     @FXML
     private ComboBox<Integer> monthCombo;
@@ -49,6 +53,7 @@ public class OverviewView extends View implements Refreshable {
     private AccountRepository accountRepository;
     private TransactionRepository transactionRepository;
     private SettingsRepository settingsRepository;
+    private Consumer<String> navigationHandler;
 
     public OverviewView() {
         super("Overview", "/fxml/views/overview.fxml");
@@ -72,6 +77,8 @@ public class OverviewView extends View implements Refreshable {
         selectSavedBaseCurrency();
         loadPeriod(true);
 
+        allAccountsLink.setOnAction(event -> onAllAccounts());
+
         baseCurrencyCombo.valueProperty().addListener((obs, oldValue, newValue) -> {
             if (newValue != null) {
                 settingsRepository.setLong(BASE_CURRENCY_KEY, newValue);
@@ -89,6 +96,17 @@ public class OverviewView extends View implements Refreshable {
         loadCurrencies();
         loadPeriod(false);
         refresh();
+    }
+
+    public void setNavigationHandler(Consumer<String> navigationHandler) {
+        this.navigationHandler = navigationHandler;
+    }
+
+    @FXML
+    private void onAllAccounts() {
+        if (navigationHandler != null) {
+            navigationHandler.accept("Accounts");
+        }
     }
 
     private void loadCurrencies() {

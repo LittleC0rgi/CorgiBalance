@@ -4,6 +4,7 @@ import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.VBox;
@@ -46,5 +47,14 @@ public class Sidebar extends VBox {
 
     public String getCurrentView() {
         return currentView.get();
+    }
+
+    public void selectView(String name) {
+        for (Toggle toggle : navGroup.getToggles()) {
+            if (toggle instanceof ToggleButton button && name.equals(button.getText())) {
+                navGroup.selectToggle(button);
+                return;
+            }
+        }
     }
 }

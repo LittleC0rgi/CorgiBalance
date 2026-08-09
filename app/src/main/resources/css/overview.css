@@ -44,6 +44,16 @@
     -fx-text-fill: #272932;
 }
 
+.card__link {
+    -fx-font-size: 12px;
+    -fx-text-fill: #F3A71290;
+    -fx-border-width: 0;
+}
+
+.card__link:hover {
+    -fx-text-fill: #F3A712;
+}
+
 .card__value--active {
     -fx-text-fill: white;
 }

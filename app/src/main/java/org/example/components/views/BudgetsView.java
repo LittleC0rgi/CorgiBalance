@@ -10,8 +10,11 @@ import org.example.components.table.FormSpec;
 import org.example.models.Budget;
 import org.example.models.Tag;
 import org.example.repositories.BudgetRepository;
+import org.example.repositories.SettingsRepository;
 import org.example.repositories.TagRepository;
+import org.example.services.CurrencyFormatter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 public class BudgetsView extends View {
+
+    private static final String BASE_CURRENCY_KEY = "overview.baseCurrencyId";
 
     @FXML
     private VBox content;
@@ -37,6 +42,13 @@ public class BudgetsView extends View {
             tagLabels.put(tag.getId(), tag.getName());
         }
 
+        CurrencyFormatter currencyFormatter = new CurrencyFormatter();
+        Long baseCurrencyId = new SettingsRepository().getLong(BASE_CURRENCY_KEY)
+                .filter(id -> currencyFormatter.currency(id) != null)
+                .orElseGet(() -> currencyFormatter.currencies().isEmpty()
+                        ? null
+                        : currencyFormatter.currencies().get(0).getId());
+
         ColumnSpec<Budget> name = ColumnSpec.<Budget>builder("Name")
                 .width(220)
                 .value(Budget::getName)
@@ -54,10 +66,11 @@ public class BudgetsView extends View {
                 .build();
         ColumnSpec<Budget> plannedAmount = ColumnSpec.<Budget>builder("Planned amount")
                 .width(160)
-                .value(budget -> budget.getPlannedAmount())
-                .editable(Cells.longEditable(),
-                        (budget, value) -> budget.setPlannedAmount(((Number) value).longValue()))
-                .form(FormSpec.number())
+                .value(Budget::getPlannedAmount)
+                .editable(Cells.amountEditable(currencyFormatter, budget -> baseCurrencyId),
+                        (budget, value) -> budget.setPlannedAmount(
+                                currencyFormatter.toMinorUnits((BigDecimal) value, baseCurrencyId)))
+                .form(FormSpec.decimal())
                 .required()
                 .build();
         ColumnSpec<Budget> startDate = ColumnSpec.<Budget>builder("Start date")

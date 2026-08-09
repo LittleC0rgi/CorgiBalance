@@ -9,6 +9,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class CurrencyFormatter {
@@ -28,6 +29,10 @@ public class CurrencyFormatter {
 
     public Currency currency(Long currencyId) {
         return currencyId == null ? null : currencies.get(currencyId);
+    }
+
+    public List<Currency> currencies() {
+        return List.copyOf(currencies.values());
     }
 
     public int minorUnit(Long currencyId) {

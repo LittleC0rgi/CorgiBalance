@@ -48,6 +48,11 @@ public final class Cells {
         return column -> new AmountEditCell<>(formatter, currencyOf);
     }
 
+    public static <T> Callback<TableColumn<T, Object>, TableCell<T, Object>> amountFormatter(
+            CurrencyFormatter formatter, Function<T, Long> currencyOf) {
+        return column -> new AmountDisplayCell<>(formatter, currencyOf);
+    }
+
     public static <T> Callback<TableColumn<T, Object>, TableCell<T, Object>> dateEditable() {
         return column -> new DateEditCell<>();
     }
@@ -181,15 +186,65 @@ public final class Cells {
         }
     }
 
-    private static final class AmountEditCell<T> extends TableCell<T, Object> {
+    private static class AmountCell<T> extends TableCell<T, Object> {
 
-        private final TextField textField = new TextField();
-        private final CurrencyFormatter formatter;
-        private final Function<T, Long> currencyOf;
+        protected final CurrencyFormatter formatter;
+        protected final Function<T, Long> currencyOf;
 
-        AmountEditCell(CurrencyFormatter formatter, Function<T, Long> currencyOf) {
+        AmountCell(CurrencyFormatter formatter, Function<T, Long> currencyOf) {
             this.formatter = formatter;
             this.currencyOf = currencyOf;
+        }
+
+        protected final String display(Object item) {
+            return formatter.format(minorUnits(item), currencyIdOf(row()));
+        }
+
+        protected final String toPlain(Object item) {
+            return formatter.toPlain(minorUnits(item), currencyIdOf(row()));
+        }
+
+        protected final Long currencyIdOf(T row) {
+            return row == null ? null : currencyOf.apply(row);
+        }
+
+        protected final long minorUnits(Object item) {
+            return item instanceof Number number ? number.longValue() : 0L;
+        }
+
+        protected final T row() {
+            TableView<T> tableView = getTableView();
+            if (tableView == null) {
+                return null;
+            }
+            List<T> items = tableView.getItems();
+            if (items == null) {
+                return null;
+            }
+            int index = getIndex();
+            return index >= 0 && index < items.size() ? items.get(index) : null;
+        }
+    }
+
+    private static final class AmountDisplayCell<T> extends AmountCell<T> {
+
+        AmountDisplayCell(CurrencyFormatter formatter, Function<T, Long> currencyOf) {
+            super(formatter, currencyOf);
+        }
+
+        @Override
+        protected void updateItem(Object item, boolean empty) {
+            super.updateItem(item, empty);
+            setText(empty ? null : display(item));
+        }
+    }
+
+    private static final class AmountEditCell<T> extends AmountCell<T> {
+
+        private final TextField textField = new TextField();
+
+        AmountEditCell(CurrencyFormatter formatter, Function<T, Long> currencyOf) {
+            super(formatter, currencyOf);
             textField.setOnAction(event -> commitAmount());
             textField.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
                 if (wasFocused && !isFocused) {
@@ -247,35 +302,6 @@ public final class Cells {
             super.cancelEdit();
             setText(display(getItem()));
             setGraphic(null);
-        }
-
-        private String display(Object item) {
-            return formatter.format(minorUnits(item), currencyIdOf(row()));
-        }
-
-        private String toPlain(Object item) {
-            return formatter.toPlain(minorUnits(item), currencyIdOf(row()));
-        }
-
-        private Long currencyIdOf(T row) {
-            return row == null ? null : currencyOf.apply(row);
-        }
-
-        private long minorUnits(Object item) {
-            return item instanceof Number number ? number.longValue() : 0L;
-        }
-
-        private T row() {
-            TableView<T> tableView = getTableView();
-            if (tableView == null) {
-                return null;
-            }
-            List<T> items = tableView.getItems();
-            if (items == null) {
-                return null;
-            }
-            int index = getIndex();
-            return index >= 0 && index < items.size() ? items.get(index) : null;
         }
     }
 

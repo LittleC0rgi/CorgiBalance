@@ -9,7 +9,7 @@ public class HeroIcon extends SVGPath {
     private Icon icon;
 
     public HeroIcon() {
-        getStyleClass().add("hero-icon");
+        getStyleClass().add("hero_icon");
     }
 
     public HeroIcon(Icon icon) {

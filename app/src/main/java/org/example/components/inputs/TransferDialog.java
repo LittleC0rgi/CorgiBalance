@@ -12,6 +12,7 @@ import javafx.util.Callback;
 import org.example.components.table.CrudTable;
 import org.example.repositories.AccountRepository;
 import org.example.repositories.ExchangeRateRepository;
+import org.example.services.CurrencyFormatter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -27,6 +28,7 @@ public class TransferDialog extends Dialog<TransferDialog.Result> {
     private final Map<Long, String> currencyCodes;
     private final ExchangeRateRepository exchangeRateRepository = new ExchangeRateRepository();
     private final AccountRepository accountRepository = new AccountRepository();
+    private final CurrencyFormatter currencyFormatter = new CurrencyFormatter();
     private final CrudDatePicker datePicker = new CrudDatePicker();
     private final CrudComboBox<Long> fromCombo = new CrudComboBox<>();
     private final CrudComboBox<Long> toCombo = new CrudComboBox<>();
@@ -241,10 +243,12 @@ public class TransferDialog extends Dialog<TransferDialog.Result> {
             return "Amount is required";
         }
         try {
-            if (Long.parseLong(amountText) <= 0) {
+            BigDecimal amount = currencyFormatter.parse(amountText);
+            Long fromCurrencyId = fromCombo.getValue() == null ? null : accountCurrencyIds.get(fromCombo.getValue());
+            if (currencyFormatter.toMinorUnits(amount, fromCurrencyId) <= 0) {
                 return "Amount must be positive";
             }
-        } catch (NumberFormatException e) {
+        } catch (RuntimeException e) {
             return "Amount must be a valid number";
         }
         if (rateField.isVisible()) {
@@ -264,10 +268,11 @@ public class TransferDialog extends Dialog<TransferDialog.Result> {
     }
 
     private Result collect() {
-        long amount = Long.parseLong(amountField.getText().trim());
+        Long fromCurrencyId = fromCombo.getValue() == null ? null : accountCurrencyIds.get(fromCombo.getValue());
+        long amount = currencyFormatter.toMinorUnits(
+                currencyFormatter.parse(amountField.getText().trim()), fromCurrencyId);
         String description = descriptionField.getText() == null ? "" : descriptionField.getText().trim();
         BigDecimal rate = rateField.isVisible() ? new BigDecimal(rateField.getText().trim()) : null;
-        Long fromCurrencyId = fromCombo.getValue() == null ? null : accountCurrencyIds.get(fromCombo.getValue());
         Long toCurrencyId = toCombo.getValue() == null ? null : accountCurrencyIds.get(toCombo.getValue());
         return new Result(fromCombo.getValue(), toCombo.getValue(), amount,
                 description.isEmpty() ? null : description, datePicker.getValue(),

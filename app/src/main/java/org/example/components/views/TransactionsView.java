@@ -19,7 +19,9 @@ import org.example.repositories.CurrencyRepository;
 import org.example.repositories.ExchangeRateRepository;
 import org.example.repositories.TagRepository;
 import org.example.repositories.TransactionRepository;
+import org.example.services.CurrencyFormatter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,6 +40,7 @@ public class TransactionsView extends View {
     private Map<Long, String> currencyCodes;
     private TransactionRepository transactionRepository;
     private ExchangeRateRepository exchangeRateRepository;
+    private CurrencyFormatter currencyFormatter;
 
     public TransactionsView() {
         super("Transactions", "/fxml/views/transactions.fxml");
@@ -47,6 +50,7 @@ public class TransactionsView extends View {
     private void initialize() {
         transactionRepository = new TransactionRepository();
         exchangeRateRepository = new ExchangeRateRepository();
+        currencyFormatter = new CurrencyFormatter();
 
         accountIds = new ArrayList<>();
         accountLabels = new HashMap<>();
@@ -127,10 +131,12 @@ public class TransactionsView extends View {
                 .build();
         ColumnSpec<Transaction> amount = ColumnSpec.<Transaction>builder("Amount")
                 .width(140)
-                .value(transaction -> transaction.getAmount())
-                .editable(Cells.longEditable(),
-                        (transaction, value) -> transaction.setAmount(((Number) value).longValue()))
-                .form(FormSpec.number())
+                .value(Transaction::getAmount)
+                .editable(Cells.amountEditable(currencyFormatter,
+                                transaction -> accountCurrencyIds.get(transaction.getAccountId())),
+                        (transaction, value) -> transaction.setAmount(currencyFormatter.toMinorUnits(
+                                (BigDecimal) value, accountCurrencyIds.get(transaction.getAccountId()))))
+                .form(FormSpec.decimal())
                 .required()
                 .build();
 

@@ -7,8 +7,6 @@ import org.example.repositories.ExchangeRateRepository;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +19,7 @@ public class CurrencyConverter {
     private final CurrencyRepository currencyRepository;
     private final ExchangeRateRepository exchangeRateRepository;
     private final Map<Long, Currency> currencies = new HashMap<>();
+    private CurrencyFormatter formatter;
 
     public CurrencyConverter() {
         this(new CurrencyRepository(), new ExchangeRateRepository());
@@ -32,6 +31,7 @@ public class CurrencyConverter {
         for (Currency currency : currencyRepository.findAll()) {
             currencies.put(currency.getId(), currency);
         }
+        this.formatter = new CurrencyFormatter(currencies.values());
     }
 
     public List<Currency> currencies() {
@@ -43,6 +43,7 @@ public class CurrencyConverter {
         for (Currency currency : currencyRepository.findAll()) {
             currencies.put(currency.getId(), currency);
         }
+        this.formatter = new CurrencyFormatter(currencies.values());
     }
 
     public Currency currency(long id) {
@@ -75,25 +76,6 @@ public class CurrencyConverter {
     }
 
     public String format(long minorUnits, Long currencyId) {
-        Currency currency = currencyId == null ? null : currencies.get(currencyId);
-        if (currency == null) {
-            return String.valueOf(minorUnits);
-        }
-        String symbol = currency.getSymbol() == null ? "" : currency.getSymbol();
-        return symbol + formatMinorUnits(minorUnits, currency.getMinorUnit());
-    }
-
-    private String formatMinorUnits(long minorUnits, int minorUnit) {
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
-        symbols.setGroupingSeparator(' ');
-        symbols.setDecimalSeparator('.');
-        DecimalFormat formatter = new DecimalFormat("0", symbols);
-        formatter.setGroupingUsed(true);
-        formatter.setMaximumFractionDigits(minorUnit);
-        formatter.setMinimumFractionDigits(minorUnit);
-        BigDecimal value = minorUnit <= 0
-                ? BigDecimal.valueOf(minorUnits)
-                : BigDecimal.valueOf(minorUnits).movePointLeft(minorUnit);
-        return formatter.format(value);
+        return formatter.format(minorUnits, currencyId);
     }
 }

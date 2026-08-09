@@ -8,18 +8,21 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
+import org.example.services.CurrencyFormatter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public final class Cells {
 
@@ -38,6 +41,11 @@ public final class Cells {
 
     public static <T> Callback<TableColumn<T, Object>, TableCell<T, Object>> decimalEditable() {
         return column -> new DecimalEditCell<>();
+    }
+
+    public static <T> Callback<TableColumn<T, Object>, TableCell<T, Object>> amountEditable(
+            CurrencyFormatter formatter, Function<T, Long> currencyOf) {
+        return column -> new AmountEditCell<>(formatter, currencyOf);
     }
 
     public static <T> Callback<TableColumn<T, Object>, TableCell<T, Object>> dateEditable() {
@@ -170,6 +178,104 @@ public final class Cells {
             super.cancelEdit();
             setText(getItem() == null ? "" : String.valueOf(getItem()));
             setGraphic(null);
+        }
+    }
+
+    private static final class AmountEditCell<T> extends TableCell<T, Object> {
+
+        private final TextField textField = new TextField();
+        private final CurrencyFormatter formatter;
+        private final Function<T, Long> currencyOf;
+
+        AmountEditCell(CurrencyFormatter formatter, Function<T, Long> currencyOf) {
+            this.formatter = formatter;
+            this.currencyOf = currencyOf;
+            textField.setOnAction(event -> commitAmount());
+            textField.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
+                if (wasFocused && !isFocused) {
+                    commitAmount();
+                }
+            });
+        }
+
+        private void commitAmount() {
+            String text = textField.getText() == null ? "" : textField.getText().trim();
+            if (text.isEmpty()) {
+                cancelEdit();
+                return;
+            }
+            try {
+                BigDecimal value = formatter.parse(text);
+                Long currencyId = currencyIdOf(row());
+                formatter.toMinorUnits(value, currencyId);
+                commitEdit(value);
+            } catch (RuntimeException e) {
+                cancelEdit();
+            }
+        }
+
+        @Override
+        protected void updateItem(Object item, boolean empty) {
+            super.updateItem(item, empty);
+            if (empty) {
+                setText(null);
+                setGraphic(null);
+            } else if (isEditing()) {
+                setText(null);
+                setGraphic(textField);
+            } else {
+                setText(display(item));
+                setGraphic(null);
+            }
+        }
+
+        @Override
+        public void startEdit() {
+            if (!isEditable()) {
+                return;
+            }
+            super.startEdit();
+            setText(null);
+            setGraphic(textField);
+            textField.setText(toPlain(getItem()));
+            textField.requestFocus();
+            textField.selectAll();
+        }
+
+        @Override
+        public void cancelEdit() {
+            super.cancelEdit();
+            setText(display(getItem()));
+            setGraphic(null);
+        }
+
+        private String display(Object item) {
+            return formatter.format(minorUnits(item), currencyIdOf(row()));
+        }
+
+        private String toPlain(Object item) {
+            return formatter.toPlain(minorUnits(item), currencyIdOf(row()));
+        }
+
+        private Long currencyIdOf(T row) {
+            return row == null ? null : currencyOf.apply(row);
+        }
+
+        private long minorUnits(Object item) {
+            return item instanceof Number number ? number.longValue() : 0L;
+        }
+
+        private T row() {
+            TableView<T> tableView = getTableView();
+            if (tableView == null) {
+                return null;
+            }
+            List<T> items = tableView.getItems();
+            if (items == null) {
+                return null;
+            }
+            int index = getIndex();
+            return index >= 0 && index < items.size() ? items.get(index) : null;
         }
     }
 

@@ -103,6 +103,10 @@ public class TransactionsView extends View {
                 .editable(Cells.comboEditable(accountIds, accountLabels),
                         (transaction, value) -> transaction.setAccountId((Long) value))
                 .form(FormSpec.combo(accountIds, accountLabels))
+                .hint(accountId -> accountId instanceof Long id
+                        ? "Balance: " + currencyFormatter.format(
+                                accountRepository.currentBalance(id), accountCurrencyIds.get(id))
+                        : "")
                 .required()
                 .build();
         ColumnSpec<Transaction> toAccount = ColumnSpec.<Transaction>builder("To account")

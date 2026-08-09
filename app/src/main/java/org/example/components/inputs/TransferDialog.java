@@ -200,9 +200,9 @@ public class TransferDialog extends Dialog<TransferDialog.Result> {
             label.setManaged(false);
             return;
         }
+        Long currencyId = accountCurrencyIds.get(accountId);
         long balance = accountRepository.currentBalance(accountId);
-        String currencyCode = currencyCodes.getOrDefault(accountCurrencyIds.get(accountId), "");
-        label.setText("Balance: " + balance + (currencyCode.isEmpty() ? "" : " " + currencyCode));
+        label.setText("Balance: " + currencyFormatter.format(balance, currencyId));
         label.setVisible(true);
         label.setManaged(true);
         resizeToContent();

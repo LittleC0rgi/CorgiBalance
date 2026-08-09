@@ -9,6 +9,7 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import org.example.components.table.ColumnSpec;
 import org.example.components.table.CrudTable;
@@ -20,6 +21,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class CrudFormDialog<T extends BaseModel> extends Dialog<T> {
@@ -84,7 +86,7 @@ public class CrudFormDialog<T extends BaseModel> extends Dialog<T> {
             Control control = createControl(form);
             applyDefault(control, spec, form.kind());
             grid.add(buildLabel(spec), 0, row);
-            grid.add(control, 1, row);
+            grid.add(withHint(control, spec), 1, row);
             fields.add(new FieldEntry<>(spec, control));
             row++;
         }
@@ -167,6 +169,38 @@ public class CrudFormDialog<T extends BaseModel> extends Dialog<T> {
             default:
                 throw new IllegalStateException("Unsupported form kind: " + form.kind());
         }
+    }
+
+    private Node withHint(Control control, ColumnSpec<T> spec) {
+        Function<Object, String> hint = spec.hint();
+        if (hint == null) {
+            return control;
+        }
+        Label hintLabel = new Label();
+        hintLabel.getStyleClass().add("crud-balance-label");
+        bindHint(control, hintLabel, hint, spec.formSpec().kind());
+        VBox box = new VBox(3, control, hintLabel);
+        box.setMaxWidth(Double.MAX_VALUE);
+        return box;
+    }
+
+    private void bindHint(Control control, Label hintLabel, Function<Object, String> hint,
+                          FormSpec.Kind kind) {
+        Runnable update = () -> {
+            Object value = read(control, kind);
+            String text = value == null ? "" : hint.apply(value);
+            hintLabel.setText(text);
+            hintLabel.setVisible(!text.isEmpty());
+            hintLabel.setManaged(!text.isEmpty());
+        };
+        if (control instanceof ComboBox<?> combo) {
+            combo.valueProperty().addListener((obs, oldValue, newValue) -> update.run());
+        } else if (control instanceof TextField field) {
+            field.textProperty().addListener((obs, oldValue, newValue) -> update.run());
+        } else if (control instanceof DatePicker picker) {
+            picker.valueProperty().addListener((obs, oldValue, newValue) -> update.run());
+        }
+        update.run();
     }
 
     private List<String> validate() {

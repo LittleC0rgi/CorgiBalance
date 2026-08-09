@@ -20,6 +20,7 @@ public final class ColumnSpec<T> {
     private final FormSpec formSpec;
     private final boolean required;
     private final Supplier<Object> defaultValue;
+    private final Function<Object, String> hint;
 
     private ColumnSpec(Builder<T> builder) {
         this.title = builder.title;
@@ -31,6 +32,7 @@ public final class ColumnSpec<T> {
         this.formSpec = builder.formSpec;
         this.required = builder.required;
         this.defaultValue = builder.defaultValue;
+        this.hint = builder.hint;
     }
 
     public static <T> Builder<T> builder(String title) {
@@ -73,6 +75,10 @@ public final class ColumnSpec<T> {
         return defaultValue;
     }
 
+    public Function<Object, String> hint() {
+        return hint;
+    }
+
     public static final class Builder<T> {
 
         private final String title;
@@ -84,6 +90,7 @@ public final class ColumnSpec<T> {
         private FormSpec formSpec;
         private boolean required;
         private Supplier<Object> defaultValue;
+        private Function<Object, String> hint;
 
         private Builder(String title) {
             this.title = title;
@@ -126,6 +133,11 @@ public final class ColumnSpec<T> {
 
         public Builder<T> defaultValue(Supplier<Object> defaultValue) {
             this.defaultValue = defaultValue;
+            return this;
+        }
+
+        public Builder<T> hint(Function<Object, String> hint) {
+            this.hint = hint;
             return this;
         }
 

@@ -1,7 +1,5 @@
 .crud-table {
     -fx-background-color: white;
-    -fx-background-radius: 12;
-    -fx-padding: 16;
 }
 
 .crud-toolbar {
@@ -52,7 +50,7 @@
 }
 
 .crud-table .table-view .column-header-background {
-    -fx-background-color: #F5F1ED;
+    -fx-background-color: #272932;
     -fx-background-radius: 8 8 0 0;
 }
 
@@ -63,7 +61,7 @@
 }
 
 .crud-table .table-view .column-header .label {
-    -fx-text-fill: #020618;
+    -fx-text-fill: white;
     -fx-font-weight: bold;
 }
 

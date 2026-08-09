@@ -16,6 +16,10 @@
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 8, 0, 0, 2);
 }
 
+.card--active {
+    -fx-background-color: #272932;
+}
+
 .card__value {
     -fx-font-size: 20px;
     -fx-font-weight: 700;
@@ -35,8 +39,12 @@
     -fx-text-fill: #27293250;
 }
 
+.card__value--active {
+    -fx-text-fill: white;
+}
+
 .overview__combo {
-    -fx-background-color: #F5F1ED;
+    -fx-background-color: white;
     -fx-background-radius: 8px;
     -fx-font-size: 12px;
     -fx-font-weight: 600;

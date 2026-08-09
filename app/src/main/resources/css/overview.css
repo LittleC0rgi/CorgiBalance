@@ -27,11 +27,11 @@
 }
 
 .card__value--income {
-    -fx-text-fill: #00bc7d;
+    -fx-text-fill: #72A276;
 }
 
 .card__value--expense {
-    -fx-text-fill: #FA003F;
+    -fx-text-fill: #CA2E55;
 }
 
 .card__label {

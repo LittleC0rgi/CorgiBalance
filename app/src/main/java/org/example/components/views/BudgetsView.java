@@ -36,10 +36,12 @@ public class BudgetsView extends View {
     private void initialize() {
         TagRepository tagRepository = new TagRepository();
         Map<Long, String> tagLabels = new HashMap<>();
+        Map<Long, String> tagColors = new HashMap<>();
         List<Long> tagIds = new ArrayList<>();
         for (Tag tag : tagRepository.findAll()) {
             tagIds.add(tag.getId());
             tagLabels.put(tag.getId(), tag.getName());
+            tagColors.put(tag.getId(), tag.getColor());
         }
 
         CurrencyFormatter currencyFormatter = new CurrencyFormatter();
@@ -59,7 +61,7 @@ public class BudgetsView extends View {
         ColumnSpec<Budget> tag = ColumnSpec.<Budget>builder("Tag")
                 .width(160)
                 .value(Budget::getTagId)
-                .editable(Cells.comboEditable(tagIds, tagLabels),
+                .editable(Cells.tagEditable(tagIds, tagLabels, tagColors),
                         (budget, value) -> budget.setTagId((Long) value))
                 .form(FormSpec.combo(tagIds, tagLabels))
                 .required()

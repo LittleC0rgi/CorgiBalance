@@ -67,6 +67,11 @@ public final class Cells {
         return column -> new ComboEditCell<>(ids, labels);
     }
 
+    public static <T> Callback<TableColumn<T, Object>, TableCell<T, Object>> tagEditable(
+            List<Long> ids, Map<Long, String> labels, Map<Long, String> colors) {
+        return column -> new TagEditCell<>(ids, labels, colors);
+    }
+
     public static <T> Callback<TableColumn<T, Object>, TableCell<T, Object>> booleanEditable() {
         return column -> new BooleanEditCell<>();
     }
@@ -472,7 +477,7 @@ public final class Cells {
         }
     }
 
-    private static final class ComboEditCell<T> extends TableCell<T, Object> {
+    private static class ComboEditCell<T> extends TableCell<T, Object> {
 
         private final Map<Long, String> labels;
         private final ComboBox<Long> comboBox = new ComboBox<>();
@@ -495,7 +500,7 @@ public final class Cells {
             });
         }
 
-        private String label(Long id) {
+        protected String label(Long id) {
             return labels.getOrDefault(id, String.valueOf(id));
         }
 
@@ -524,6 +529,45 @@ public final class Cells {
             comboBox.setValue((Long) getItem());
             setText(null);
             setGraphic(comboBox);
+        }
+    }
+
+    private static final class TagEditCell<T> extends ComboEditCell<T> {
+
+        private final Map<Long, String> colors;
+
+        TagEditCell(List<Long> ids, Map<Long, String> labels, Map<Long, String> colors) {
+            super(ids, labels);
+            this.colors = colors;
+        }
+
+        @Override
+        protected void updateItem(Object item, boolean empty) {
+            super.updateItem(item, empty);
+            if (empty || isEditing()) {
+                return;
+            }
+            Long id = (Long) item;
+            if (id == null) {
+                setGraphic(null);
+                setText("");
+                return;
+            }
+            setText(null);
+            Label chip = new Label(label(id));
+            chip.getStyleClass().add("tag-chip");
+            String color = colors.get(id);
+            if (color != null && !color.isBlank()) {
+                try {
+                    Color c = Color.web(color);
+                    double luminance = 0.299 * c.getRed() + 0.587 * c.getGreen() + 0.114 * c.getBlue();
+                    String textColor = luminance > 0.6 ? "#1A1A1A" : "#FFFFFF";
+                    chip.setStyle("-fx-background-color: " + color + "; -fx-text-fill: " + textColor + ";");
+                } catch (IllegalArgumentException e) {
+                    // leave default styling
+                }
+            }
+            setGraphic(chip);
         }
     }
 

@@ -87,6 +87,14 @@
     -fx-fill: #020618;
 }
 
+.crud-table .tag-chip {
+    -fx-background-color: #ECECEC;
+    -fx-background-radius: 12;
+    -fx-padding: 3 12;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
 .crud-form-label {
     -fx-font-weight: bold;
     -fx-text-fill: #020618;

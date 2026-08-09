@@ -72,10 +72,12 @@ public class TransactionsView extends View {
 
         TagRepository tagRepository = new TagRepository();
         Map<Long, String> tagLabels = new HashMap<>();
+        Map<Long, String> tagColors = new HashMap<>();
         List<Long> tagIds = new ArrayList<>();
         for (Tag tag : tagRepository.findAll()) {
             tagIds.add(tag.getId());
             tagLabels.put(tag.getId(), tag.getName());
+            tagColors.put(tag.getId(), tag.getColor());
         }
 
         List<TransactionType> transactionTypes = List.of(TransactionType.INCOME, TransactionType.EXPENSE);
@@ -118,7 +120,7 @@ public class TransactionsView extends View {
         ColumnSpec<Transaction> tag = ColumnSpec.<Transaction>builder("Tag")
                 .width(140)
                 .value(Transaction::getTagId)
-                .editable(Cells.comboEditable(tagIds, tagLabels),
+                .editable(Cells.tagEditable(tagIds, tagLabels, tagColors),
                         (transaction, value) -> transaction.setTagId((Long) value))
                 .form(FormSpec.combo(tagIds, tagLabels))
                 .build();

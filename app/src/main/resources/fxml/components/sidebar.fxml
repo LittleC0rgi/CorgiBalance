@@ -9,45 +9,45 @@
          styleClass="sidebar"
          spacing="4">
 
-    <HBox styleClass="brand" spacing="10">
-        <StackPane styleClass="brand-icon">
+    <HBox styleClass="sidebar__brand" spacing="10">
+        <StackPane styleClass="sidebar__brand_icon">
             <HeroIcon icon="DATABASE"/>
         </StackPane>
         <VBox alignment="CENTER_LEFT">
-            <Label text="Corgi Balance" styleClass="brand-title"/>
-            <Label text="Personal Finance" styleClass="brand-subtitle"/>
+            <Label text="Corgi Balance" styleClass="sidebar__title"/>
+            <Label text="Personal Finance" styleClass="sidebar__subtitle"/>
         </VBox>
     </HBox>
 
     <fx:define>
         <ToggleGroup fx:id="navGroup"/>
     </fx:define>
-    <ToggleButton text="Overview" toggleGroup="$navGroup" selected="true" styleClass="sidebar-btn">
+    <ToggleButton text="Overview" toggleGroup="$navGroup" selected="true" styleClass="sidebar__btn">
         <graphic>
             <HeroIcon icon="HOME"/>
         </graphic>
     </ToggleButton>
-    <ToggleButton text="Transactions" toggleGroup="$navGroup" styleClass="sidebar-btn">
+    <ToggleButton text="Transactions" toggleGroup="$navGroup" styleClass="sidebar__btn">
         <graphic>
             <HeroIcon icon="TRANSACTIONS"/>
         </graphic>
     </ToggleButton>
-    <ToggleButton text="Calendar" toggleGroup="$navGroup" styleClass="sidebar-btn">
+    <ToggleButton text="Calendar" toggleGroup="$navGroup" styleClass="sidebar__btn">
         <graphic>
             <HeroIcon icon="CALENDAR"/>
         </graphic>
     </ToggleButton>
-    <ToggleButton text="Accounts" toggleGroup="$navGroup" styleClass="sidebar-btn">
+    <ToggleButton text="Accounts" toggleGroup="$navGroup" styleClass="sidebar__btn">
         <graphic>
             <HeroIcon icon="WALLET"/>
         </graphic>
     </ToggleButton>
-    <ToggleButton text="Budgets" toggleGroup="$navGroup" styleClass="sidebar-btn">
+    <ToggleButton text="Budgets" toggleGroup="$navGroup" styleClass="sidebar__btn">
         <graphic>
             <HeroIcon icon="BUDGETS"/>
         </graphic>
     </ToggleButton>
-    <ToggleButton text="Analytics" toggleGroup="$navGroup" styleClass="sidebar-btn">
+    <ToggleButton text="Analytics" toggleGroup="$navGroup" styleClass="sidebar__btn">
         <graphic>
             <HeroIcon icon="ANALYTICS"/>
         </graphic>
@@ -55,12 +55,12 @@
 
     <Region VBox.vgrow="ALWAYS"/>
 
-    <ToggleButton text="Settings" toggleGroup="$navGroup" styleClass="sidebar-btn">
+    <ToggleButton text="Settings" toggleGroup="$navGroup" styleClass="sidebar__btn">
         <graphic>
             <HeroIcon icon="SETTINGS"/>
         </graphic>
     </ToggleButton>
-    <VBox styleClass="sidebar-footer">
-        <Label text="v0.1.0" styleClass="version-label"/>
+    <VBox styleClass="sidebar__footer">
+        <Label text="v0.1.0" styleClass="sidebar__version"/>
     </VBox>
 </fx:root>

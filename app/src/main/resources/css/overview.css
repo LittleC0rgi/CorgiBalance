@@ -39,6 +39,11 @@
     -fx-text-fill: #27293250;
 }
 
+.card__text {
+    -fx-font-size: 14px;
+    -fx-text-fill: #272932;
+}
+
 .card__value--active {
     -fx-text-fill: white;
 }
@@ -55,3 +60,4 @@
 .overview__combo .list-cell {
     -fx-padding: 2 6;
 }
+

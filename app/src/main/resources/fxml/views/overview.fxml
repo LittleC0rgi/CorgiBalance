@@ -36,5 +36,24 @@
                 <Label text="Expenses" styleClass="card__label"/>
             </VBox>
         </GridPane>
+
+        <GridPane styleClass="grid">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="33.33" hgrow="ALWAYS"/>
+                <ColumnConstraints percentWidth="33.33" hgrow="ALWAYS"/>
+                <ColumnConstraints percentWidth="33.33" hgrow="ALWAYS"/>
+            </columnConstraints>
+
+            <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="0">
+                <Label text="Accounts" styleClass="card__label"/>
+                <VBox fx:id="accountList" spacing="4.0"/>
+            </VBox>
+            <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="1">
+                <Label text="Budgets" styleClass="card__label"/>
+            </VBox>
+            <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="2">
+                <Label text="Nearest payments" styleClass="card__label"/>
+            </VBox>
+        </GridPane>
     </VBox>
 </fx:root>

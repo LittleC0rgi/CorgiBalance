@@ -5,6 +5,10 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import org.example.models.Account;
 import org.example.models.Currency;
@@ -32,6 +36,8 @@ public class OverviewView extends View implements Refreshable {
     private Label incomeValue;
     @FXML
     private Label expenseValue;
+    @FXML
+    private VBox accountList;
     @FXML
     private ComboBox<Long> baseCurrencyCombo;
     @FXML
@@ -144,6 +150,19 @@ public class OverviewView extends View implements Refreshable {
 
         incomeValue.setText("+" + converter.format(income, baseCurrencyId));
         expenseValue.setText("-" + converter.format(expense, baseCurrencyId));
+
+        accountList.getChildren().clear();
+        for (Account account : accountRepository.findAll()) {
+            long balance = accountRepository.currentBalance(account.getId());
+            Label name = new Label(account.getName());
+            name.getStyleClass().add("card__text");
+            Label amount = new Label(converter.format(balance, account.getCurrencyId()));
+            amount.getStyleClass().add("card__text");
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, Priority.ALWAYS);
+            HBox row = new HBox(name, spacer, amount);
+            accountList.getChildren().add(row);
+        }
     }
 
     private long sumForPeriod(TransactionType type, int year, int month, Long baseCurrencyId) {

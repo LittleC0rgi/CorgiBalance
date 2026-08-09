@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -81,15 +82,60 @@ public final class Database {
     }
 
     private void connect() throws SQLException {
+        Path dbPath = dbPath();
+        logger.info("Connecting to database: " + dbPath.toAbsolutePath());
+        connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
+        initDatabase();
+    }
+
+    public synchronized Path dbPath() throws SQLException {
         try {
             Path dbDir = Path.of(System.getProperty("user.home"), ".corgibalance");
             Files.createDirectories(dbDir);
-            Path dbPath = dbDir.resolve("corgibalance.db");
-            logger.info("Connecting to database: " + dbPath.toAbsolutePath());
-            connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
-            initDatabase();
+            return dbDir.resolve("corgibalance.db");
         } catch (IOException e) {
             throw new SQLException("Failed to create database directory", e);
+        }
+    }
+
+    public synchronized void exportTo(Path target) throws SQLException {
+        getConnection();
+        try {
+            Files.deleteIfExists(target);
+        } catch (IOException e) {
+            throw new SQLException("Failed to prepare export file", e);
+        }
+        String escapedPath = target.toString().replace("'", "''");
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("VACUUM INTO '" + escapedPath + "'");
+        }
+    }
+
+    public synchronized void importFrom(Path source) throws SQLException {
+        validateSource(source);
+        close();
+        try {
+            Path dbPath = dbPath();
+            Files.copy(source, dbPath, StandardCopyOption.REPLACE_EXISTING);
+            Files.deleteIfExists(dbPath.resolveSibling("corgibalance.db-wal"));
+            Files.deleteIfExists(dbPath.resolveSibling("corgibalance.db-shm"));
+            Files.deleteIfExists(dbPath.resolveSibling("corgibalance.db-journal"));
+            connect();
+        } catch (IOException e) {
+            throw new SQLException("Failed to import database", e);
+        }
+    }
+
+    private void validateSource(Path source) throws SQLException {
+        if (!Files.isRegularFile(source)) {
+            throw new SQLException("Selected file does not exist");
+        }
+        try (Connection sourceConnection = DriverManager.getConnection("jdbc:sqlite:" + source);
+             Statement statement = sourceConnection.createStatement();
+             ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM sqlite_master")) {
+            resultSet.next();
+        } catch (SQLException e) {
+            throw new SQLException("Selected file is not a valid database: " + source, e);
         }
     }
 

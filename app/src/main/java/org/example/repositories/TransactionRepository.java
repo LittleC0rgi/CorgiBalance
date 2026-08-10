@@ -24,6 +24,8 @@ public class TransactionRepository implements CrudRepository<Transaction> {
 
     private static final String FIND_ALL_SQL =
             "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, created_at, updated_at FROM transactions ORDER BY transaction_date DESC";
+    private static final String FIND_LATEST_SQL =
+            "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, created_at, updated_at FROM transactions ORDER BY transaction_date DESC, id DESC LIMIT ?";
     private static final String FIND_BY_ID_SQL =
             "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, created_at, updated_at FROM transactions WHERE id = ?";
     private static final String FIND_SIBLING_SQL =
@@ -83,6 +85,24 @@ public class TransactionRepository implements CrudRepository<Transaction> {
             }
         } catch (SQLException e) {
             throw new RuntimeException("Failed to load transactions", e);
+        }
+        return transactions;
+    }
+
+    public List<Transaction> findLatest(int limit) {
+        List<Transaction> transactions = new ArrayList<>();
+        try {
+            Connection connection = database.getConnection();
+            try (PreparedStatement statement = connection.prepareStatement(FIND_LATEST_SQL)) {
+                statement.setInt(1, limit);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        transactions.add(mapRow(resultSet));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to load latest transactions", e);
         }
         return transactions;
     }

@@ -8,19 +8,30 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import lombok.Setter;
+import org.example.components.table.Cells;
+import org.example.components.table.ColumnSpec;
+import org.example.components.table.CrudTable;
+import org.example.components.table.FormSpec;
 import org.example.models.Account;
 import org.example.models.Budget;
 import org.example.models.Currency;
+import org.example.models.Tag;
+import org.example.models.Transaction;
 import org.example.models.TransactionType;
 import org.example.repositories.AccountRepository;
 import org.example.repositories.BudgetRepository;
 import org.example.repositories.SettingsRepository;
+import org.example.repositories.TagRepository;
 import org.example.repositories.TransactionRepository;
 import org.example.services.CurrencyConverter;
+import org.example.services.CurrencyFormatter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.TextStyle;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -41,6 +52,8 @@ public class OverviewView extends View implements Refreshable {
     private VBox accountList;
     @FXML
     private VBox budgetList;
+    @FXML
+    private VBox transactionList;
     @FXML
     private Hyperlink allAccountsLink;
     @FXML
@@ -95,6 +108,10 @@ public class OverviewView extends View implements Refreshable {
         monthCombo.valueProperty().addListener((obs, oldValue, newValue) -> refresh());
         yearCombo.valueProperty().addListener((obs, oldValue, newValue) -> refresh());
 
+        CrudTable<Transaction> table = buildTransactionsTable();
+        table.setOnDataChanged(this::refresh);
+        transactionList.getChildren().add(table);
+
         refresh();
     }
 
@@ -116,6 +133,12 @@ public class OverviewView extends View implements Refreshable {
     private void onAllBudgets() {
         if (navigationHandler != null) {
             navigationHandler.accept("Budgets");
+        }
+    }
+
+    private void onAllTransactions() {
+        if (navigationHandler != null) {
+            navigationHandler.accept("Transactions");
         }
     }
 
@@ -232,6 +255,105 @@ public class OverviewView extends View implements Refreshable {
         row.setSpacing(4.0);
         row.getStyleClass().add("budget__row");
         return row;
+    }
+
+    private CrudTable<Transaction> buildTransactionsTable() {
+        CurrencyFormatter currencyFormatter = new CurrencyFormatter();
+
+        List<Long> accountIds = new ArrayList<>();
+        Map<Long, String> accountLabels = new HashMap<>();
+        Map<Long, Long> accountCurrencyIds = new HashMap<>();
+        for (Account account : accountRepository.findAll()) {
+            accountIds.add(account.getId());
+            accountLabels.put(account.getId(), account.getName());
+            if (account.getCurrencyId() != null) {
+                accountCurrencyIds.put(account.getId(), account.getCurrencyId());
+            }
+        }
+
+        Map<Long, String> tagLabels = new HashMap<>();
+        Map<Long, String> tagColors = new HashMap<>();
+        List<Long> tagIds = new ArrayList<>();
+        TagRepository tagRepository = new TagRepository();
+        for (Tag tag : tagRepository.findAll()) {
+            tagIds.add(tag.getId());
+            tagLabels.put(tag.getId(), tag.getName());
+            tagColors.put(tag.getId(), tag.getColor());
+        }
+
+        List<TransactionType> transactionTypes = List.of(TransactionType.INCOME, TransactionType.EXPENSE);
+
+        ColumnSpec<Transaction> date = ColumnSpec.<Transaction>builder("Date")
+                .width(120)
+                .value(Transaction::getTransactionDate)
+                .editable(Cells.dateEditable(),
+                        (transaction, value) -> transaction.setTransactionDate((LocalDate) value))
+                .form(FormSpec.date())
+                .required()
+                .build();
+        ColumnSpec<Transaction> type = ColumnSpec.<Transaction>builder("Type")
+                .width(110)
+                .value(Transaction::getTransactionType)
+                .editable(Cells.enumEditable(transactionTypes),
+                        (transaction, value) -> transaction.setTransactionType((TransactionType) value))
+                .form(FormSpec.enumValue(transactionTypes))
+                .required()
+                .build();
+        ColumnSpec<Transaction> account = ColumnSpec.<Transaction>builder("Account")
+                .width(160)
+                .value(Transaction::getAccountId)
+                .editable(Cells.comboEditable(accountIds, accountLabels),
+                        (transaction, value) -> transaction.setAccountId((Long) value))
+                .form(FormSpec.combo(accountIds, accountLabels))
+                .required()
+                .build();
+        ColumnSpec<Transaction> toAccount = ColumnSpec.<Transaction>builder("To account")
+                .width(140)
+                .value(Transaction::getToAccountId)
+                .editable(Cells.comboEditable(accountIds, accountLabels),
+                        (transaction, value) -> transaction.setToAccountId((Long) value))
+                .build();
+        ColumnSpec<Transaction> tag = ColumnSpec.<Transaction>builder("Tag")
+                .width(140)
+                .value(Transaction::getTagId)
+                .editable(Cells.tagEditable(tagIds, tagLabels, tagColors),
+                        (transaction, value) -> transaction.setTagId((Long) value))
+                .form(FormSpec.combo(tagIds, tagLabels))
+                .build();
+        ColumnSpec<Transaction> description = ColumnSpec.<Transaction>builder("Description")
+                .width(220)
+                .value(Transaction::getDescription)
+                .editable(Cells.editableText(),
+                        (transaction, value) -> transaction.setDescription((String) value))
+                .form(FormSpec.text())
+                .build();
+        ColumnSpec<Transaction> rate = ColumnSpec.<Transaction>builder("Rate")
+                .width(90)
+                .value(Transaction::getRate)
+                .build();
+        ColumnSpec<Transaction> amount = ColumnSpec.<Transaction>builder("Amount")
+                .width(140)
+                .value(Transaction::getAmount)
+                .editable(Cells.amountEditable(currencyFormatter,
+                                transaction -> accountCurrencyIds.get(transaction.getAccountId())),
+                        (transaction, value) -> transaction.setAmount(currencyFormatter.toMinorUnits(
+                                (BigDecimal) value, accountCurrencyIds.get(transaction.getAccountId()))))
+                .form(FormSpec.decimal())
+                .required()
+                .build();
+
+        CrudTable<Transaction> table = new CrudTable<>(
+                "Recent transactions", transactionRepository,
+                () -> transactionRepository.findLatest(10), Transaction::new,
+                List.of(date, type, account, toAccount, tag, description, rate, amount));
+
+        Hyperlink allLink = new Hyperlink("All");
+        allLink.getStyleClass().add("card__link");
+        allLink.setOnAction(event -> onAllTransactions());
+        table.addToolbarNode(allLink);
+
+        VBox.setVgrow(table, Priority.ALWAYS);
+        return table;
     }
 
     private long sumForPeriod(TransactionType type, int year, int month, Long baseCurrencyId) {

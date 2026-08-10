@@ -32,11 +32,11 @@
             <HeroIcon icon="TRANSACTIONS"/>
         </graphic>
     </ToggleButton>
-    <ToggleButton text="Calendar" toggleGroup="$navGroup" styleClass="sidebar__btn">
-        <graphic>
-            <HeroIcon icon="CALENDAR"/>
-        </graphic>
-    </ToggleButton>
+    <!--    <ToggleButton text="Calendar" toggleGroup="$navGroup" styleClass="sidebar__btn">-->
+    <!--        <graphic>-->
+    <!--            <HeroIcon icon="CALENDAR"/>-->
+    <!--        </graphic>-->
+    <!--    </ToggleButton>-->
     <ToggleButton text="Accounts" toggleGroup="$navGroup" styleClass="sidebar__btn">
         <graphic>
             <HeroIcon icon="WALLET"/>
@@ -47,11 +47,11 @@
             <HeroIcon icon="BUDGETS"/>
         </graphic>
     </ToggleButton>
-    <ToggleButton text="Analytics" toggleGroup="$navGroup" styleClass="sidebar__btn">
-        <graphic>
-            <HeroIcon icon="ANALYTICS"/>
-        </graphic>
-    </ToggleButton>
+    <!--    <ToggleButton text="Analytics" toggleGroup="$navGroup" styleClass="sidebar__btn">-->
+    <!--        <graphic>-->
+    <!--            <HeroIcon icon="ANALYTICS"/>-->
+    <!--        </graphic>-->
+    <!--    </ToggleButton>-->
 
     <Region VBox.vgrow="ALWAYS"/>
 

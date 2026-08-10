@@ -2,8 +2,14 @@ package org.example.components.views;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.util.Callback;
 import org.example.components.inputs.TransferDialog;
 import org.example.components.table.Cells;
 import org.example.components.table.ColumnSpec;
@@ -27,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public class TransactionsView extends View {
 
@@ -138,7 +145,7 @@ public class TransactionsView extends View {
         ColumnSpec<Transaction> amount = ColumnSpec.<Transaction>builder("Amount")
                 .width(140)
                 .value(Transaction::getAmount)
-                .editable(Cells.amountEditable(currencyFormatter,
+                .editable(signedAmountCell(currencyFormatter,
                                 transaction -> accountCurrencyIds.get(transaction.getAccountId())),
                         (transaction, value) -> transaction.setAmount(currencyFormatter.toMinorUnits(
                                 (BigDecimal) value, accountCurrencyIds.get(transaction.getAccountId()))))
@@ -153,6 +160,137 @@ public class TransactionsView extends View {
         table.addToolbarButton("New Transfer", event -> showTransferDialog(table));
         VBox.setVgrow(table, Priority.ALWAYS);
         content.getChildren().add(table);
+    }
+
+    private Callback<TableColumn<Transaction, Object>, TableCell<Transaction, Object>> signedAmountCell(
+            CurrencyFormatter formatter, Function<Transaction, Long> currencyOf) {
+        return column -> new SignedAmountCell(formatter, currencyOf);
+    }
+
+    private static final class SignedAmountCell extends TableCell<Transaction, Object> {
+
+        private static final Color INCOME_COLOR = Color.web("#72A276");
+        private static final Color EXPENSE_COLOR = Color.web("#CA2E55");
+
+        private final CurrencyFormatter formatter;
+        private final Function<Transaction, Long> currencyOf;
+        private final TextField textField = new TextField();
+
+        SignedAmountCell(CurrencyFormatter formatter, Function<Transaction, Long> currencyOf) {
+            this.formatter = formatter;
+            this.currencyOf = currencyOf;
+            textField.setOnAction(event -> commitAmount());
+            textField.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
+                if (wasFocused && !isFocused) {
+                    commitAmount();
+                }
+            });
+        }
+
+        @Override
+        protected void updateItem(Object item, boolean empty) {
+            super.updateItem(item, empty);
+            if (empty) {
+                setText(null);
+                setGraphic(null);
+            } else if (isEditing()) {
+                setText(null);
+                setGraphic(textField);
+            } else {
+                setText(displayText(item));
+                setTextFill(textFill());
+                setGraphic(null);
+            }
+        }
+
+        @Override
+        public void startEdit() {
+            if (!isEditable()) {
+                return;
+            }
+            super.startEdit();
+            setText(null);
+            setGraphic(textField);
+            textField.setText(toPlain(getItem()));
+            textField.requestFocus();
+            textField.selectAll();
+        }
+
+        @Override
+        public void cancelEdit() {
+            super.cancelEdit();
+            setText(displayText(getItem()));
+            setTextFill(textFill());
+            setGraphic(null);
+        }
+
+        private void commitAmount() {
+            String text = textField.getText() == null ? "" : textField.getText().trim();
+            if (text.isEmpty()) {
+                cancelEdit();
+                return;
+            }
+            try {
+                BigDecimal value = formatter.parse(text);
+                Long currencyId = currencyIdOf(row());
+                formatter.toMinorUnits(value, currencyId);
+                commitEdit(value);
+            } catch (RuntimeException e) {
+                cancelEdit();
+            }
+        }
+
+        private String displayText(Object item) {
+            String formatted = formatter.format(Math.abs(minorUnits(item)), currencyIdOf(row()));
+            TransactionType type = typeOf(row());
+            if (type == TransactionType.INCOME) {
+                return "+" + formatted;
+            }
+            if (type == TransactionType.EXPENSE) {
+                return "-" + formatted;
+            }
+            return formatted;
+        }
+
+        private String toPlain(Object item) {
+            return formatter.toPlain(minorUnits(item), currencyIdOf(row()));
+        }
+
+        private Color textFill() {
+            TransactionType type = typeOf(row());
+            if (type == TransactionType.INCOME) {
+                return INCOME_COLOR;
+            }
+            if (type == TransactionType.EXPENSE) {
+                return EXPENSE_COLOR;
+            }
+            return null;
+        }
+
+        private Transaction row() {
+            TableView<Transaction> tableView = getTableView();
+            if (tableView == null) {
+                return null;
+            }
+            List<Transaction> items = tableView.getItems();
+            if (items == null) {
+                return null;
+            }
+            int index = getIndex();
+            return index >= 0 && index < items.size() ? items.get(index) : null;
+        }
+
+        private TransactionType typeOf(Transaction row) {
+            return row == null ? null : row.getTransactionType();
+        }
+
+        private Long currencyIdOf(Transaction row) {
+            return row == null ? null : currencyOf.apply(row);
+        }
+
+        private long minorUnits(Object item) {
+            return item instanceof Number number ? number.longValue() : 0L;
+        }
     }
 
     private void showTransferDialog(CrudTable<Transaction> table) {

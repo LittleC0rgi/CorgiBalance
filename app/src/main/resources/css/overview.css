@@ -71,3 +71,45 @@
     -fx-padding: 2 6;
 }
 
+.budget__name {
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #272932;
+}
+
+.budget__amount {
+    -fx-font-size: 12px;
+    -fx-text-fill: #272932;
+}
+
+.budget__percent {
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #F3A712;
+}
+
+.budget__percent--over {
+    -fx-text-fill: #CA2E55;
+}
+
+.budget__track {
+    -fx-background-color: #EFEFF2;
+    -fx-background-radius: 4px;
+    -fx-pref-height: 6px;
+    -fx-min-height: 6px;
+    -fx-max-height: 6px;
+}
+
+.budget__fill {
+    -fx-background-color: #F3A712;
+    -fx-background-radius: 4px;
+    -fx-pref-height: 6px;
+    -fx-min-height: 6px;
+    -fx-max-height: 6px;
+}
+
+.budget__fill--over {
+    -fx-background-color: #CA2E55;
+    -fx-background-radius: 4px;
+}
+

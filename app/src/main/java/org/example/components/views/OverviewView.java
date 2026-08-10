@@ -1,20 +1,19 @@
 package org.example.components.views;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
+import lombok.Setter;
 import org.example.models.Account;
+import org.example.models.Budget;
 import org.example.models.Currency;
 import org.example.models.TransactionType;
 import org.example.repositories.AccountRepository;
+import org.example.repositories.BudgetRepository;
 import org.example.repositories.SettingsRepository;
 import org.example.repositories.TransactionRepository;
 import org.example.services.CurrencyConverter;
@@ -41,7 +40,11 @@ public class OverviewView extends View implements Refreshable {
     @FXML
     private VBox accountList;
     @FXML
+    private VBox budgetList;
+    @FXML
     private Hyperlink allAccountsLink;
+    @FXML
+    private Hyperlink allBudgetsLink;
     @FXML
     private ComboBox<Long> baseCurrencyCombo;
     @FXML
@@ -52,7 +55,9 @@ public class OverviewView extends View implements Refreshable {
     private CurrencyConverter converter;
     private AccountRepository accountRepository;
     private TransactionRepository transactionRepository;
+    private BudgetRepository budgetRepository;
     private SettingsRepository settingsRepository;
+    @Setter
     private Consumer<String> navigationHandler;
 
     public OverviewView() {
@@ -64,6 +69,7 @@ public class OverviewView extends View implements Refreshable {
         converter = new CurrencyConverter();
         accountRepository = new AccountRepository();
         transactionRepository = new TransactionRepository();
+        budgetRepository = new BudgetRepository();
         settingsRepository = new SettingsRepository();
 
         monthCombo.getItems().setAll(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
@@ -78,6 +84,7 @@ public class OverviewView extends View implements Refreshable {
         loadPeriod(true);
 
         allAccountsLink.setOnAction(event -> onAllAccounts());
+        allBudgetsLink.setOnAction(event -> onAllBudgets());
 
         baseCurrencyCombo.valueProperty().addListener((obs, oldValue, newValue) -> {
             if (newValue != null) {
@@ -98,14 +105,17 @@ public class OverviewView extends View implements Refreshable {
         refresh();
     }
 
-    public void setNavigationHandler(Consumer<String> navigationHandler) {
-        this.navigationHandler = navigationHandler;
-    }
-
     @FXML
     private void onAllAccounts() {
         if (navigationHandler != null) {
             navigationHandler.accept("Accounts");
+        }
+    }
+
+    @FXML
+    private void onAllBudgets() {
+        if (navigationHandler != null) {
+            navigationHandler.accept("Budgets");
         }
     }
 
@@ -181,6 +191,47 @@ public class OverviewView extends View implements Refreshable {
             HBox row = new HBox(name, spacer, amount);
             accountList.getChildren().add(row);
         }
+
+        budgetList.getChildren().clear();
+        for (Budget budget : budgetRepository.findAll()) {
+            budgetList.getChildren().add(budgetRow(budget, baseCurrencyId));
+        }
+    }
+
+    private VBox budgetRow(Budget budget, Long baseCurrencyId) {
+        Map<Long, Long> totals = transactionRepository.sumByCurrency(
+                TransactionType.EXPENSE, budget.getTagId(), budget.getStartDate(), budget.getEndDate());
+        long spent = 0;
+        for (Map.Entry<Long, Long> entry : totals.entrySet()) {
+            spent += converter.convert(Math.abs(entry.getValue()), entry.getKey(), baseCurrencyId);
+        }
+        long planned = budget.getPlannedAmount();
+        double ratio = planned <= 0 ? 0 : Math.min(1.0, (double) spent / planned);
+        boolean over = planned > 0 && spent >= planned;
+        int percent = (int) Math.round((planned <= 0 ? 0 : (double) spent / planned) * 100);
+
+        Label name = new Label(budget.getName());
+        name.getStyleClass().add("budget__name");
+        Label amount = new Label(converter.format(spent, baseCurrencyId)
+                + " / " + converter.format(planned, baseCurrencyId));
+        amount.getStyleClass().add("budget__amount");
+        Label percentLabel = new Label(percent + "%");
+        percentLabel.getStyleClass().add(over ? "budget__percent--over" : "budget__percent");
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        HBox header = new HBox(name, spacer, amount, percentLabel);
+        header.setSpacing(6.0);
+
+        Region fill = new Region();
+        fill.getStyleClass().add(over ? "budget__fill--over" : "budget__fill");
+        HBox track = new HBox(fill);
+        track.getStyleClass().add("budget__track");
+        fill.prefWidthProperty().bind(track.widthProperty().multiply(ratio));
+
+        VBox row = new VBox(header, track);
+        row.setSpacing(4.0);
+        row.getStyleClass().add("budget__row");
+        return row;
     }
 
     private long sumForPeriod(TransactionType type, int year, int month, Long baseCurrencyId) {

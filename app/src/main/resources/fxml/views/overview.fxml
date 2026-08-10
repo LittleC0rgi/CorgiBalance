@@ -53,7 +53,12 @@
                 <VBox fx:id="accountList" spacing="4.0"/>
             </VBox>
             <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="1">
-                <Label text="Budgets" styleClass="card__label"/>
+                <HBox>
+                    <Label text="Budgets" styleClass="card__label"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Hyperlink fx:id="allBudgetsLink" text="All" styleClass="card__link"/>
+                </HBox>
+                <VBox fx:id="budgetList" spacing="10.0"/>
             </VBox>
             <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="2">
                 <Label text="Nearest payments" styleClass="card__label"/>

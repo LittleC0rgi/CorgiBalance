@@ -46,7 +46,7 @@
 
 .card__link {
     -fx-font-size: 12px;
-    -fx-text-fill: #F3A71290;
+    -fx-text-fill: #272932;
     -fx-border-width: 0;
 }
 
@@ -85,7 +85,7 @@
 .budget__percent {
     -fx-font-size: 12px;
     -fx-font-weight: 700;
-    -fx-text-fill: #F3A712;
+    -fx-text-fill: #272932;
 }
 
 .budget__percent--over {
@@ -101,7 +101,7 @@
 }
 
 .budget__fill {
-    -fx-background-color: #F3A712;
+    -fx-background-color: #272932;
     -fx-background-radius: 4px;
     -fx-pref-height: 6px;
     -fx-min-height: 6px;

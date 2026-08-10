@@ -12,6 +12,8 @@ module javafx.demo {
     exports org.example.components.views;
     exports org.example.repositories;
     exports org.example.services;
+    exports org.example.models;
+
 
     opens org.example to javafx.fxml;
     opens org.example.components to javafx.fxml;

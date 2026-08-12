@@ -37,7 +37,7 @@ java {
 
 application {
     mainModule = "javafx.demo"
-    mainClass = "org.example.App"
+    mainClass = "com.corgibalance.App"
 }
 
 jlink {

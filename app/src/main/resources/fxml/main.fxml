@@ -2,11 +2,11 @@
 
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.StackPane?>
-<?import org.example.components.Sidebar?>
-<?import org.example.components.views.*?>
+<?import com.corgibalance.components.Sidebar?>
+<?import com.corgibalance.components.views.*?>
 <BorderPane xmlns:fx="http://javafx.com/fxml/1"
             xmlns="http://javafx.com/javafx/25"
-            fx:controller="org.example.controllers.MainController"
+            fx:controller="com.corgibalance.controllers.MainController"
             styleClass="root-pane">
 
     <left>

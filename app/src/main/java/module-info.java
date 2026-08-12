@@ -5,19 +5,19 @@ module javafx.demo {
     requires org.xerial.sqlitejdbc;
     requires static lombok;
 
-    exports org.example;
-    exports org.example.components;
-    exports org.example.components.inputs;
-    exports org.example.components.table;
-    exports org.example.components.views;
-    exports org.example.repositories;
-    exports org.example.services;
-    exports org.example.models;
+    exports com.corgibalance;
+    exports com.corgibalance.components;
+    exports com.corgibalance.components.inputs;
+    exports com.corgibalance.components.table;
+    exports com.corgibalance.components.views;
+    exports com.corgibalance.repositories;
+    exports com.corgibalance.services;
+    exports com.corgibalance.models;
 
 
-    opens org.example to javafx.fxml;
-    opens org.example.components to javafx.fxml;
-    opens org.example.components.views to javafx.fxml;
-    exports org.example.controllers;
-    opens org.example.controllers to javafx.fxml;
+    opens com.corgibalance to javafx.fxml;
+    opens com.corgibalance.components to javafx.fxml;
+    opens com.corgibalance.components.views to javafx.fxml;
+    exports com.corgibalance.controllers;
+    opens com.corgibalance.controllers to javafx.fxml;
 }

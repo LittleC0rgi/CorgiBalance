@@ -1,6 +1,5 @@
 package com.corgibalance.repositories;
 
-import com.corgibalance.components.table.CrudRepository;
 import com.corgibalance.models.Currency;
 import com.corgibalance.services.Database;
 
@@ -14,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CurrencyRepository implements CrudRepository<Currency> {
+public class CurrencyRepository {
 
     private static final String FIND_ALL_SQL =
             "SELECT id, code, name, symbol, minor_unit, created_at, updated_at FROM currencies ORDER BY code";
@@ -35,7 +34,6 @@ public class CurrencyRepository implements CrudRepository<Currency> {
         this.database = database;
     }
 
-    @Override
     public List<Currency> findAll() {
         List<Currency> currencies = new ArrayList<>();
         try {
@@ -52,7 +50,6 @@ public class CurrencyRepository implements CrudRepository<Currency> {
         return currencies;
     }
 
-    @Override
     public Currency create(Currency currency) {
         try {
             Connection connection = database.getConnection();
@@ -74,7 +71,6 @@ public class CurrencyRepository implements CrudRepository<Currency> {
         return currency;
     }
 
-    @Override
     public void update(Currency currency) {
         try {
             Connection connection = database.getConnection();
@@ -91,7 +87,6 @@ public class CurrencyRepository implements CrudRepository<Currency> {
         }
     }
 
-    @Override
     public void delete(Currency currency) {
         try {
             Connection connection = database.getConnection();

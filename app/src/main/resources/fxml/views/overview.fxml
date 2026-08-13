@@ -65,6 +65,5 @@
             </VBox>
         </GridPane>
 
-        <VBox fx:id="transactionList" VBox.vgrow="ALWAYS" styleClass="card"/>
     </VBox>
 </fx:root>

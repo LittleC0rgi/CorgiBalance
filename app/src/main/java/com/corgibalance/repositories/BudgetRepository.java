@@ -1,6 +1,5 @@
 package com.corgibalance.repositories;
 
-import com.corgibalance.components.table.CrudRepository;
 import com.corgibalance.models.Budget;
 import com.corgibalance.services.Database;
 
@@ -15,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BudgetRepository implements CrudRepository<Budget> {
+public class BudgetRepository {
 
     private static final String FIND_ALL_SQL =
             "SELECT id, name, tag_id, planned_amount, start_date, end_date, created_at, updated_at FROM budgets ORDER BY name COLLATE NOCASE";
@@ -36,7 +35,6 @@ public class BudgetRepository implements CrudRepository<Budget> {
         this.database = database;
     }
 
-    @Override
     public List<Budget> findAll() {
         List<Budget> budgets = new ArrayList<>();
         try {
@@ -53,7 +51,6 @@ public class BudgetRepository implements CrudRepository<Budget> {
         return budgets;
     }
 
-    @Override
     public Budget create(Budget budget) {
         try {
             Connection connection = database.getConnection();
@@ -76,7 +73,6 @@ public class BudgetRepository implements CrudRepository<Budget> {
         return budget;
     }
 
-    @Override
     public void update(Budget budget) {
         try {
             Connection connection = database.getConnection();
@@ -94,7 +90,6 @@ public class BudgetRepository implements CrudRepository<Budget> {
         }
     }
 
-    @Override
     public void delete(Budget budget) {
         try {
             Connection connection = database.getConnection();

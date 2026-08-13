@@ -1,6 +1,5 @@
 package com.corgibalance.repositories;
 
-import com.corgibalance.components.table.CrudRepository;
 import com.corgibalance.models.Tag;
 import com.corgibalance.services.Database;
 
@@ -14,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TagRepository implements CrudRepository<Tag> {
+public class TagRepository {
 
     private static final String FIND_ALL_SQL =
             "SELECT id, name, color, icon, created_at, updated_at FROM tags ORDER BY name COLLATE NOCASE";
@@ -35,7 +34,6 @@ public class TagRepository implements CrudRepository<Tag> {
         this.database = database;
     }
 
-    @Override
     public List<Tag> findAll() {
         List<Tag> tags = new ArrayList<>();
         try {
@@ -52,7 +50,6 @@ public class TagRepository implements CrudRepository<Tag> {
         return tags;
     }
 
-    @Override
     public Tag create(Tag tag) {
         try {
             Connection connection = database.getConnection();
@@ -73,7 +70,6 @@ public class TagRepository implements CrudRepository<Tag> {
         return tag;
     }
 
-    @Override
     public void update(Tag tag) {
         try {
             Connection connection = database.getConnection();
@@ -89,7 +85,6 @@ public class TagRepository implements CrudRepository<Tag> {
         }
     }
 
-    @Override
     public void delete(Tag tag) {
         try {
             Connection connection = database.getConnection();

@@ -1,6 +1,5 @@
 package com.corgibalance.repositories;
 
-import com.corgibalance.components.table.CrudRepository;
 import com.corgibalance.models.Transaction;
 import com.corgibalance.models.TransactionType;
 import com.corgibalance.services.Database;
@@ -20,7 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TransactionRepository implements CrudRepository<Transaction> {
+public class TransactionRepository {
 
     private static final String FIND_ALL_SQL =
             "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, created_at, updated_at FROM transactions ORDER BY transaction_date DESC";
@@ -72,7 +71,6 @@ public class TransactionRepository implements CrudRepository<Transaction> {
         this.database = database;
     }
 
-    @Override
     public List<Transaction> findAll() {
         List<Transaction> transactions = new ArrayList<>();
         try {
@@ -176,7 +174,6 @@ public class TransactionRepository implements CrudRepository<Transaction> {
         }
     }
 
-    @Override
     public Transaction create(Transaction transaction) {
         try {
             Connection connection = database.getConnection();
@@ -213,7 +210,6 @@ public class TransactionRepository implements CrudRepository<Transaction> {
         return create(source);
     }
 
-    @Override
     public void update(Transaction transaction) {
         try {
             Connection connection = database.getConnection();
@@ -227,7 +223,6 @@ public class TransactionRepository implements CrudRepository<Transaction> {
         }
     }
 
-    @Override
     public void delete(Transaction transaction) {
         try {
             Connection connection = database.getConnection();

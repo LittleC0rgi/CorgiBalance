@@ -1,6 +1,5 @@
 package com.corgibalance.repositories;
 
-import com.corgibalance.components.table.CrudRepository;
 import com.corgibalance.models.Account;
 import com.corgibalance.services.Database;
 
@@ -14,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AccountRepository implements CrudRepository<Account> {
+public class AccountRepository {
 
     private static final String FIND_ALL_SQL =
             "SELECT id, name, initial_balance, currency_id, created_at, updated_at FROM accounts ORDER BY name COLLATE NOCASE";
@@ -38,7 +37,6 @@ public class AccountRepository implements CrudRepository<Account> {
         this.database = database;
     }
 
-    @Override
     public List<Account> findAll() {
         List<Account> accounts = new ArrayList<>();
         try {
@@ -70,7 +68,6 @@ public class AccountRepository implements CrudRepository<Account> {
         }
     }
 
-    @Override
     public Account create(Account account) {
         try {
             Connection connection = database.getConnection();
@@ -91,7 +88,6 @@ public class AccountRepository implements CrudRepository<Account> {
         return account;
     }
 
-    @Override
     public void update(Account account) {
         try {
             Connection connection = database.getConnection();
@@ -107,7 +103,6 @@ public class AccountRepository implements CrudRepository<Account> {
         }
     }
 
-    @Override
     public void delete(Account account) {
         try {
             Connection connection = database.getConnection();

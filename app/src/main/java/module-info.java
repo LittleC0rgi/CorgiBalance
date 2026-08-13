@@ -7,8 +7,6 @@ module javafx.demo {
 
     exports com.corgibalance;
     exports com.corgibalance.components;
-    exports com.corgibalance.components.inputs;
-    exports com.corgibalance.components.table;
     exports com.corgibalance.components.views;
     exports com.corgibalance.repositories;
     exports com.corgibalance.services;

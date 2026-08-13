@@ -1,6 +1,5 @@
 package com.corgibalance.repositories;
 
-import com.corgibalance.components.table.CrudRepository;
 import com.corgibalance.models.ExchangeRate;
 import com.corgibalance.services.Database;
 
@@ -17,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class ExchangeRateRepository implements CrudRepository<ExchangeRate> {
+public class ExchangeRateRepository {
 
     private static final String FIND_ALL_SQL =
             "SELECT id, from_currency_id, to_currency_id, rate, rate_date, created_at, updated_at "
@@ -52,7 +51,6 @@ public class ExchangeRateRepository implements CrudRepository<ExchangeRate> {
         this.database = database;
     }
 
-    @Override
     public List<ExchangeRate> findAll() {
         List<ExchangeRate> exchangeRates = new ArrayList<>();
         try {
@@ -69,7 +67,6 @@ public class ExchangeRateRepository implements CrudRepository<ExchangeRate> {
         return exchangeRates;
     }
 
-    @Override
     public ExchangeRate create(ExchangeRate exchangeRate) {
         try {
             Connection connection = database.getConnection();
@@ -88,7 +85,6 @@ public class ExchangeRateRepository implements CrudRepository<ExchangeRate> {
         return exchangeRate;
     }
 
-    @Override
     public void update(ExchangeRate exchangeRate) {
         try {
             Connection connection = database.getConnection();
@@ -102,7 +98,6 @@ public class ExchangeRateRepository implements CrudRepository<ExchangeRate> {
         }
     }
 
-    @Override
     public void delete(ExchangeRate exchangeRate) {
         try {
             Connection connection = database.getConnection();

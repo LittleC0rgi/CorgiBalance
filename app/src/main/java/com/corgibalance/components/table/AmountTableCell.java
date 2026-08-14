@@ -1,18 +1,22 @@
 package com.corgibalance.components.table;
 
-import com.corgibalance.models.Account;
+import com.corgibalance.models.BaseModel;
 import com.corgibalance.services.CurrencyFormatter;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
 
-public class BalanceTableCell extends TableCell<Account, Long> {
+import java.util.function.Function;
+
+public class AmountTableCell<T extends BaseModel> extends TableCell<T, Long> {
 
     private static final String PLACEHOLDER_STYLE_CLASS = "table__placeholder";
 
     private final CurrencyFormatter formatter = new CurrencyFormatter();
+    private final Function<T, Long> currencyIdOf;
     private final TextField textField = new TextField();
 
-    public BalanceTableCell() {
+    public AmountTableCell(Function<T, Long> currencyIdOf) {
+        this.currencyIdOf = currencyIdOf;
         textField.setOnAction(_ -> commitFromTextField());
         textField.focusedProperty().addListener((_, _, isFocused) -> {
             if (!isFocused && isEditing()) {
@@ -21,28 +25,33 @@ public class BalanceTableCell extends TableCell<Account, Long> {
         });
     }
 
-    private Account currentAccount() {
+    private T currentItem() {
         return getTableRow() == null ? null : getTableRow().getItem();
+    }
+
+    private Long currencyId() {
+        T item = currentItem();
+        return item == null ? null : currencyIdOf.apply(item);
     }
 
     @Override
     protected void updateItem(Long value, boolean empty) {
         super.updateItem(value, empty);
-        Account account = currentAccount();
-        if (empty || account == null) {
+        T item = currentItem();
+        if (empty || item == null) {
             setText(null);
             setGraphic(null);
             getStyleClass().remove(PLACEHOLDER_STYLE_CLASS);
-        } else if (account.getId() == null) {
-            setText(formatter.format(value, account.getCurrencyId()));
-            setGraphic(null);
-            if (!getStyleClass().contains(PLACEHOLDER_STYLE_CLASS)) {
-                getStyleClass().add(PLACEHOLDER_STYLE_CLASS);
-            }
         } else {
-            setText(formatter.format(value, account.getCurrencyId()));
+            setText(formatter.format(value, currencyIdOf.apply(item)));
             setGraphic(null);
-            getStyleClass().remove(PLACEHOLDER_STYLE_CLASS);
+            if (item.getId() == null) {
+                if (!getStyleClass().contains(PLACEHOLDER_STYLE_CLASS)) {
+                    getStyleClass().add(PLACEHOLDER_STYLE_CLASS);
+                }
+            } else {
+                getStyleClass().remove(PLACEHOLDER_STYLE_CLASS);
+            }
         }
     }
 
@@ -52,8 +61,7 @@ public class BalanceTableCell extends TableCell<Account, Long> {
             return;
         }
         super.startEdit();
-        Account account = currentAccount();
-        textField.setText(formatter.toPlain(getItem(), account == null ? null : account.getCurrencyId()));
+        textField.setText(formatter.toPlain(getItem(), currencyId()));
         setText(null);
         setGraphic(textField);
         textField.selectAll();
@@ -77,10 +85,8 @@ public class BalanceTableCell extends TableCell<Account, Long> {
         if (!isEditing()) {
             return;
         }
-        Account account = currentAccount();
         try {
-            assert account != null;
-            long minorUnits = formatter.toMinorUnits(formatter.parse(textField.getText()), account.getCurrencyId());
+            long minorUnits = formatter.toMinorUnits(formatter.parse(textField.getText()), currencyId());
             commitEdit(minorUnits);
         } catch (NumberFormatException e) {
             cancelEdit();

@@ -1,25 +1,28 @@
 package com.corgibalance.components.table;
 
-import com.corgibalance.models.Account;
-import com.corgibalance.models.Currency;
-import com.corgibalance.services.CurrencyFormatter;
+import com.corgibalance.models.BaseModel;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TableCell;
 
-public class CurrencyTableCell extends TableCell<Account, Long> {
+import java.util.List;
+import java.util.function.Function;
+
+public class SelectTableCell<T extends BaseModel> extends TableCell<T, Long> {
 
     private static final String PLACEHOLDER_STYLE_CLASS = "table__placeholder";
 
-    private final CurrencyFormatter formatter;
-    private final ComboBox<Currency> comboBox = new ComboBox<>();
+    private final ComboBox<Long> comboBox = new ComboBox<>();
+    private final Function<Long, String> labelFor;
 
-    public CurrencyTableCell(CurrencyFormatter formatter) {
-        this.formatter = formatter;
-        comboBox.setItems(FXCollections.observableArrayList(formatter.currencies()));
-        comboBox.setCellFactory(_ -> currencyListCell());
-        comboBox.setButtonCell(currencyListCell());
+    public SelectTableCell(List<Long> ids, Function<Long, String> labelFor) {
+        this.labelFor = labelFor;
+        ObservableList<Long> items = FXCollections.observableArrayList(ids);
+        comboBox.setItems(items);
+        comboBox.setCellFactory(_ -> selectListCell());
+        comboBox.setButtonCell(selectListCell());
         comboBox.setOnAction(_ -> commitSelection());
         comboBox.focusedProperty().addListener((_, _, isFocused) -> {
             if (!isFocused && !comboBox.isShowing() && isEditing()) {
@@ -28,32 +31,32 @@ public class CurrencyTableCell extends TableCell<Account, Long> {
         });
     }
 
-    private ListCell<Currency> currencyListCell() {
+    private ListCell<Long> selectListCell() {
         return new ListCell<>() {
             @Override
-            protected void updateItem(Currency currency, boolean empty) {
-                super.updateItem(currency, empty);
-                setText(empty || currency == null ? null : currency.getName());
+            protected void updateItem(Long id, boolean empty) {
+                super.updateItem(id, empty);
+                setText(empty || id == null ? null : labelFor.apply(id));
             }
         };
     }
 
-    private Account currentAccount() {
+    private T currentItem() {
         return getTableRow() == null ? null : getTableRow().getItem();
     }
 
     @Override
-    protected void updateItem(Long currencyId, boolean empty) {
-        super.updateItem(currencyId, empty);
-        Account account = currentAccount();
-        if (empty || account == null) {
+    protected void updateItem(Long id, boolean empty) {
+        super.updateItem(id, empty);
+        T item = currentItem();
+        if (empty || item == null) {
             setText(null);
             setGraphic(null);
             getStyleClass().remove(PLACEHOLDER_STYLE_CLASS);
         } else {
-            setText(currencyName(currencyId));
+            setText(labelFor.apply(id));
             setGraphic(null);
-            if (account.getId() == null) {
+            if (item.getId() == null) {
                 if (!getStyleClass().contains(PLACEHOLDER_STYLE_CLASS)) {
                     getStyleClass().add(PLACEHOLDER_STYLE_CLASS);
                 }
@@ -68,8 +71,7 @@ public class CurrencyTableCell extends TableCell<Account, Long> {
         if (!isEditable()) {
             return;
         }
-        Long currencyId = getItem();
-        comboBox.setValue(currencyId == null ? null : formatter.currency(currencyId));
+        comboBox.setValue(getItem());
         super.startEdit();
         setText(null);
         setGraphic(comboBox);
@@ -93,19 +95,11 @@ public class CurrencyTableCell extends TableCell<Account, Long> {
         if (!isEditing()) {
             return;
         }
-        Currency selected = comboBox.getValue();
+        Long selected = comboBox.getValue();
         if (selected == null) {
             cancelEdit();
         } else {
-            commitEdit(selected.getId());
+            commitEdit(selected);
         }
-    }
-
-    private String currencyName(Long currencyId) {
-        if (currencyId == null) {
-            return "";
-        }
-        var currency = formatter.currency(currencyId);
-        return currency == null ? String.valueOf(currencyId) : currency.getName();
     }
 }

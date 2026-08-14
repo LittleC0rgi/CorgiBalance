@@ -1,16 +1,22 @@
 package com.corgibalance.components.table;
 
-import com.corgibalance.models.Account;
+import com.corgibalance.models.BaseModel;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
 
-public class NameTableCell extends TableCell<Account, String> {
+import java.util.function.Function;
+
+public class NameTableCell<T extends BaseModel> extends TableCell<T, String> {
 
     private static final String PLACEHOLDER_STYLE_CLASS = "table__placeholder";
 
+    private final Function<T, String> valueOf;
+    private final String placeholderText;
     private final TextField textField = new TextField();
 
-    public NameTableCell() {
+    public NameTableCell(Function<T, String> valueOf, String placeholderText) {
+        this.valueOf = valueOf;
+        this.placeholderText = placeholderText;
         textField.setOnAction(_ -> commitEdit(textField.getText()));
         textField.focusedProperty().addListener((_, _, isFocused) -> {
             if (!isFocused && isEditing()) {
@@ -19,26 +25,26 @@ public class NameTableCell extends TableCell<Account, String> {
         });
     }
 
-    private Account currentAccount() {
+    private T currentItem() {
         return getTableRow() == null ? null : getTableRow().getItem();
     }
 
     @Override
     protected void updateItem(String value, boolean empty) {
         super.updateItem(value, empty);
-        Account account = currentAccount();
-        if (empty || account == null) {
+        T item = currentItem();
+        if (empty || item == null) {
             setText(null);
             setGraphic(null);
             getStyleClass().remove(PLACEHOLDER_STYLE_CLASS);
-        } else if (account.getId() == null) {
-            setText("+ Add account");
+        } else if (item.getId() == null) {
+            setText(placeholderText);
             setGraphic(null);
             if (!getStyleClass().contains(PLACEHOLDER_STYLE_CLASS)) {
                 getStyleClass().add(PLACEHOLDER_STYLE_CLASS);
             }
         } else {
-            setText(account.getName());
+            setText(valueOf.apply(item));
             setGraphic(null);
             getStyleClass().remove(PLACEHOLDER_STYLE_CLASS);
         }
@@ -50,8 +56,9 @@ public class NameTableCell extends TableCell<Account, String> {
             return;
         }
         super.startEdit();
-        Account account = currentAccount();
-        textField.setText(account == null ? "" : account.getName());
+        T item = currentItem();
+        String name = item == null ? "" : valueOf.apply(item);
+        textField.setText(name == null ? "" : name);
         setText(null);
         setGraphic(textField);
         textField.selectAll();

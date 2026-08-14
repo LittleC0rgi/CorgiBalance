@@ -1,8 +1,8 @@
 package com.corgibalance.controllers;
 
-import com.corgibalance.components.table.BalanceTableCell;
-import com.corgibalance.components.table.CurrencyTableCell;
+import com.corgibalance.components.table.AmountTableCell;
 import com.corgibalance.components.table.NameTableCell;
+import com.corgibalance.components.table.SelectTableCell;
 import com.corgibalance.models.Account;
 import com.corgibalance.models.Currency;
 import com.corgibalance.repositories.AccountRepository;
@@ -32,15 +32,15 @@ public class AccountTableController extends BaseTableController<Account, Account
     @Override
     protected void configureColumns() {
         name.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getName()));
-        name.setCellFactory(_ -> new NameTableCell());
+        name.setCellFactory(_ -> new NameTableCell<>(Account::getName, "+ Add account"));
         name.setOnEditCommit(this::onNameCommitted);
 
         currency.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getCurrencyId()));
-        currency.setCellFactory(_ -> new CurrencyTableCell(currencyFormatter));
+        currency.setCellFactory(_ -> new SelectTableCell<>(currencyIds(), this::currencyName));
         currency.setOnEditCommit(this::onCurrencyCommitted);
 
         initialBalance.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getInitialBalance()));
-        initialBalance.setCellFactory(_ -> new BalanceTableCell());
+        initialBalance.setCellFactory(_ -> new AmountTableCell<>(Account::getCurrencyId));
         initialBalance.setOnEditCommit(this::onBalanceCommitted);
     }
 
@@ -76,6 +76,18 @@ public class AccountTableController extends BaseTableController<Account, Account
         Account account = new Account();
         account.setCurrencyId(defaultCurrencyId());
         return account;
+    }
+
+    private List<Long> currencyIds() {
+        return currencyFormatter.currencies().stream().map(Currency::getId).toList();
+    }
+
+    private String currencyName(Long currencyId) {
+        if (currencyId == null) {
+            return "";
+        }
+        var currency = currencyFormatter.currency(currencyId);
+        return currency == null ? String.valueOf(currencyId) : currency.getName();
     }
 
     private Long defaultCurrencyId() {

@@ -1,19 +1,17 @@
 package com.corgibalance.components.table;
 
 import com.corgibalance.models.Account;
-import com.corgibalance.services.CurrencyFormatter;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
 
-public class BalanceTableCell extends TableCell<Account, Long> {
+public class NameTableCell extends TableCell<Account, String> {
 
     private static final String PLACEHOLDER_STYLE_CLASS = "table__placeholder";
 
-    private final CurrencyFormatter formatter = new CurrencyFormatter();
     private final TextField textField = new TextField();
 
-    public BalanceTableCell() {
-        textField.setOnAction(_ -> commitFromTextField());
+    public NameTableCell() {
+        textField.setOnAction(_ -> commitEdit(textField.getText()));
         textField.focusedProperty().addListener((_, _, isFocused) -> {
             if (!isFocused && isEditing()) {
                 cancelEdit();
@@ -26,7 +24,7 @@ public class BalanceTableCell extends TableCell<Account, Long> {
     }
 
     @Override
-    protected void updateItem(Long value, boolean empty) {
+    protected void updateItem(String value, boolean empty) {
         super.updateItem(value, empty);
         Account account = currentAccount();
         if (empty || account == null) {
@@ -34,13 +32,13 @@ public class BalanceTableCell extends TableCell<Account, Long> {
             setGraphic(null);
             getStyleClass().remove(PLACEHOLDER_STYLE_CLASS);
         } else if (account.getId() == null) {
-            setText(formatter.format(value, account.getCurrencyId()));
+            setText("+ Add account");
             setGraphic(null);
             if (!getStyleClass().contains(PLACEHOLDER_STYLE_CLASS)) {
                 getStyleClass().add(PLACEHOLDER_STYLE_CLASS);
             }
         } else {
-            setText(formatter.format(value, account.getCurrencyId()));
+            setText(account.getName());
             setGraphic(null);
             getStyleClass().remove(PLACEHOLDER_STYLE_CLASS);
         }
@@ -53,7 +51,7 @@ public class BalanceTableCell extends TableCell<Account, Long> {
         }
         super.startEdit();
         Account account = currentAccount();
-        textField.setText(formatter.toPlain(getItem(), account == null ? null : account.getCurrencyId()));
+        textField.setText(account == null ? "" : account.getName());
         setText(null);
         setGraphic(textField);
         textField.selectAll();
@@ -61,7 +59,7 @@ public class BalanceTableCell extends TableCell<Account, Long> {
     }
 
     @Override
-    public void commitEdit(Long newValue) {
+    public void commitEdit(String newValue) {
         super.commitEdit(newValue);
         setGraphic(null);
     }
@@ -71,19 +69,5 @@ public class BalanceTableCell extends TableCell<Account, Long> {
         super.cancelEdit();
         setGraphic(null);
         updateItem(getItem(), isEmpty());
-    }
-
-    private void commitFromTextField() {
-        if (!isEditing()) {
-            return;
-        }
-        Account account = currentAccount();
-        try {
-            assert account != null;
-            long minorUnits = formatter.toMinorUnits(formatter.parse(textField.getText()), account.getCurrencyId());
-            commitEdit(minorUnits);
-        } catch (NumberFormatException e) {
-            cancelEdit();
-        }
     }
 }

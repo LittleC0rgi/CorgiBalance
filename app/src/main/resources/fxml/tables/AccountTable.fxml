@@ -9,6 +9,7 @@
 >
     <columns>
         <TableColumn fx:id="name" text="Name"/>
+        <TableColumn fx:id="currency" text="Currency"/>
         <TableColumn fx:id="initialBalance" text="initialBalance"/>
     </columns>
 </TableView>

@@ -3,7 +3,6 @@ package com.corgibalance.controllers;
 import com.corgibalance.components.table.BalanceTableCell;
 import com.corgibalance.models.Account;
 import com.corgibalance.repositories.AccountRepository;
-import com.corgibalance.services.CurrencyFormatter;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -17,8 +16,6 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.KeyCode;
 
 public class AccountTableController {
-
-    private final CurrencyFormatter formatter = new CurrencyFormatter();
     private final AccountRepository accountRepository = new AccountRepository();
 
     @FXML
@@ -51,7 +48,7 @@ public class AccountTableController {
         name.setOnEditCommit(this::onNameCommitted);
 
         initialBalance.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getInitialBalance()));
-        initialBalance.setCellFactory(_ -> new BalanceTableCell(formatter));
+        initialBalance.setCellFactory(_ -> new BalanceTableCell());
         initialBalance.setOnEditCommit(this::onBalanceCommitted);
     }
 

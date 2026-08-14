@@ -7,13 +7,12 @@ import javafx.scene.control.TextField;
 
 public class BalanceTableCell extends TableCell<Account, Long> {
 
-    private final CurrencyFormatter formatter;
+    private final CurrencyFormatter formatter = new CurrencyFormatter();
     private final TextField textField = new TextField();
 
-    public BalanceTableCell(CurrencyFormatter formatter) {
-        this.formatter = formatter;
-        textField.setOnAction(event -> commitFromTextField());
-        textField.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
+    public BalanceTableCell() {
+        textField.setOnAction(_ -> commitFromTextField());
+        textField.focusedProperty().addListener((_, _, isFocused) -> {
             if (!isFocused && isEditing()) {
                 cancelEdit();
             }

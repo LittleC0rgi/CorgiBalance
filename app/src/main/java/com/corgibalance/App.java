@@ -1,11 +1,11 @@
 package com.corgibalance;
 
+import com.corgibalance.services.Database;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-import com.corgibalance.services.Database;
 
 import java.sql.SQLException;
 import java.util.Objects;
@@ -20,11 +20,11 @@ public class App extends Application {
     }
 
     private void loadStyles(Scene scene) {
-
         scene.getStylesheets().add(Objects.requireNonNull(App.class.getResource("/css/base.css")).toExternalForm());
         scene.getStylesheets().add(Objects.requireNonNull(App.class.getResource("/css/sidebar.css")).toExternalForm());
         scene.getStylesheets().add(Objects.requireNonNull(App.class.getResource("/css/views.css")).toExternalForm());
         scene.getStylesheets().add(Objects.requireNonNull(App.class.getResource("/css/overview.css")).toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(App.class.getResource("/css/table.css")).toExternalForm());
     }
 
     @Override

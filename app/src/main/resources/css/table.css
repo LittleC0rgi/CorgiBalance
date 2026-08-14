@@ -1,0 +1,60 @@
+.table {
+    -fx-background-color: white;
+    -fx-background-radius: 12px;
+    -fx-border-color: #EFEFF2;
+    -fx-padding: 0;
+    -fx-table-cell-border-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.table .column-header-background {
+    -fx-background-color: #272932;
+    -fx-background-radius: 12px 12px 0 0;
+}
+
+.table .column-header {
+    -fx-background-color: transparent;
+}
+
+.table .column-header .label {
+    -fx-alignment: CENTER_LEFT;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-padding: 12px 8px;
+}
+
+.table .table-cell {
+    -fx-font-size: 14px;
+    -fx-text-fill: #272932;
+    -fx-padding: 6px 8px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-border-color: transparent;
+}
+
+.table .table-row-cell {
+    -fx-background-color: white;
+}
+
+.table .table-row-cell:odd {
+    -fx-background-color: #FAFAFB;
+}
+
+.table .table-row-cell:hover {
+    -fx-background-color: #EFEFF2;
+}
+
+.table .table-row-cell:selected {
+    -fx-background-color: #E4E6EB;
+}
+
+.table .table-row-cell:selected .table-cell {
+    -fx-text-fill: #272932;
+    -fx-font-weight: 600;
+}
+
+.table .placeholder .label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #27293250;
+}

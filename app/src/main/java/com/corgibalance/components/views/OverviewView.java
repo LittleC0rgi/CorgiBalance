@@ -1,13 +1,5 @@
 package com.corgibalance.components.views;
 
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
-import javafx.util.Callback;
-import lombok.Setter;
 import com.corgibalance.models.Account;
 import com.corgibalance.models.Budget;
 import com.corgibalance.models.Currency;
@@ -17,6 +9,18 @@ import com.corgibalance.repositories.BudgetRepository;
 import com.corgibalance.repositories.SettingsRepository;
 import com.corgibalance.repositories.TransactionRepository;
 import com.corgibalance.services.CurrencyConverter;
+import javafx.fxml.FXML;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
+import javafx.util.Callback;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -133,7 +137,7 @@ public class OverviewView extends View implements Refreshable {
         if (saved.isPresent() && converter.currency(saved.get()) != null) {
             baseCurrencyCombo.setValue(saved.get());
         } else if (!baseCurrencyCombo.getItems().isEmpty()) {
-            baseCurrencyCombo.setValue(baseCurrencyCombo.getItems().get(0));
+            baseCurrencyCombo.setValue(baseCurrencyCombo.getItems().getFirst());
         }
     }
 

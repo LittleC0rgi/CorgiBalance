@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<TableView xmlns:fx="http://javafx.com/fxml" fx:id="table"
+           styleClass="table"
+           xmlns="http://javafx.com/javafx"
+           fx:controller="com.corgibalance.controllers.AccountTableController"
+>
+    <columns>
+        <TableColumn fx:id="name" text="Name"/>
+        <TableColumn fx:id="initialBalance" text="initialBalance"/>
+    </columns>
+</TableView>

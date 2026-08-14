@@ -15,6 +15,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 public class RecurringTransactionRepository {
 
     private static final String FIND_ALL_SQL =
@@ -33,10 +36,6 @@ public class RecurringTransactionRepository {
 
     public RecurringTransactionRepository() {
         this(Database.getInstance());
-    }
-
-    public RecurringTransactionRepository(Database database) {
-        this.database = database;
     }
 
     public List<RecurringTransaction> findAll() {

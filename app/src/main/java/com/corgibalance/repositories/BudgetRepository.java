@@ -14,7 +14,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BudgetRepository {
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+public class BudgetRepository implements CrudRepository<Budget> {
 
     private static final String FIND_ALL_SQL =
             "SELECT id, name, tag_id, planned_amount, start_date, end_date, created_at, updated_at FROM budgets ORDER BY name COLLATE NOCASE";
@@ -29,10 +32,6 @@ public class BudgetRepository {
 
     public BudgetRepository() {
         this(Database.getInstance());
-    }
-
-    public BudgetRepository(Database database) {
-        this.database = database;
     }
 
     public List<Budget> findAll() {

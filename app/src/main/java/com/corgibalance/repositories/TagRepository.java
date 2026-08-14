@@ -13,7 +13,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TagRepository {
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+public class TagRepository implements CrudRepository<Tag> {
 
     private static final String FIND_ALL_SQL =
             "SELECT id, name, color, icon, created_at, updated_at FROM tags ORDER BY name COLLATE NOCASE";
@@ -28,10 +31,6 @@ public class TagRepository {
 
     public TagRepository() {
         this(Database.getInstance());
-    }
-
-    public TagRepository(Database database) {
-        this.database = database;
     }
 
     public List<Tag> findAll() {

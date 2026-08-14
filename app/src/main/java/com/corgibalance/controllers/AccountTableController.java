@@ -9,23 +9,15 @@ import com.corgibalance.repositories.AccountRepository;
 import com.corgibalance.services.CurrencyFormatter;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.input.KeyCode;
 
 import java.util.List;
 
-public class AccountTableController {
-    private final AccountRepository accountRepository = new AccountRepository();
+public class AccountTableController extends BaseTableController<Account, AccountRepository> {
+
     private final CurrencyFormatter currencyFormatter = new CurrencyFormatter();
 
-    @FXML
-    private TableView<Account> table;
     @FXML
     private TableColumn<Account, String> name;
     @FXML
@@ -33,24 +25,12 @@ public class AccountTableController {
     @FXML
     private TableColumn<Account, Long> initialBalance;
 
-    @FXML
-    public void initialize() {
-        configureTable();
-        configureColumns();
-        loadData();
+    public AccountTableController() {
+        super(new AccountRepository());
     }
 
-    private void configureTable() {
-        table.setEditable(true);
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
-        table.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.DELETE) {
-                deleteSelectedAccount();
-            }
-        });
-    }
-
-    private void configureColumns() {
+    @Override
+    protected void configureColumns() {
         name.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getName()));
         name.setCellFactory(_ -> new NameTableCell());
         name.setOnEditCommit(this::onNameCommitted);
@@ -67,61 +47,32 @@ public class AccountTableController {
     private void onNameCommitted(TableColumn.CellEditEvent<Account, String> event) {
         String newName = event.getNewValue() == null ? "" : event.getNewValue().trim();
         if (newName.isEmpty()) {
-            table.refresh();
+            refresh();
             return;
         }
-        Account account = event.getRowValue();
-        account.setName(newName);
-        if (isPlaceholder(account)) {
-            accountRepository.create(account);
-            table.getItems().add(newPlaceholder());
-            table.refresh();
-        } else {
-            accountRepository.update(account);
-        }
+        commit(event.getRowValue(), account -> account.setName(newName), true);
     }
 
     private void onBalanceCommitted(TableColumn.CellEditEvent<Account, Long> event) {
         Account account = event.getRowValue();
         if (isPlaceholder(account)) {
-            table.refresh();
+            refresh();
             return;
         }
-        account.setInitialBalance(event.getNewValue());
-        accountRepository.update(account);
+        commit(account, a -> a.setInitialBalance(event.getNewValue()), false);
     }
 
     private void onCurrencyCommitted(TableColumn.CellEditEvent<Account, Long> event) {
         Account account = event.getRowValue();
         account.setCurrencyId(event.getNewValue());
         if (!isPlaceholder(account)) {
-            accountRepository.update(account);
-            table.refresh();
+            repository.update(account);
+            refresh();
         }
     }
 
-    private void deleteSelectedAccount() {
-        Account selected = table.getSelectionModel().getSelectedItem();
-        if (selected == null || isPlaceholder(selected)) {
-            return;
-        }
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setHeaderText(null);
-        confirm.setContentText("Delete account \"" + selected.getName() + "\"?");
-        if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
-            accountRepository.delete(selected);
-            table.getItems().remove(selected);
-        }
-    }
-
-    private void loadData() {
-        var data = accountRepository.findAll();
-        ObservableList<Account> items = FXCollections.observableArrayList(data);
-        items.add(newPlaceholder());
-        setItems(items);
-    }
-
-    private Account newPlaceholder() {
+    @Override
+    protected Account newPlaceholder() {
         Account account = new Account();
         account.setCurrencyId(defaultCurrencyId());
         return account;
@@ -132,11 +83,8 @@ public class AccountTableController {
         return currencies.isEmpty() ? null : currencies.getFirst().getId();
     }
 
-    private boolean isPlaceholder(Account account) {
-        return account.getId() == null;
-    }
-
-    public void setItems(ObservableList<Account> items) {
-        table.setItems(items);
+    @Override
+    protected String deleteConfirmationText(Account account) {
+        return "Delete account \"" + account.getName() + "\"?";
     }
 }

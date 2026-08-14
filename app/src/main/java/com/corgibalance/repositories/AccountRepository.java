@@ -13,7 +13,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AccountRepository {
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+public class AccountRepository implements CrudRepository<Account> {
 
     private static final String FIND_ALL_SQL =
             "SELECT id, name, initial_balance, currency_id, created_at, updated_at FROM accounts ORDER BY name COLLATE NOCASE";
@@ -31,10 +34,6 @@ public class AccountRepository {
 
     public AccountRepository() {
         this(Database.getInstance());
-    }
-
-    public AccountRepository(Database database) {
-        this.database = database;
     }
 
     public List<Account> findAll() {

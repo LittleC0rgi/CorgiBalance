@@ -8,6 +8,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 public class SettingsRepository {
 
     private static final String GET_SQL =
@@ -20,10 +23,6 @@ public class SettingsRepository {
 
     public SettingsRepository() {
         this(Database.getInstance());
-    }
-
-    public SettingsRepository(Database database) {
-        this.database = database;
     }
 
     public Optional<String> get(String key) {

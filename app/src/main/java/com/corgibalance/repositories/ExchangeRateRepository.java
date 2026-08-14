@@ -16,7 +16,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class ExchangeRateRepository {
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+public class ExchangeRateRepository implements CrudRepository<ExchangeRate> {
 
     private static final String FIND_ALL_SQL =
             "SELECT id, from_currency_id, to_currency_id, rate, rate_date, created_at, updated_at "
@@ -45,10 +48,6 @@ public class ExchangeRateRepository {
 
     public ExchangeRateRepository() {
         this(Database.getInstance());
-    }
-
-    public ExchangeRateRepository(Database database) {
-        this.database = database;
     }
 
     public List<ExchangeRate> findAll() {

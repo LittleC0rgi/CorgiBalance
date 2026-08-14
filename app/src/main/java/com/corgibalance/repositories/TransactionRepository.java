@@ -19,7 +19,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TransactionRepository {
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+public class TransactionRepository implements CrudRepository<Transaction> {
 
     private static final String FIND_ALL_SQL =
             "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, created_at, updated_at FROM transactions ORDER BY transaction_date DESC";
@@ -65,10 +68,6 @@ public class TransactionRepository {
 
     public TransactionRepository() {
         this(Database.getInstance());
-    }
-
-    public TransactionRepository(Database database) {
-        this.database = database;
     }
 
     public List<Transaction> findAll() {

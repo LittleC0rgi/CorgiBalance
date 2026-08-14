@@ -13,7 +13,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CurrencyRepository {
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+public class CurrencyRepository implements CrudRepository<Currency> {
 
     private static final String FIND_ALL_SQL =
             "SELECT id, code, name, symbol, minor_unit, created_at, updated_at FROM currencies ORDER BY code";
@@ -28,10 +31,6 @@ public class CurrencyRepository {
 
     public CurrencyRepository() {
         this(Database.getInstance());
-    }
-
-    public CurrencyRepository(Database database) {
-        this.database = database;
     }
 
     public List<Currency> findAll() {

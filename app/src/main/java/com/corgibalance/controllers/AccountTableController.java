@@ -9,9 +9,12 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.input.KeyCode;
 
 public class AccountTableController {
 
@@ -35,6 +38,11 @@ public class AccountTableController {
     private void configureTable() {
         table.setEditable(true);
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+        table.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.DELETE) {
+                deleteSelectedAccount();
+            }
+        });
     }
 
     private void configureColumns() {
@@ -43,7 +51,7 @@ public class AccountTableController {
         name.setOnEditCommit(this::onNameCommitted);
 
         initialBalance.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getInitialBalance()));
-        initialBalance.setCellFactory(column -> new BalanceTableCell(formatter));
+        initialBalance.setCellFactory(_ -> new BalanceTableCell(formatter));
         initialBalance.setOnEditCommit(this::onBalanceCommitted);
     }
 
@@ -62,6 +70,20 @@ public class AccountTableController {
         Account account = event.getRowValue();
         account.setInitialBalance(event.getNewValue());
         accountRepository.update(account);
+    }
+
+    private void deleteSelectedAccount() {
+        Account selected = table.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            return;
+        }
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setHeaderText(null);
+        confirm.setContentText("Delete account \"" + selected.getName() + "\"?");
+        if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+            accountRepository.delete(selected);
+            table.getItems().remove(selected);
+        }
     }
 
     private void loadData() {

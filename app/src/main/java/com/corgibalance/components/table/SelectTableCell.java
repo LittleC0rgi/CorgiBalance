@@ -10,16 +10,16 @@ import javafx.scene.control.TableCell;
 import java.util.List;
 import java.util.function.Function;
 
-public class SelectTableCell<T extends BaseModel> extends TableCell<T, Long> {
+public class SelectTableCell<T extends BaseModel, V> extends TableCell<T, V> {
 
     private static final String PLACEHOLDER_STYLE_CLASS = "table__placeholder";
 
-    private final ComboBox<Long> comboBox = new ComboBox<>();
-    private final Function<Long, String> labelFor;
+    private final ComboBox<V> comboBox = new ComboBox<>();
+    private final Function<V, String> labelFor;
 
-    public SelectTableCell(List<Long> ids, Function<Long, String> labelFor) {
+    public SelectTableCell(List<V> values, Function<V, String> labelFor) {
         this.labelFor = labelFor;
-        ObservableList<Long> items = FXCollections.observableArrayList(ids);
+        ObservableList<V> items = FXCollections.observableArrayList(values);
         comboBox.setItems(items);
         comboBox.setCellFactory(_ -> selectListCell());
         comboBox.setButtonCell(selectListCell());
@@ -31,12 +31,12 @@ public class SelectTableCell<T extends BaseModel> extends TableCell<T, Long> {
         });
     }
 
-    private ListCell<Long> selectListCell() {
+    private ListCell<V> selectListCell() {
         return new ListCell<>() {
             @Override
-            protected void updateItem(Long id, boolean empty) {
-                super.updateItem(id, empty);
-                setText(empty || id == null ? null : labelFor.apply(id));
+            protected void updateItem(V value, boolean empty) {
+                super.updateItem(value, empty);
+                setText(empty || value == null ? null : labelFor.apply(value));
             }
         };
     }
@@ -46,15 +46,15 @@ public class SelectTableCell<T extends BaseModel> extends TableCell<T, Long> {
     }
 
     @Override
-    protected void updateItem(Long id, boolean empty) {
-        super.updateItem(id, empty);
+    protected void updateItem(V value, boolean empty) {
+        super.updateItem(value, empty);
         T item = currentItem();
         if (empty || item == null) {
             setText(null);
             setGraphic(null);
             getStyleClass().remove(PLACEHOLDER_STYLE_CLASS);
         } else {
-            setText(labelFor.apply(id));
+            setText(labelFor.apply(value));
             setGraphic(null);
             if (item.getId() == null) {
                 if (!getStyleClass().contains(PLACEHOLDER_STYLE_CLASS)) {
@@ -79,7 +79,7 @@ public class SelectTableCell<T extends BaseModel> extends TableCell<T, Long> {
     }
 
     @Override
-    public void commitEdit(Long newValue) {
+    public void commitEdit(V newValue) {
         super.commitEdit(newValue);
         setGraphic(null);
     }
@@ -95,7 +95,7 @@ public class SelectTableCell<T extends BaseModel> extends TableCell<T, Long> {
         if (!isEditing()) {
             return;
         }
-        Long selected = comboBox.getValue();
+        V selected = comboBox.getValue();
         if (selected == null) {
             cancelEdit();
         } else {

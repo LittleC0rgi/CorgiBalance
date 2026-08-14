@@ -4,8 +4,7 @@
 <fx:root xmlns:fx="http://javafx.com/fxml/1"
          type="javafx.scene.layout.VBox"
          xmlns="http://javafx.com/javafx/25"
-         styleClass="settings-view"
          spacing="24">
 
-    <VBox fx:id="content" VBox.vgrow="ALWAYS"/>
+    <fx:include fx:id="TransactionTable" source="../tables/TransactionTable.fxml"/>
 </fx:root>

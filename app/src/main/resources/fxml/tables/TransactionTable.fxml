@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<TableView xmlns:fx="http://javafx.com/fxml" fx:id="table"
+           styleClass="table"
+           xmlns="http://javafx.com/javafx"
+           fx:controller="com.corgibalance.controllers.TransactionTableController"
+>
+    <columns>
+        <TableColumn fx:id="date" text="Date"/>
+        <TableColumn fx:id="account" text="Account"/>
+        <TableColumn fx:id="tag" text="Tag"/>
+        <TableColumn fx:id="type" text="Type"/>
+        <TableColumn fx:id="description" text="Description"/>
+        <TableColumn fx:id="amount" text="Amount"/>
+    </columns>
+</TableView>

@@ -15,5 +15,5 @@
         <Region HBox.hgrow="ALWAYS"/>
         <Button fx:id="transferButton" text="Transfer" styleClass="btn" onAction="#openTransferDialog"/>
     </HBox>
-    <fx:include fx:id="TransactionTable" source="../tables/TransactionTable.fxml"/>
+    <fx:include fx:id="TransactionTable" source="../components/tables/TransactionTable.fxml"/>
 </fx:root>

@@ -5,5 +5,5 @@
          type="javafx.scene.layout.VBox"
          xmlns="http://javafx.com/javafx/25"
          spacing="24">
-    <fx:include fx:id="AccountTable" source="../tables/AccountTable.fxml"/>
+    <fx:include fx:id="AccountTable" source="../components/tables/AccountTable.fxml"/>
 </fx:root>

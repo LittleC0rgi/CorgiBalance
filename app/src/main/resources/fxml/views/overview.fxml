@@ -72,6 +72,6 @@
         </GridPane>
 
         <Label text="Recent transactions" styleClass="card__label"/>
-        <fx:include fx:id="RecentTransactionsTable" source="../tables/RecentTransactionsTable.fxml"/>
+        <fx:include fx:id="RecentTransactionsTable" source="../components/tables/RecentTransactionsTable.fxml"/>
     </VBox>
 </fx:root>

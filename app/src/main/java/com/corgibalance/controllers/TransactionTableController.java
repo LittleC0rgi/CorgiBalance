@@ -60,7 +60,7 @@ public class TransactionTableController extends BaseTableController<Transaction,
         account.setOnEditCommit(this::onAccountCommitted);
 
         tag.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getTagId()));
-        tag.setCellFactory(_ -> new SelectTableCell<>(tagIds(), this::tagName));
+        tag.setCellFactory(_ -> new SelectTableCell<>(tagIds(), this::tagName, this::tagColor));
         tag.setOnEditCommit(this::onTagCommitted);
 
         type.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getTransactionType()));
@@ -160,6 +160,18 @@ public class TransactionTableController extends BaseTableController<Transaction,
             }
         }
         return "";
+    }
+
+    private String tagColor(Long tagId) {
+        if (tagId == null) {
+            return null;
+        }
+        for (Tag tag : tags) {
+            if (tag.getId().equals(tagId)) {
+                return tag.getColor();
+            }
+        }
+        return null;
     }
 
     private String typeName(TransactionType type) {

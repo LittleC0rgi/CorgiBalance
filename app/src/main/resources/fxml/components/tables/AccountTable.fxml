@@ -2,8 +2,10 @@
 
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.VBox?>
 <TableView xmlns:fx="http://javafx.com/fxml" fx:id="table"
            styleClass="table"
+           VBox.vgrow="ALWAYS"
            xmlns="http://javafx.com/javafx"
            fx:controller="com.corgibalance.controllers.AccountTableController"
 >

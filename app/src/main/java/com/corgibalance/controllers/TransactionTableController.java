@@ -46,7 +46,7 @@ public class TransactionTableController extends BaseTableController<Transaction,
     public void reload() {
         this.accounts = new AccountRepository().findAll();
         this.tags = new TagRepository().findAll();
-        table.refresh();
+        loadData();
     }
 
     @Override
@@ -81,7 +81,8 @@ public class TransactionTableController extends BaseTableController<Transaction,
         description.setOnEditCommit(this::onDescriptionCommitted);
 
         amount.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getAmount()));
-        amount.setCellFactory(_ -> new AmountTableCell<>(this::currencyIdOf));
+        amount.setCellFactory(_ -> new AmountTableCell<>(this::currencyIdOf,
+                transaction -> transaction.getTransactionType() == TransactionType.EXPENSE));
         amount.setOnEditCommit(this::onAmountCommitted);
     }
 

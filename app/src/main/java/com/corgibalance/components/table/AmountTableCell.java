@@ -6,6 +6,7 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
 
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class AmountTableCell<T extends BaseModel> extends TableCell<T, Long> {
 
@@ -13,10 +14,16 @@ public class AmountTableCell<T extends BaseModel> extends TableCell<T, Long> {
 
     private final CurrencyFormatter formatter = new CurrencyFormatter();
     private final Function<T, Long> currencyIdOf;
+    private final Predicate<T> negate;
     private final TextField textField = new TextField();
 
     public AmountTableCell(Function<T, Long> currencyIdOf) {
+        this(currencyIdOf, _ -> false);
+    }
+
+    public AmountTableCell(Function<T, Long> currencyIdOf, Predicate<T> negate) {
         this.currencyIdOf = currencyIdOf;
+        this.negate = negate;
         textField.setOnAction(_ -> commitFromTextField());
         textField.focusedProperty().addListener((_, _, isFocused) -> {
             if (!isFocused && isEditing()) {
@@ -34,6 +41,10 @@ public class AmountTableCell<T extends BaseModel> extends TableCell<T, Long> {
         return item == null ? null : currencyIdOf.apply(item);
     }
 
+    private long displayValue(Long value, T item) {
+        return negate.test(item) ? -Math.abs(value) : value;
+    }
+
     @Override
     protected void updateItem(Long value, boolean empty) {
         super.updateItem(value, empty);
@@ -43,7 +54,7 @@ public class AmountTableCell<T extends BaseModel> extends TableCell<T, Long> {
             setGraphic(null);
             getStyleClass().remove(PLACEHOLDER_STYLE_CLASS);
         } else {
-            setText(formatter.format(value, currencyIdOf.apply(item)));
+            setText(formatter.format(displayValue(value, item), currencyIdOf.apply(item)));
             setGraphic(null);
             if (item.getId() == null) {
                 if (!getStyleClass().contains(PLACEHOLDER_STYLE_CLASS)) {
@@ -61,7 +72,7 @@ public class AmountTableCell<T extends BaseModel> extends TableCell<T, Long> {
             return;
         }
         super.startEdit();
-        textField.setText(formatter.toPlain(getItem(), currencyId()));
+        textField.setText(formatter.toPlain(displayValue(getItem(), currentItem()), currencyId()));
         setText(null);
         setGraphic(textField);
         textField.selectAll();

@@ -82,7 +82,8 @@ public class TransactionTableController extends BaseTableController<Transaction,
 
         amount.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getAmount()));
         amount.setCellFactory(_ -> new AmountTableCell<>(this::currencyIdOf,
-                transaction -> transaction.getTransactionType() == TransactionType.EXPENSE));
+                transaction -> transaction.getTransactionType() == TransactionType.EXPENSE,
+                transaction -> transaction.getAmount() == 0));
         amount.setOnEditCommit(this::onAmountCommitted);
     }
 

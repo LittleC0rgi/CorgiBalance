@@ -59,6 +59,11 @@
     -fx-text-fill: #27293250;
 }
 
+.table .table-cell.table__amount--zero {
+    -fx-text-fill: #CA2E55;
+    -fx-font-weight: bold;
+}
+
 .table .table-cell.table__placeholder {
     -fx-text-fill: #27293250;
     -fx-font-style: italic;

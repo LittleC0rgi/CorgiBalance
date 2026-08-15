@@ -11,19 +11,26 @@ import java.util.function.Predicate;
 public class AmountTableCell<T extends BaseModel> extends TableCell<T, Long> {
 
     private static final String PLACEHOLDER_STYLE_CLASS = "table__placeholder";
+    private static final String ZERO_STYLE_CLASS = "table__amount--zero";
 
     private final CurrencyFormatter formatter = new CurrencyFormatter();
     private final Function<T, Long> currencyIdOf;
     private final Predicate<T> negate;
+    private final Predicate<T> highlight;
     private final TextField textField = new TextField();
 
     public AmountTableCell(Function<T, Long> currencyIdOf) {
-        this(currencyIdOf, _ -> false);
+        this(currencyIdOf, _ -> false, _ -> false);
     }
 
     public AmountTableCell(Function<T, Long> currencyIdOf, Predicate<T> negate) {
+        this(currencyIdOf, negate, _ -> false);
+    }
+
+    public AmountTableCell(Function<T, Long> currencyIdOf, Predicate<T> negate, Predicate<T> highlight) {
         this.currencyIdOf = currencyIdOf;
         this.negate = negate;
+        this.highlight = highlight;
         textField.setOnAction(_ -> commitFromTextField());
         textField.focusedProperty().addListener((_, _, isFocused) -> {
             if (!isFocused && isEditing()) {
@@ -34,6 +41,16 @@ public class AmountTableCell<T extends BaseModel> extends TableCell<T, Long> {
 
     private T currentItem() {
         return getTableRow() == null ? null : getTableRow().getItem();
+    }
+
+    private void toggleStyleClass(String styleClass, boolean on) {
+        if (on) {
+            if (!getStyleClass().contains(styleClass)) {
+                getStyleClass().add(styleClass);
+            }
+        } else {
+            getStyleClass().remove(styleClass);
+        }
     }
 
     private Long currencyId() {
@@ -56,13 +73,8 @@ public class AmountTableCell<T extends BaseModel> extends TableCell<T, Long> {
         } else {
             setText(formatter.format(displayValue(value, item), currencyIdOf.apply(item)));
             setGraphic(null);
-            if (item.getId() == null) {
-                if (!getStyleClass().contains(PLACEHOLDER_STYLE_CLASS)) {
-                    getStyleClass().add(PLACEHOLDER_STYLE_CLASS);
-                }
-            } else {
-                getStyleClass().remove(PLACEHOLDER_STYLE_CLASS);
-            }
+            toggleStyleClass(ZERO_STYLE_CLASS, highlight.test(item));
+            toggleStyleClass(PLACEHOLDER_STYLE_CLASS, item.getId() == null);
         }
     }
 

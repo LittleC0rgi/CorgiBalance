@@ -1,14 +1,3 @@
-.overview__title {
-    -fx-text-fill: #272932;
-    -fx-font-size: 24px;
-    -fx-font-weight: 800;
-}
-
-.grid {
-    -fx-hgap: 14px;
-    -fx-vgap: 14px;
-}
-
 .card {
     -fx-background-color: white;
     -fx-background-radius: 12px;

@@ -8,7 +8,36 @@
     -fx-padding: 24;
 }
 
-.content-greeting {
-    -fx-text-fill: #020618;
+.title {
+    -fx-text-fill: #272932;
     -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.grid {
+    -fx-hgap: 14px;
+    -fx-vgap: 14px;
+}
+
+.btn {
+    -fx-background-color: #272932;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-background-radius: 8;
+    -fx-padding: 6 18;
+    -fx-cursor: hand;
+}
+
+.btn:hover {
+    -fx-background-color: #16171c;
+}
+
+.btn--primary {
+    -fx-background-color: #F3A712;
+    -fx-text-fill: white;
+}
+
+.btn--primary:hover {
+    -fx-background-color: #ce8e10;
 }

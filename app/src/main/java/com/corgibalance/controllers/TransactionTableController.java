@@ -2,7 +2,7 @@ package com.corgibalance.controllers;
 
 import com.corgibalance.components.table.AmountTableCell;
 import com.corgibalance.components.table.DateTableCell;
-import com.corgibalance.components.table.NameTableCell;
+import com.corgibalance.components.table.TextTableCell;
 import com.corgibalance.components.table.SelectTableCell;
 import com.corgibalance.models.Account;
 import com.corgibalance.models.Tag;
@@ -71,7 +71,7 @@ public class TransactionTableController extends BaseTableController<Transaction,
         type.setOnEditCommit(this::onTypeCommitted);
 
         description.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getDescription()));
-        description.setCellFactory(_ -> new NameTableCell<>(Transaction::getDescription, "+ Add transaction"));
+        description.setCellFactory(_ -> new TextTableCell<>(Transaction::getDescription, "+ Add transaction"));
         description.setOnEditCommit(this::onDescriptionCommitted);
 
         amount.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getAmount()));

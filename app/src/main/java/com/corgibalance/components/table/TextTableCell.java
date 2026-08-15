@@ -6,7 +6,7 @@ import javafx.scene.control.TextField;
 
 import java.util.function.Function;
 
-public class NameTableCell<T extends BaseModel> extends TableCell<T, String> {
+public class TextTableCell<T extends BaseModel> extends TableCell<T, String> {
 
     private static final String PLACEHOLDER_STYLE_CLASS = "table__placeholder";
 
@@ -14,7 +14,7 @@ public class NameTableCell<T extends BaseModel> extends TableCell<T, String> {
     private final String placeholderText;
     private final TextField textField = new TextField();
 
-    public NameTableCell(Function<T, String> valueOf, String placeholderText) {
+    public TextTableCell(Function<T, String> valueOf, String placeholderText) {
         this.valueOf = valueOf;
         this.placeholderText = placeholderText;
         textField.setOnAction(_ -> commitEdit(textField.getText()));

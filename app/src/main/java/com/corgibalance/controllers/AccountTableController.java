@@ -1,7 +1,7 @@
 package com.corgibalance.controllers;
 
 import com.corgibalance.components.table.AmountTableCell;
-import com.corgibalance.components.table.NameTableCell;
+import com.corgibalance.components.table.TextTableCell;
 import com.corgibalance.components.table.SelectTableCell;
 import com.corgibalance.models.Account;
 import com.corgibalance.models.Currency;
@@ -32,7 +32,7 @@ public class AccountTableController extends BaseTableController<Account, Account
     @Override
     protected void configureColumns() {
         name.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getName()));
-        name.setCellFactory(_ -> new NameTableCell<>(Account::getName, "+ Add account"));
+        name.setCellFactory(_ -> new TextTableCell<>(Account::getName, "+ Add account"));
         name.setOnEditCommit(this::onNameCommitted);
 
         currency.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getCurrencyId()));

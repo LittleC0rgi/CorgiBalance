@@ -2,7 +2,7 @@ package com.corgibalance.controllers;
 
 import com.corgibalance.components.table.AmountTableCell;
 import com.corgibalance.components.table.DateTableCell;
-import com.corgibalance.components.table.NameTableCell;
+import com.corgibalance.components.table.TextTableCell;
 import com.corgibalance.components.table.SelectTableCell;
 import com.corgibalance.models.Budget;
 import com.corgibalance.models.Currency;
@@ -48,7 +48,7 @@ public class BudgetTableController extends BaseTableController<Budget, BudgetRep
     @Override
     protected void configureColumns() {
         name.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getName()));
-        name.setCellFactory(_ -> new NameTableCell<>(Budget::getName, "+ Add budget"));
+        name.setCellFactory(_ -> new TextTableCell<>(Budget::getName, "+ Add budget"));
         name.setOnEditCommit(this::onNameCommitted);
 
         tag.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getTagId()));

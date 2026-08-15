@@ -21,8 +21,8 @@ import java.util.List;
 
 public class TransactionTableController extends BaseTableController<Transaction, TransactionRepository> {
 
-    private final List<Account> accounts;
-    private final List<Tag> tags;
+    private List<Account> accounts;
+    private List<Tag> tags;
 
     @FXML
     private TableColumn<Transaction, LocalDate> date;
@@ -41,6 +41,12 @@ public class TransactionTableController extends BaseTableController<Transaction,
         super(new TransactionRepository());
         this.accounts = new AccountRepository().findAll();
         this.tags = new TagRepository().findAll();
+    }
+
+    public void reload() {
+        this.accounts = new AccountRepository().findAll();
+        this.tags = new TagRepository().findAll();
+        table.refresh();
     }
 
     @Override

@@ -25,7 +25,7 @@ public class BudgetTableController extends BaseTableController<Budget, BudgetRep
     private static final String BASE_CURRENCY_KEY = "overview.baseCurrencyId";
 
     private final CurrencyFormatter currencyFormatter = new CurrencyFormatter();
-    private final List<Tag> tags;
+    private List<Tag> tags;
     private final Long currencyId;
 
     @FXML
@@ -43,6 +43,11 @@ public class BudgetTableController extends BaseTableController<Budget, BudgetRep
         super(new BudgetRepository());
         this.tags = new TagRepository().findAll();
         this.currencyId = defaultCurrencyId();
+    }
+
+    public void reload() {
+        this.tags = new TagRepository().findAll();
+        table.refresh();
     }
 
     @Override

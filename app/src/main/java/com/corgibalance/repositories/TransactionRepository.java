@@ -30,6 +30,8 @@ public class TransactionRepository implements CrudRepository<Transaction> {
             "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, created_at, updated_at FROM transactions ORDER BY transaction_date DESC, id DESC LIMIT ?";
     private static final String FIND_BY_ID_SQL =
             "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, created_at, updated_at FROM transactions WHERE id = ?";
+    private static final String FIND_LAST_INSERTED_SQL =
+            "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, created_at, updated_at FROM transactions ORDER BY id DESC LIMIT 1";
     private static final String FIND_SIBLING_SQL =
             "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, created_at, updated_at FROM transactions WHERE transfer_id = ? AND id != ?";
     private static final String INSERT_SQL =
@@ -84,6 +86,18 @@ public class TransactionRepository implements CrudRepository<Transaction> {
             throw new RuntimeException("Failed to load transactions", e);
         }
         return transactions;
+    }
+
+    public Transaction findLastInserted() {
+        try {
+            Connection connection = database.getConnection();
+            try (PreparedStatement statement = connection.prepareStatement(FIND_LAST_INSERTED_SQL);
+                 ResultSet resultSet = statement.executeQuery()) {
+                return resultSet.next() ? mapRow(resultSet) : null;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to load last inserted transaction", e);
+        }
     }
 
     public List<Transaction> findLatest(int limit) {

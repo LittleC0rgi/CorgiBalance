@@ -182,10 +182,18 @@ public class TransactionTableController extends BaseTableController<Transaction,
         Transaction transaction = new Transaction();
         transaction.setTransactionType(TransactionType.EXPENSE);
         transaction.setTransactionDate(LocalDate.now());
-        if (!accounts.isEmpty()) {
+        Transaction last = repository.findLastInserted();
+        if (last != null) {
+            transaction.setAccountId(last.getAccountId());
+            transaction.setTagId(last.getTagId());
+            if (last.getTransactionType() != TransactionType.TRANSFER) {
+                transaction.setTransactionType(last.getTransactionType());
+            }
+        }
+        if (transaction.getAccountId() == null && !accounts.isEmpty()) {
             transaction.setAccountId(accounts.getFirst().getId());
         }
-        if (!tags.isEmpty()) {
+        if (transaction.getTagId() == null && !tags.isEmpty()) {
             transaction.setTagId(tags.getFirst().getId());
         }
         return transaction;

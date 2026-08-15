@@ -55,12 +55,13 @@ public class CurrencyConverter {
             return amountMinor;
         }
         Optional<BigDecimal> rate = exchangeRate(fromCurrencyId, toCurrencyId);
-        if (rate.isEmpty()) {
-            return amountMinor;
-        }
-        return new BigDecimal(amountMinor).multiply(rate.get())
+        return rate.map(bigDecimal -> new BigDecimal(amountMinor).multiply(bigDecimal)
                 .setScale(0, RoundingMode.HALF_UP)
-                .longValueExact();
+                .longValueExact()).orElse(amountMinor);
+    }
+
+    public Optional<BigDecimal> rate(long fromCurrencyId, long toCurrencyId) {
+        return exchangeRate(fromCurrencyId, toCurrencyId);
     }
 
     private Optional<BigDecimal> exchangeRate(long fromCurrencyId, long toCurrencyId) {
@@ -69,10 +70,7 @@ public class CurrencyConverter {
             return Optional.of(direct.get().getRate());
         }
         Optional<ExchangeRate> inverse = exchangeRateRepository.findLatest(toCurrencyId, fromCurrencyId);
-        if (inverse.isPresent()) {
-            return Optional.of(BigDecimal.ONE.divide(inverse.get().getRate(), CONVERSION_SCALE, RoundingMode.HALF_UP));
-        }
-        return Optional.empty();
+        return inverse.map(exchangeRate -> BigDecimal.ONE.divide(exchangeRate.getRate(), CONVERSION_SCALE, RoundingMode.HALF_UP));
     }
 
     public String format(long minorUnits, Long currencyId) {

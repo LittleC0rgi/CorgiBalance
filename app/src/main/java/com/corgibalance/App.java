@@ -22,7 +22,6 @@ public class App extends Application {
     private void loadStyles(Scene scene) {
         scene.getStylesheets().add(Objects.requireNonNull(App.class.getResource("/css/base.css")).toExternalForm());
         scene.getStylesheets().add(Objects.requireNonNull(App.class.getResource("/css/sidebar.css")).toExternalForm());
-        scene.getStylesheets().add(Objects.requireNonNull(App.class.getResource("/css/views.css")).toExternalForm());
         scene.getStylesheets().add(Objects.requireNonNull(App.class.getResource("/css/overview.css")).toExternalForm());
         scene.getStylesheets().add(Objects.requireNonNull(App.class.getResource("/css/table.css")).toExternalForm());
     }

@@ -1,5 +1,6 @@
 package com.corgibalance.components.views;
 
+import com.corgibalance.controllers.RecentTransactionsTableController;
 import com.corgibalance.models.Account;
 import com.corgibalance.models.Budget;
 import com.corgibalance.models.Currency;
@@ -55,6 +56,8 @@ public class OverviewView extends View implements Refreshable {
     private ComboBox<Integer> monthCombo;
     @FXML
     private ComboBox<Integer> yearCombo;
+    @FXML
+    private RecentTransactionsTableController RecentTransactionsTableController;
 
     private CurrencyConverter converter;
     private AccountRepository accountRepository;
@@ -106,6 +109,7 @@ public class OverviewView extends View implements Refreshable {
     public void onShow() {
         loadCurrencies();
         loadPeriod(false);
+        RecentTransactionsTableController.reload();
         refresh();
     }
 
@@ -180,8 +184,11 @@ public class OverviewView extends View implements Refreshable {
         long income = sumForPeriod(TransactionType.INCOME, year, month, baseCurrencyId);
         long expense = sumForPeriod(TransactionType.EXPENSE, year, month, baseCurrencyId);
 
-        incomeValue.setText("+" + converter.format(income, baseCurrencyId));
-        expenseValue.setText("-" + converter.format(expense, baseCurrencyId));
+        incomeValue.setText((income != 0 ? "+" : "") + converter.format(income, baseCurrencyId));
+        expenseValue.setText((expense != 0 ? "-" : "") + converter.format(expense, baseCurrencyId));
+
+        toggleColor(incomeValue, "card__value--income", income == 0);
+        toggleColor(expenseValue, "card__value--expense", expense == 0);
 
         accountList.getChildren().clear();
         for (Account account : accountRepository.findAll()) {
@@ -236,6 +243,14 @@ public class OverviewView extends View implements Refreshable {
         row.setSpacing(4.0);
         row.getStyleClass().add("budget__row");
         return row;
+    }
+
+    private void toggleColor(Label label, String styleClass, boolean valueIsZero) {
+        if (valueIsZero) {
+            label.getStyleClass().remove(styleClass);
+        } else if (!label.getStyleClass().contains(styleClass)) {
+            label.getStyleClass().add(styleClass);
+        }
     }
 
     private long sumForPeriod(TransactionType type, int year, int month, Long baseCurrencyId) {

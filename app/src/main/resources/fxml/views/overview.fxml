@@ -70,5 +70,8 @@
                 <Label text="Nearest payments" styleClass="card__label"/>
             </VBox>
         </GridPane>
+
+        <Label text="Recent transactions" styleClass="card__label"/>
+        <fx:include fx:id="RecentTransactionsTable" source="../tables/RecentTransactionsTable.fxml"/>
     </VBox>
 </fx:root>

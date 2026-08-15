@@ -25,9 +25,9 @@ import lombok.RequiredArgsConstructor;
 public class TransactionRepository implements CrudRepository<Transaction> {
 
     private static final String FIND_ALL_SQL =
-            "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, created_at, updated_at FROM transactions ORDER BY transaction_date DESC";
+            "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, created_at, updated_at FROM transactions ORDER BY transaction_date ASC, id ASC";
     private static final String FIND_LATEST_SQL =
-            "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, created_at, updated_at FROM transactions ORDER BY transaction_date DESC, id DESC LIMIT ?";
+            "SELECT * FROM (SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, created_at, updated_at FROM transactions ORDER BY transaction_date DESC, id DESC LIMIT ?) ORDER BY transaction_date ASC, id ASC";
     private static final String FIND_BY_ID_SQL =
             "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, created_at, updated_at FROM transactions WHERE id = ?";
     private static final String FIND_LAST_INSERTED_SQL =

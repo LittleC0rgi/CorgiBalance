@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.VBox?>
+<TableView xmlns:fx="http://javafx.com/fxml" fx:id="table"
+           styleClass="table"
+           VBox.vgrow="ALWAYS"
+           xmlns="http://javafx.com/javafx"
+           fx:controller="com.corgibalance.controllers.CurrencyTableController"
+>
+    <columns>
+        <TableColumn fx:id="code" text="Code"/>
+        <TableColumn fx:id="name" text="Name"/>
+        <TableColumn fx:id="symbol" text="Symbol"/>
+        <TableColumn fx:id="minorUnit" text="Minor units"/>
+    </columns>
+</TableView>

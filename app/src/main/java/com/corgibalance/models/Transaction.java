@@ -14,6 +14,7 @@ public class Transaction extends BaseModel {
     private Long toAccountId;
     private Long transferId;
     private String rate;
+    private int direction = 1;
     private long amount;
     private String description;
     private TransactionType transactionType;

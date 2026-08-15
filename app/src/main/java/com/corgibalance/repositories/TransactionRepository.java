@@ -25,21 +25,21 @@ import lombok.RequiredArgsConstructor;
 public class TransactionRepository implements CrudRepository<Transaction> {
 
     private static final String FIND_ALL_SQL =
-            "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, created_at, updated_at FROM transactions ORDER BY transaction_date ASC, id ASC";
+            "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, direction, created_at, updated_at FROM transactions ORDER BY transaction_date ASC, id ASC";
     private static final String FIND_LATEST_SQL =
-            "SELECT * FROM (SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, created_at, updated_at FROM transactions ORDER BY transaction_date DESC, id DESC LIMIT ?) ORDER BY transaction_date ASC, id ASC";
+            "SELECT * FROM (SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, direction, created_at, updated_at FROM transactions ORDER BY transaction_date DESC, id DESC LIMIT ?) ORDER BY transaction_date ASC, id ASC";
     private static final String FIND_BY_DESCRIPTION_LIKE_SQL =
-            "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, created_at, updated_at FROM transactions WHERE description LIKE ? ORDER BY transaction_date DESC, id DESC LIMIT ?";
+            "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, direction, created_at, updated_at FROM transactions WHERE description LIKE ? ORDER BY transaction_date DESC, id DESC LIMIT ?";
     private static final String FIND_BY_ID_SQL =
-            "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, created_at, updated_at FROM transactions WHERE id = ?";
+            "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, direction, created_at, updated_at FROM transactions WHERE id = ?";
     private static final String FIND_LAST_INSERTED_SQL =
-            "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, created_at, updated_at FROM transactions ORDER BY id DESC LIMIT 1";
+            "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, direction, created_at, updated_at FROM transactions ORDER BY id DESC LIMIT 1";
     private static final String FIND_SIBLING_SQL =
-            "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, created_at, updated_at FROM transactions WHERE transfer_id = ? AND id != ?";
+            "SELECT id, account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, direction, created_at, updated_at FROM transactions WHERE transfer_id = ? AND id != ?";
     private static final String INSERT_SQL =
-            "INSERT INTO transactions (account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            "INSERT INTO transactions (account_id, tag_id, amount, description, transaction_type, transaction_date, to_account_id, transfer_id, rate, direction) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String UPDATE_SQL =
-            "UPDATE transactions SET account_id = ?, tag_id = ?, amount = ?, description = ?, transaction_type = ?, transaction_date = ?, to_account_id = ?, transfer_id = ?, rate = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+            "UPDATE transactions SET account_id = ?, tag_id = ?, amount = ?, description = ?, transaction_type = ?, transaction_date = ?, to_account_id = ?, transfer_id = ?, rate = ?, direction = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
     private static final String DELETE_BY_ID_SQL =
             "DELETE FROM transactions WHERE id = ?";
     private static final String DELETE_TRANSFER_PAIR_SQL =
@@ -48,7 +48,10 @@ public class TransactionRepository implements CrudRepository<Transaction> {
             "UPDATE transactions SET transfer_id = ? WHERE id = ?";
     private static final String BALANCE_OF_SQL =
             "SELECT COALESCE((SELECT initial_balance FROM accounts WHERE id = ?), 0) "
-            + "+ COALESCE((SELECT SUM(amount) FROM transactions WHERE account_id = ?), 0)";
+            + "+ COALESCE((SELECT SUM(CASE "
+            + "WHEN transaction_type = 'EXPENSE' THEN -amount "
+            + "WHEN transaction_type = 'TRANSFER' AND direction = 0 THEN -amount "
+            + "ELSE amount END) FROM transactions WHERE account_id = ?), 0)";
     private static final String TARGET_MINOR_UNITS_SQL =
             "SELECT c.minor_unit FROM accounts a JOIN currencies c ON c.id = a.currency_id WHERE a.id = ?";
     private static final String SUM_BY_CURRENCY_SQL =
@@ -214,8 +217,9 @@ public class TransactionRepository implements CrudRepository<Transaction> {
             if (transaction.getTransactionType() == TransactionType.TRANSFER) {
                 createTransferPair(connection, transaction);
             } else {
+                transaction.setAmount(Math.abs(transaction.getAmount()));
                 Map<Long, Long> deltas = new HashMap<>();
-                addDelta(deltas, transaction.getAccountId(), transaction.getAmount());
+                addDelta(deltas, transaction.getAccountId(), signedAmount(transaction));
                 validateDeltas(connection, deltas);
                 insertRow(connection, transaction);
             }
@@ -237,7 +241,8 @@ public class TransactionRepository implements CrudRepository<Transaction> {
         source.setTransactionType(TransactionType.TRANSFER);
         source.setAccountId(fromAccountId);
         source.setToAccountId(toAccountId);
-        source.setAmount(-amount);
+        source.setAmount(amount);
+        source.setDirection(0);
         source.setRate(rate == null ? null : rate.toPlainString());
         source.setDescription(description);
         source.setTransactionDate(transactionDate);
@@ -250,6 +255,7 @@ public class TransactionRepository implements CrudRepository<Transaction> {
             if (transaction.getTransferId() != null) {
                 updateTransferPair(connection, transaction);
             } else {
+                transaction.setAmount(Math.abs(transaction.getAmount()));
                 updateRowChecked(connection, transaction);
             }
         } catch (SQLException e) {
@@ -265,11 +271,11 @@ public class TransactionRepository implements CrudRepository<Transaction> {
                 return;
             }
             Map<Long, Long> deltas = new HashMap<>();
-            addDelta(deltas, existing.getAccountId(), -existing.getAmount());
+            addDelta(deltas, existing.getAccountId(), -signedAmount(existing));
             if (existing.getTransferId() != null) {
                 Transaction sibling = findSibling(connection, existing);
                 if (sibling != null) {
-                    addDelta(deltas, sibling.getAccountId(), -sibling.getAmount());
+                    addDelta(deltas, sibling.getAccountId(), -signedAmount(sibling));
                 }
             }
             validateDeltas(connection, deltas);
@@ -290,8 +296,8 @@ public class TransactionRepository implements CrudRepository<Transaction> {
             return;
         }
         Map<Long, Long> deltas = new HashMap<>();
-        addDelta(deltas, existing.getAccountId(), -existing.getAmount());
-        addDelta(deltas, transaction.getAccountId(), transaction.getAmount());
+        addDelta(deltas, existing.getAccountId(), -signedAmount(existing));
+        addDelta(deltas, transaction.getAccountId(), signedAmount(transaction));
         validateDeltas(connection, deltas);
         updateRow(connection, transaction);
     }
@@ -323,10 +329,10 @@ public class TransactionRepository implements CrudRepository<Transaction> {
         if (source.getToAccountId() == null) {
             throw new IllegalArgumentException("Transfer requires a destination account");
         }
-        long targetAmount = convertAmount(-source.getAmount(), source.getRate(),
+        long targetAmount = convertAmount(source.getAmount(), source.getRate(),
                 targetMinorUnits(source.getToAccountId()));
         Map<Long, Long> deltas = new HashMap<>();
-        addDelta(deltas, source.getAccountId(), source.getAmount());
+        addDelta(deltas, source.getAccountId(), signedAmount(source));
         addDelta(deltas, source.getToAccountId(), targetAmount);
         validateDeltas(connection, deltas);
 
@@ -339,6 +345,7 @@ public class TransactionRepository implements CrudRepository<Transaction> {
         target.setAccountId(source.getToAccountId());
         target.setToAccountId(source.getAccountId());
         target.setAmount(targetAmount);
+        target.setDirection(1);
         target.setRate(source.getRate());
         target.setDescription(source.getDescription());
         target.setTransactionDate(source.getTransactionDate());
@@ -348,36 +355,46 @@ public class TransactionRepository implements CrudRepository<Transaction> {
 
     private void updateTransferPair(Connection connection, Transaction transaction) throws SQLException {
         transaction.setTransactionType(TransactionType.TRANSFER);
+        transaction.setAmount(Math.abs(transaction.getAmount()));
         Transaction existing = findById(connection, transaction.getId());
         if (existing == null) {
             updateRow(connection, transaction);
             return;
         }
-        long targetAmount = transaction.getToAccountId() == null
-                ? -transaction.getAmount()
-                : convertAmount(-transaction.getAmount(), transaction.getRate(),
-                        targetMinorUnits(transaction.getToAccountId()));
-        Map<Long, Long> deltas = new HashMap<>();
-        addDelta(deltas, existing.getAccountId(), -existing.getAmount());
-        addDelta(deltas, transaction.getAccountId(), transaction.getAmount());
         Transaction sibling = findSibling(connection, transaction);
-        if (sibling != null) {
-            addDelta(deltas, sibling.getAccountId(), -sibling.getAmount());
-            addDelta(deltas, transaction.getToAccountId(), targetAmount);
+        if (sibling == null) {
+            updateRow(connection, transaction);
+            return;
         }
+        Transaction source = transaction.getDirection() == 0 ? transaction : sibling;
+        Transaction target = source == transaction ? sibling : transaction;
+        long targetAmount = target.getAccountId() == null
+                ? source.getAmount()
+                : convertAmount(source.getAmount(), source.getRate(),
+                        targetMinorUnits(target.getAccountId()));
+
+        Map<Long, Long> deltas = new HashMap<>();
+        addDelta(deltas, existing.getAccountId(), -signedAmount(existing));
+        addDelta(deltas, transaction.getAccountId(), signedAmount(transaction));
+        addDelta(deltas, sibling.getAccountId(), -signedAmount(sibling));
+        addDelta(deltas, target.getAccountId(), targetAmount);
         validateDeltas(connection, deltas);
 
-        updateRow(connection, transaction);
-        if (sibling != null) {
-            sibling.setAccountId(transaction.getToAccountId());
-            sibling.setToAccountId(transaction.getAccountId());
-            sibling.setAmount(targetAmount);
-            sibling.setRate(transaction.getRate());
-            sibling.setDescription(transaction.getDescription());
-            sibling.setTransactionDate(transaction.getTransactionDate());
-            sibling.setTransactionType(TransactionType.TRANSFER);
-            updateRow(connection, sibling);
-        }
+        source.setDirection(0);
+        source.setToAccountId(target.getAccountId());
+        source.setDescription(transaction.getDescription());
+        source.setRate(transaction.getRate());
+        source.setTransactionDate(transaction.getTransactionDate());
+        source.setTransactionType(TransactionType.TRANSFER);
+        target.setDirection(1);
+        target.setToAccountId(source.getAccountId());
+        target.setAmount(targetAmount);
+        target.setDescription(transaction.getDescription());
+        target.setRate(transaction.getRate());
+        target.setTransactionDate(transaction.getTransactionDate());
+        target.setTransactionType(TransactionType.TRANSFER);
+        updateRow(connection, source);
+        updateRow(connection, target);
     }
 
     private Transaction findSibling(Connection connection, Transaction transaction) throws SQLException {
@@ -401,6 +418,7 @@ public class TransactionRepository implements CrudRepository<Transaction> {
             setNullableLong(statement, 7, transaction.getToAccountId());
             setNullableLong(statement, 8, transaction.getTransferId());
             statement.setString(9, transaction.getRate());
+            statement.setInt(10, transaction.getDirection());
             statement.executeUpdate();
             try (ResultSet keys = statement.getGeneratedKeys()) {
                 long id = keys.next() ? keys.getLong(1) : -1;
@@ -421,7 +439,8 @@ public class TransactionRepository implements CrudRepository<Transaction> {
             setNullableLong(statement, 7, transaction.getToAccountId());
             setNullableLong(statement, 8, transaction.getTransferId());
             statement.setString(9, transaction.getRate());
-            statement.setLong(10, transaction.getId());
+            statement.setInt(10, transaction.getDirection());
+            statement.setLong(11, transaction.getId());
             statement.executeUpdate();
         }
     }
@@ -446,6 +465,7 @@ public class TransactionRepository implements CrudRepository<Transaction> {
         transaction.setToAccountId(getNullableLong(resultSet, "to_account_id"));
         transaction.setTransferId(getNullableLong(resultSet, "transfer_id"));
         transaction.setRate(resultSet.getString("rate"));
+        transaction.setDirection(resultSet.getInt("direction"));
         transaction.setCreatedAt(toLocalDateTime(resultSet.getTimestamp("created_at")));
         transaction.setUpdatedAt(toLocalDateTime(resultSet.getTimestamp("updated_at")));
         return transaction;
@@ -475,6 +495,16 @@ public class TransactionRepository implements CrudRepository<Transaction> {
             return;
         }
         deltas.merge(accountId, delta, Long::sum);
+    }
+
+    private long signedAmount(Transaction transaction) {
+        if (transaction.getTransactionType() == TransactionType.EXPENSE) {
+            return -transaction.getAmount();
+        }
+        if (transaction.getTransactionType() == TransactionType.TRANSFER && transaction.getDirection() == 0) {
+            return -transaction.getAmount();
+        }
+        return transaction.getAmount();
     }
 
     private long convertAmount(long sourceAmountMinor, String rateString, int targetMinorUnits) {

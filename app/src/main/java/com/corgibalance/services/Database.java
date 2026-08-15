@@ -25,6 +25,12 @@ public final class Database {
             "SELECT COUNT(*) FROM (SELECT 1 FROM %s LIMIT 1)";
     private static final String ADD_RATE_COLUMN_SQL =
             "ALTER TABLE transactions ADD COLUMN rate TEXT";
+    private static final String ADD_DIRECTION_COLUMN_SQL =
+            "ALTER TABLE transactions ADD COLUMN direction INTEGER NOT NULL DEFAULT 1";
+    private static final String NORMALIZE_EXPENSE_SQL =
+            "UPDATE transactions SET amount = ABS(amount) WHERE transaction_type IN ('INCOME', 'EXPENSE') AND amount < 0";
+    private static final String NORMALIZE_TRANSFER_SQL =
+            "UPDATE transactions SET amount = ABS(amount), direction = 0 WHERE transaction_type = 'TRANSFER' AND amount < 0";
     private static final String TRANSACTIONS_SCHEMA_SQL =
             "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'transactions'";
     private static final String TRANSACTIONS_COLUMNS_SQL =
@@ -53,7 +59,8 @@ public final class Database {
             + "to_account_id INTEGER,"
             + "transfer_id INTEGER,"
             + "rate TEXT,"
-            + "amount INTEGER NOT NULL,"
+            + "direction INTEGER NOT NULL DEFAULT 1 CHECK (direction IN (0, 1)),"
+            + "amount INTEGER NOT NULL CHECK (amount >= 0),"
             + "description TEXT,"
             + "transaction_type TEXT NOT NULL CHECK (transaction_type IN ('INCOME', 'EXPENSE', 'TRANSFER')),"
             + "transaction_date TEXT NOT NULL,"
@@ -184,6 +191,20 @@ public final class Database {
             try (Statement statement = connection.createStatement()) {
                 statement.execute(ADD_RATE_COLUMN_SQL);
             }
+        }
+        if (!transactionColumnNames().contains("direction")) {
+            logger.info("Adding direction column to transactions table");
+            try (Statement statement = connection.createStatement()) {
+                statement.execute(ADD_DIRECTION_COLUMN_SQL);
+            }
+        }
+        normalizeAmounts();
+    }
+
+    private void normalizeAmounts() throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            statement.executeUpdate(NORMALIZE_TRANSFER_SQL);
+            statement.executeUpdate(NORMALIZE_EXPENSE_SQL);
         }
     }
 

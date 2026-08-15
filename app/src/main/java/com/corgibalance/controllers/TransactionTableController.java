@@ -88,7 +88,8 @@ public class TransactionTableController extends BaseTableController<Transaction,
 
         amount.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getAmount()));
         amount.setCellFactory(_ -> new AmountTableCell<>(this::currencyIdOf,
-                transaction -> transaction.getTransactionType() == TransactionType.EXPENSE,
+                t -> t.getTransactionType() == TransactionType.EXPENSE
+                        || (t.getTransactionType() == TransactionType.TRANSFER && t.getDirection() == 0),
                 transaction -> transaction.getAmount() == 0));
         amount.setOnEditCommit(this::onAmountCommitted);
     }
@@ -102,7 +103,16 @@ public class TransactionTableController extends BaseTableController<Transaction,
     }
 
     private void onDateCommitted(TableColumn.CellEditEvent<Transaction, LocalDate> event) {
-        commit(event.getRowValue(), t -> t.setTransactionDate(event.getNewValue()), false);
+        Transaction transaction = event.getRowValue();
+        commit(transaction, t -> t.setTransactionDate(event.getNewValue()), false);
+        if (transaction.getTransferId() != null) {
+            for (Transaction item : table.getItems()) {
+                if (item != transaction && transaction.getTransferId().equals(item.getTransferId())) {
+                    item.setTransactionDate(event.getNewValue());
+                }
+            }
+            table.refresh();
+        }
     }
 
     private void onAmountCommitted(TableColumn.CellEditEvent<Transaction, Long> event) {
@@ -153,6 +163,7 @@ public class TransactionTableController extends BaseTableController<Transaction,
         target.setToAccountId(template.getToAccountId());
         target.setTransferId(template.getTransferId());
         target.setRate(template.getRate());
+        target.setDirection(template.getDirection());
     }
 
     private List<Long> accountIds() {

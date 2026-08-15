@@ -129,6 +129,7 @@ public class DescriptionTemplateTableCell extends TableCell<Transaction, String>
 
     private String formatAmount(Transaction transaction) {
         long display = transaction.getTransactionType() == TransactionType.EXPENSE
+                || (transaction.getTransactionType() == TransactionType.TRANSFER && transaction.getDirection() == 0)
                 ? -Math.abs(transaction.getAmount())
                 : transaction.getAmount();
         return formatter.format(display, currencyIdOf.apply(transaction.getAccountId()));

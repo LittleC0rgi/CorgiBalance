@@ -130,12 +130,20 @@ CREATE TABLE IF NOT EXISTS transactions (
     rate TEXT,
 
 
-    -- Stored in minor currency units.
+    -- Direction for TRANSFER rows (ignored for INCOME/EXPENSE):
+    -- 0 = money leaves account_id (transfer sender)
+    -- 1 = money arrives at account_id (transfer receiver)
+    direction INTEGER NOT NULL DEFAULT 1
+        CHECK (direction IN (0, 1)),
+
+
+    -- Stored in minor currency units, always positive.
+    -- The sign lives in transaction_type (EXPENSE) / direction (TRANSFER).
     --
     -- Examples:
-    -- +500000 = +5000.00
-    -- -129900 = -1299.00
-    amount INTEGER NOT NULL,
+    -- 500000 = 5000.00
+    -- 129900 = 1299.00
+    amount INTEGER NOT NULL CHECK (amount >= 0),
 
 
     description TEXT,

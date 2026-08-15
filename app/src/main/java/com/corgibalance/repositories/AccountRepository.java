@@ -28,7 +28,10 @@ public class AccountRepository implements CrudRepository<Account> {
             "DELETE FROM accounts WHERE id = ?";
     private static final String CURRENT_BALANCE_SQL =
             "SELECT COALESCE((SELECT initial_balance FROM accounts WHERE id = ?), 0) "
-            + "+ COALESCE((SELECT SUM(amount) FROM transactions WHERE account_id = ?), 0)";
+            + "+ COALESCE((SELECT SUM(CASE "
+            + "WHEN transaction_type = 'EXPENSE' THEN -amount "
+            + "WHEN transaction_type = 'TRANSFER' AND direction = 0 THEN -amount "
+            + "ELSE amount END) FROM transactions WHERE account_id = ?), 0)";
 
     private final Database database;
 

@@ -2,7 +2,7 @@ package com.corgibalance.controllers;
 
 import com.corgibalance.components.table.AmountTableCell;
 import com.corgibalance.components.table.DateTableCell;
-import com.corgibalance.components.table.TextTableCell;
+import com.corgibalance.components.table.DescriptionTemplateTableCell;
 import com.corgibalance.components.table.SelectTableCell;
 import com.corgibalance.models.Account;
 import com.corgibalance.models.Tag;
@@ -18,11 +18,13 @@ import javafx.scene.control.TableColumn;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class TransactionTableController extends BaseTableController<Transaction, TransactionRepository> {
 
     private List<Account> accounts;
     private List<Tag> tags;
+    private LocalDate lastEnteredDate;
 
     @FXML
     private TableColumn<Transaction, LocalDate> date;
@@ -77,7 +79,11 @@ public class TransactionTableController extends BaseTableController<Transaction,
         type.setOnEditCommit(this::onTypeCommitted);
 
         description.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getDescription()));
-        description.setCellFactory(_ -> new TextTableCell<>(Transaction::getDescription, "+ Add transaction"));
+        description.setCellFactory(_ -> new DescriptionTemplateTableCell("+ Add transaction",
+                q -> repository.findByDescriptionLike(q, 5),
+                this::applyDescriptionTemplate,
+                this::tagColor,
+                this::currencyIdOfAccount));
         description.setOnEditCommit(this::onDescriptionCommitted);
 
         amount.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getAmount()));
@@ -85,6 +91,14 @@ public class TransactionTableController extends BaseTableController<Transaction,
                 transaction -> transaction.getTransactionType() == TransactionType.EXPENSE,
                 transaction -> transaction.getAmount() == 0));
         amount.setOnEditCommit(this::onAmountCommitted);
+    }
+
+    @Override
+    protected void commit(Transaction item, Consumer<Transaction> apply, boolean createOnPlaceholder) {
+        if (isPlaceholder(item) && createOnPlaceholder && item.getTransactionDate() != null) {
+            lastEnteredDate = item.getTransactionDate();
+        }
+        super.commit(item, apply, createOnPlaceholder);
     }
 
     private void onDateCommitted(TableColumn.CellEditEvent<Transaction, LocalDate> event) {
@@ -129,6 +143,16 @@ public class TransactionTableController extends BaseTableController<Transaction,
             return;
         }
         commit(event.getRowValue(), t -> t.setDescription(newDescription), true);
+    }
+
+    private void applyDescriptionTemplate(Transaction template, Transaction target) {
+        target.setAccountId(template.getAccountId());
+        target.setTagId(template.getTagId());
+        target.setTransactionType(template.getTransactionType());
+        target.setAmount(template.getAmount());
+        target.setToAccountId(template.getToAccountId());
+        target.setTransferId(template.getTransferId());
+        target.setRate(template.getRate());
     }
 
     private List<Long> accountIds() {
@@ -191,11 +215,23 @@ public class TransactionTableController extends BaseTableController<Transaction,
         return null;
     }
 
+    private Long currencyIdOfAccount(Long accountId) {
+        if (accountId == null) {
+            return null;
+        }
+        for (Account account : accounts) {
+            if (account.getId().equals(accountId)) {
+                return account.getCurrencyId();
+            }
+        }
+        return null;
+    }
+
     @Override
     protected Transaction newPlaceholder() {
         Transaction transaction = new Transaction();
         transaction.setTransactionType(TransactionType.EXPENSE);
-        transaction.setTransactionDate(LocalDate.now());
+        transaction.setTransactionDate(lastEnteredDate != null ? lastEnteredDate : LocalDate.now());
         Transaction last = repository.findLastInserted();
         if (last != null) {
             transaction.setAccountId(last.getAccountId());

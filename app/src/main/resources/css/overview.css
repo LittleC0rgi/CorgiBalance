@@ -66,6 +66,11 @@
     -fx-text-fill: #272932;
 }
 
+.budget__dates {
+    -fx-font-size: 11px;
+    -fx-text-fill: #8B8D99;
+}
+
 .budget__amount {
     -fx-font-size: 12px;
     -fx-text-fill: #272932;

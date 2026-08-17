@@ -25,6 +25,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.List;
 import java.util.Locale;
@@ -35,6 +36,7 @@ import java.util.function.Consumer;
 public class OverviewView extends View implements Refreshable {
 
     private static final String BASE_CURRENCY_KEY = "overview.baseCurrencyId";
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     @FXML
     private Label balanceValue;
@@ -204,7 +206,12 @@ public class OverviewView extends View implements Refreshable {
         }
 
         budgetList.getChildren().clear();
+        LocalDate from = LocalDate.of(year, month, 1);
+        LocalDate to = from.withDayOfMonth(from.lengthOfMonth());
         for (Budget budget : budgetRepository.findAll()) {
+            if (budget.getStartDate().isAfter(to) || budget.getEndDate().isBefore(from)) {
+                continue;
+            }
             budgetList.getChildren().add(budgetRow(budget, baseCurrencyId));
         }
     }
@@ -223,6 +230,8 @@ public class OverviewView extends View implements Refreshable {
 
         Label name = new Label(budget.getName());
         name.getStyleClass().add("budget__name");
+        Label dates = new Label(budget.getStartDate().format(DATE_FORMAT) + " — " + budget.getEndDate().format(DATE_FORMAT));
+        dates.getStyleClass().add("budget__dates");
         Label amount = new Label(converter.format(spent, baseCurrencyId)
                 + " / " + converter.format(planned, baseCurrencyId));
         amount.getStyleClass().add("budget__amount");
@@ -230,7 +239,7 @@ public class OverviewView extends View implements Refreshable {
         percentLabel.getStyleClass().add(over ? "budget__percent--over" : "budget__percent");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        HBox header = new HBox(name, spacer, amount, percentLabel);
+        HBox header = new HBox(name, dates, spacer, amount, percentLabel);
         header.setSpacing(6.0);
 
         Region fill = new Region();

@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.VBox?>
 <fx:root xmlns:fx="http://javafx.com/fxml/1"
          type="javafx.scene.layout.VBox"
          xmlns="http://javafx.com/javafx/25"
-         spacing="24">
-
+         spacing="12">
+    <Label text="Budgets" styleClass="title"/>
     <fx:include fx:id="BudgetTable" source="../components/tables/BudgetTable.fxml"/>
 </fx:root>

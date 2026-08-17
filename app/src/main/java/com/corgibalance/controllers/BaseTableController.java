@@ -6,12 +6,14 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableView;
 import javafx.scene.input.KeyCode;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
@@ -80,6 +82,10 @@ public abstract class BaseTableController<T extends BaseModel, R extends CrudRep
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setHeaderText(null);
         confirm.setContentText(deleteConfirmationText(selected));
+        confirm.getDialogPane().getStylesheets().add(
+                Objects.requireNonNull(getClass().getResource("/css/base.css")).toExternalForm());
+        ((Button) confirm.getDialogPane().lookupButton(ButtonType.OK)).getStyleClass().addAll("btn", "btn--primary");
+        ((Button) confirm.getDialogPane().lookupButton(ButtonType.CANCEL)).getStyleClass().add("btn");
         if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
             repository.delete(selected);
             table.getItems().remove(selected);

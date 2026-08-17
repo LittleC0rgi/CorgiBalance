@@ -9,21 +9,22 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import lombok.Getter;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 public class TransferDialog extends Dialog<Void> {
 
@@ -41,15 +42,28 @@ public class TransferDialog extends Dialog<Void> {
     @FXML
     private TextField rateField;
     @FXML
-    private GridPane rateRow;
+    private CheckBox autoRateCheckBox;
+    @FXML
+    private VBox rateRow;
+    @FXML
+    private Label fromBalanceLabel;
+    @FXML
+    private Label toBalanceLabel;
+    @FXML
+    private VBox errorBox;
     @FXML
     private Label errorLabel;
+
+    private final CurrencyFormatter formatter = new CurrencyFormatter();
 
     public TransferDialog(List<Account> accounts, CurrencyConverter converter) {
         this.accounts = accounts;
         this.converter = converter;
         setTitle("Transfer between accounts");
         setDialogPane(loadPane());
+        getDialogPane().getStylesheets().addAll(
+                Objects.requireNonNull(getClass().getResource("/css/base.css")).toExternalForm(),
+                Objects.requireNonNull(getClass().getResource("/css/overview.css")).toExternalForm());
         configureAccounts();
         configureRateRow();
         configureButtons();
@@ -69,8 +83,19 @@ public class TransferDialog extends Dialog<Void> {
     private void configureAccounts() {
         configureCombo(fromCombo);
         configureCombo(toCombo);
+        fromCombo.valueProperty().addListener((_, _, _) -> updateBalance(fromCombo, fromBalanceLabel));
+        toCombo.valueProperty().addListener((_, _, _) -> updateBalance(toCombo, toBalanceLabel));
         fromCombo.setValue(accounts.get(0));
         toCombo.setValue(accounts.get(1));
+    }
+
+    private void updateBalance(ComboBox<Account> combo, Label label) {
+        Account account = combo.getValue();
+        if (account == null) {
+            label.setText("");
+            return;
+        }
+        label.setText("Balance " + formatter.format(account.getInitialBalance(), account.getCurrencyId()));
     }
 
     private void configureCombo(ComboBox<Account> combo) {
@@ -94,9 +119,8 @@ public class TransferDialog extends Dialog<Void> {
     private void configureRateRow() {
         Runnable updateRateRow = () -> {
             boolean different = differentCurrency(fromCombo.getValue(), toCombo.getValue());
-            rateRow.setVisible(different);
-            rateRow.setManaged(different);
-            if (different) {
+            showRow(rateRow, different);
+            if (different && !autoRateCheckBox.isSelected()) {
                 converter.rate(fromCombo.getValue().getCurrencyId(), toCombo.getValue().getCurrencyId())
                         .ifPresent(rate -> rateField.setText(rate.toPlainString()));
             }
@@ -107,20 +131,33 @@ public class TransferDialog extends Dialog<Void> {
     }
 
     private void configureButtons() {
-        ButtonType createType = new ButtonType("Transfer", ButtonBar.ButtonData.OK_DONE);
-        getDialogPane().getButtonTypes().addAll(createType, ButtonType.CANCEL);
-        Button createButton = (Button) getDialogPane().lookupButton(createType);
+        Button createButton = (Button) getDialogPane().lookupButton(getDialogPane().getButtonTypes().get(0));
+        createButton.getStyleClass().addAll("btn", "btn--primary");
+        Button cancelButton = (Button) getDialogPane().lookupButton(getDialogPane().getButtonTypes().get(1));
+        cancelButton.getStyleClass().add("btn");
         createButton.addEventFilter(ActionEvent.ACTION, this::onTransfer);
     }
 
     private void onTransfer(ActionEvent event) {
-        errorLabel.setText("");
+        showRow(errorBox, false);
         try {
             createTransfer();
             created = true;
         } catch (RuntimeException e) {
             event.consume();
             errorLabel.setText(e.getMessage());
+            showRow(errorBox, true);
+        }
+    }
+
+    private void showRow(VBox row, boolean show) {
+        row.setVisible(show);
+        row.setManaged(show);
+        javafx.stage.Window window = getDialogPane().getScene() == null
+                ? null
+                : getDialogPane().getScene().getWindow();
+        if (window instanceof Stage stage) {
+            stage.sizeToScene();
         }
     }
 
@@ -130,7 +167,6 @@ public class TransferDialog extends Dialog<Void> {
         if (from == null || to == null || from.getId().equals(to.getId())) {
             throw new IllegalArgumentException("Accounts must be different.");
         }
-        CurrencyFormatter formatter = new CurrencyFormatter();
         BigDecimal amount = formatter.parse(amountField.getText());
         if (amount.signum() <= 0) {
             throw new IllegalArgumentException("Amount must be positive.");

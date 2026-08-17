@@ -1,37 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.ButtonType?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DialogPane?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.VBox?>
 <fx:root xmlns:fx="http://javafx.com/fxml/1"
          type="javafx.scene.control.DialogPane"
+         minWidth="350"
          xmlns="http://javafx.com/javafx">
+    <buttonTypes>
+        <ButtonType text="Transfer" buttonData="OK_DONE"/>
+        <ButtonType fx:constant="CANCEL"/>
+    </buttonTypes>
     <content>
-        <GridPane hgap="12" vgap="12">
-            <columnConstraints>
-                <ColumnConstraints hgrow="NEVER"/>
-                <ColumnConstraints hgrow="ALWAYS" minWidth="220"/>
-            </columnConstraints>
-            <Label text="From account" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-            <ComboBox fx:id="fromCombo" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-            <Label text="To account" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-            <ComboBox fx:id="toCombo" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-            <Label text="Amount" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-            <TextField fx:id="amountField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-            <GridPane fx:id="rateRow" hgap="12" GridPane.columnIndex="1" GridPane.rowIndex="3"
-                      managed="false" visible="false">
-                <columnConstraints>
-                    <ColumnConstraints hgrow="NEVER"/>
-                    <ColumnConstraints hgrow="ALWAYS" minWidth="120"/>
-                </columnConstraints>
-                <Label text="Rate" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                <TextField fx:id="rateField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-            </GridPane>
-            <Label fx:id="errorLabel" style="-fx-text-fill: #D64545;"
-                   wrapText="true" GridPane.columnIndex="0" GridPane.rowIndex="4" GridPane.columnSpan="2"/>
-        </GridPane>
+        <VBox spacing="12">
+            <VBox styleClass="card" spacing="6">
+                <Label text="From account" styleClass="card__label"/>
+                <ComboBox fx:id="fromCombo" maxWidth="Infinity" styleClass="selector"/>
+                <Label fx:id="fromBalanceLabel" styleClass="card__label"/>
+            </VBox>
+            <VBox styleClass="card" spacing="6">
+                <Label text="To account" styleClass="card__label"/>
+                <ComboBox fx:id="toCombo" maxWidth="Infinity" styleClass="selector"/>
+                <Label fx:id="toBalanceLabel" styleClass="card__label"/>
+            </VBox>
+
+            <VBox styleClass="card" spacing="6">
+                <Label text="Amount" styleClass="card__label"/>
+                <TextField fx:id="amountField" maxWidth="Infinity" styleClass="input"/>
+            </VBox>
+
+
+            <VBox fx:id="rateRow" managed="false" visible="false" spacing="6">
+
+                <Label text="Or" styleClass="card__text"/>
+
+                <VBox styleClass="card" spacing="6">
+                    <Label text="Rate" styleClass="card__label"/>
+                    <TextField fx:id="rateField" maxWidth="Infinity" styleClass="input"/>
+                </VBox>
+
+                <CheckBox fx:id="autoRateCheckBox" text="Disable auto-calculated rate"/>
+            </VBox>
+
+            <VBox fx:id="errorBox" styleClass="card" managed="false" visible="false">
+                <Label text="Error" styleClass="card__label"/>
+                <Label fx:id="errorLabel" wrapText="true" styleClass="card__text"/>
+            </VBox>
+        </VBox>
     </content>
 </fx:root>

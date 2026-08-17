@@ -35,6 +35,7 @@ public class App extends Application {
         loadStyles(scene);
         stage.setScene(scene);
         stage.setTitle("Corgi Balance");
+        stage.setMinWidth(500);
         stage.setMaximized(true);
         stage.show();
     }

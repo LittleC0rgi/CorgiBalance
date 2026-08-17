@@ -10,6 +10,7 @@ import com.corgibalance.services.CurrencyFormatter;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 
 import java.util.List;
@@ -24,6 +25,8 @@ public class AccountTableController extends BaseTableController<Account, Account
     private TableColumn<Account, Long> currency;
     @FXML
     private TableColumn<Account, Long> initialBalance;
+    @FXML
+    private TableColumn<Account, Long> balance;
 
     public AccountTableController() {
         super(new AccountRepository());
@@ -42,6 +45,21 @@ public class AccountTableController extends BaseTableController<Account, Account
         initialBalance.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getInitialBalance()));
         initialBalance.setCellFactory(_ -> new AmountTableCell<>(Account::getCurrencyId));
         initialBalance.setOnEditCommit(this::onBalanceCommitted);
+
+        balance.setCellValueFactory(cell -> {
+            Long id = cell.getValue().getId();
+            return new ReadOnlyObjectWrapper<>(id == null ? null : repository.currentBalance(id));
+        });
+        balance.setCellFactory(_ -> new TableCell<>() {
+            @Override
+            protected void updateItem(Long value, boolean empty) {
+                super.updateItem(value, empty);
+                Account account = getTableRow() == null ? null : getTableRow().getItem();
+                setText(empty || account == null || value == null
+                        ? null
+                        : currencyFormatter.format(value, account.getCurrencyId()));
+            }
+        });
     }
 
     private void onNameCommitted(TableColumn.CellEditEvent<Account, String> event) {

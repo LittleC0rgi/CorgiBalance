@@ -1,12 +1,14 @@
 package com.corgibalance.components.views;
 
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.stage.FileChooser;
 import com.corgibalance.services.Database;
 
 import java.io.File;
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.Optional;
 
 public class SettingsView extends View {
@@ -43,6 +45,7 @@ public class SettingsView extends View {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setHeaderText(null);
         confirm.setContentText("Importing will replace all current data with the selected database. Continue?");
+        style(confirm);
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isEmpty() || result.get() != ButtonType.OK) {
             return;
@@ -61,6 +64,7 @@ public class SettingsView extends View {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setHeaderText(header);
         alert.setContentText(message);
+        style(alert);
         alert.showAndWait();
     }
 
@@ -68,6 +72,19 @@ public class SettingsView extends View {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setHeaderText(header);
         alert.setContentText(message);
+        style(alert);
         alert.showAndWait();
+    }
+
+    private void style(Alert alert) {
+        alert.getDialogPane().getStylesheets().add(
+                Objects.requireNonNull(getClass().getResource("/css/base.css")).toExternalForm());
+        for (ButtonType type : alert.getButtonTypes()) {
+            Button button = (Button) alert.getDialogPane().lookupButton(type);
+            button.getStyleClass().add("btn");
+            if (type == ButtonType.OK || type == ButtonType.YES) {
+                button.getStyleClass().add("btn--primary");
+            }
+        }
     }
 }

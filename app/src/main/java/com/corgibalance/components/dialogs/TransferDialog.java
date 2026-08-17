@@ -2,6 +2,7 @@ package com.corgibalance.components.dialogs;
 
 import com.corgibalance.models.Account;
 import com.corgibalance.models.Currency;
+import com.corgibalance.repositories.AccountRepository;
 import com.corgibalance.repositories.TransactionRepository;
 import com.corgibalance.services.CurrencyConverter;
 import com.corgibalance.services.CurrencyFormatter;
@@ -55,6 +56,7 @@ public class TransferDialog extends Dialog<Void> {
     private Label errorLabel;
 
     private final CurrencyFormatter formatter = new CurrencyFormatter();
+    private final AccountRepository accountRepository = new AccountRepository();
 
     public TransferDialog(List<Account> accounts, CurrencyConverter converter) {
         this.accounts = accounts;
@@ -95,7 +97,7 @@ public class TransferDialog extends Dialog<Void> {
             label.setText("");
             return;
         }
-        label.setText("Balance " + formatter.format(account.getInitialBalance(), account.getCurrencyId()));
+        label.setText("Balance " + formatter.format(accountRepository.currentBalance(account.getId()), account.getCurrencyId()));
     }
 
     private void configureCombo(ComboBox<Account> combo) {

@@ -49,6 +49,7 @@ public class TransactionTableController extends BaseTableController<Transaction,
         this.accounts = new AccountRepository().findAll();
         this.tags = new TagRepository().findAll();
         loadData();
+        table.refresh();
     }
 
     @Override

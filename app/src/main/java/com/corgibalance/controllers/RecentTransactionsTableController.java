@@ -15,6 +15,6 @@ public class RecentTransactionsTableController extends TransactionTableControlle
 
     @Override
     public void reload() {
-        loadData();
+        super.reload();
     }
 }

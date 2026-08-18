@@ -29,6 +29,7 @@ public class SelectTableCell<T extends BaseModel, V> extends TableCell<T, V> {
         this.colorFor = colorFor;
         ObservableList<V> items = FXCollections.observableArrayList(values);
         comboBox.setItems(items);
+        comboBox.getStyleClass().add("selector");
         comboBox.setCellFactory(_ -> selectListCell());
         comboBox.setButtonCell(selectListCell());
         comboBox.setOnAction(_ -> commitSelection());

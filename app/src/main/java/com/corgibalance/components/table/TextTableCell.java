@@ -18,6 +18,7 @@ public class TextTableCell<T extends BaseModel> extends TableCell<T, String> {
         this.valueOf = valueOf;
         this.placeholderText = placeholderText;
         textField.setOnAction(_ -> commitEdit(textField.getText()));
+        textField.getStyleClass().add("input");
         textField.focusedProperty().addListener((_, _, isFocused) -> {
             if (!isFocused && isEditing()) {
                 cancelEdit();

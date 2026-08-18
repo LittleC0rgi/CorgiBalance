@@ -11,7 +11,7 @@
 <fx:root xmlns:fx="http://javafx.com/fxml/1"
          type="javafx.scene.layout.VBox"
          xmlns="http://javafx.com/javafx/25">
-    <VBox spacing="12.0">
+    <VBox spacing="12.0" VBox.vgrow="ALWAYS">
         <HBox alignment="CENTER_LEFT" spacing="12.0">
             <Label text="Overview" styleClass="title"/>
             <HBox alignment="CENTER_LEFT" spacing="6.0">
@@ -71,7 +71,7 @@
             </VBox>
         </GridPane>
 
-        <VBox spacing="6">
+        <VBox spacing="6" VBox.vgrow="ALWAYS">
             <Label text="Recent transactions" styleClass="card__label"/>
             <fx:include fx:id="RecentTransactionsTable" source="../components/tables/RecentTransactionsTable.fxml"/>
         </VBox>

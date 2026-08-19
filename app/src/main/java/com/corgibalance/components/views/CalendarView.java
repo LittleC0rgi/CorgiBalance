@@ -1,5 +1,6 @@
 package com.corgibalance.components.views;
 
+import com.corgibalance.components.HeroIcon;
 import com.corgibalance.components.dialogs.PlannedTransactionDialog;
 import com.corgibalance.models.Account;
 import com.corgibalance.models.PlannedTransaction;
@@ -9,6 +10,7 @@ import com.corgibalance.repositories.AccountRepository;
 import com.corgibalance.repositories.PlannedTransactionRepository;
 import com.corgibalance.repositories.TransactionRepository;
 import com.corgibalance.services.CurrencyFormatter;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
@@ -23,27 +25,26 @@ import javafx.scene.layout.VBox;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Locale;
+import java.util.Map;
 
 public class CalendarView extends View implements Refreshable {
 
     private static final DateTimeFormatter MONTH_FORMAT =
             DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH);
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     @FXML
     private Label monthLabel;
     @FXML
     private GridPane grid;
-    @FXML
-    private VBox plannedList;
 
     private YearMonth currentMonth;
     private CurrencyFormatter formatter;
     private Map<Long, Long> accountCurrencies;
+    private Map<LocalDate, List<PlannedTransaction>> plannedByDate;
 
     public CalendarView() {
         super("Calendar", "/fxml/views/calendar.fxml");
@@ -53,15 +54,14 @@ public class CalendarView extends View implements Refreshable {
     private void initialize() {
         formatter = new CurrencyFormatter();
         accountCurrencies = new HashMap<>();
+        plannedByDate = new HashMap<>();
         currentMonth = YearMonth.now();
-        render();
-        reloadPlanned();
+        reloadData();
     }
 
     @Override
     public void onShow() {
-        render();
-        reloadPlanned();
+        reloadData();
     }
 
     @FXML
@@ -89,8 +89,20 @@ public class CalendarView extends View implements Refreshable {
         PlannedTransactionDialog dialog = new PlannedTransactionDialog(accounts, date);
         dialog.showAndWait();
         if (dialog.isCreated()) {
-            reloadPlanned();
+            reloadData();
         }
+    }
+
+    private void reloadData() {
+        accountCurrencies.clear();
+        for (Account account : new AccountRepository().findAll()) {
+            accountCurrencies.put(account.getId(), account.getCurrencyId());
+        }
+        plannedByDate.clear();
+        for (PlannedTransaction planned : new PlannedTransactionRepository().findAll()) {
+            plannedByDate.computeIfAbsent(planned.getPlannedDate(), _ -> new ArrayList<>()).add(planned);
+        }
+        render();
     }
 
     private void render() {
@@ -109,7 +121,7 @@ public class CalendarView extends View implements Refreshable {
     }
 
     private VBox dayCell(LocalDate date, LocalDate today) {
-        VBox cell = new VBox(4);
+        VBox cell = new VBox(2);
         cell.getStyleClass().add("calendar__day");
         if (date.equals(today)) {
             cell.getStyleClass().add("calendar__day--today");
@@ -124,51 +136,47 @@ public class CalendarView extends View implements Refreshable {
         plans.getStyleClass().add("calendar__day__plans");
         VBox.setVgrow(plans, Priority.ALWAYS);
         plans.setMaxHeight(Double.MAX_VALUE);
+        addPlannedRows(plans, plannedByDate.get(date));
 
         cell.getChildren().addAll(number, plans);
         return cell;
     }
 
-    private void reloadPlanned() {
-        accountCurrencies.clear();
-        for (Account account : new AccountRepository().findAll()) {
-            accountCurrencies.put(account.getId(), account.getCurrencyId());
+    private void addPlannedRows(VBox plans, List<PlannedTransaction> dayPlans) {
+        if (dayPlans == null) {
+            return;
         }
-        plannedList.getChildren().clear();
-        for (PlannedTransaction planned : new PlannedTransactionRepository().findAll()) {
-            plannedList.getChildren().add(plannedRow(planned));
+        for (PlannedTransaction planned : dayPlans) {
+            plans.getChildren().add(plannedCellRow(planned));
         }
     }
 
-    private HBox plannedRow(PlannedTransaction planned) {
-        Label date = new Label(planned.getPlannedDate().format(DATE_FORMAT));
-        date.getStyleClass().add("calendar__row-text");
+    private HBox plannedCellRow(PlannedTransaction planned) {
         Label description = new Label(descriptionText(planned));
-        description.getStyleClass().add("calendar__row-text");
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
+        description.getStyleClass().add("calendar__cell-text");
+        description.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(description, Priority.ALWAYS);
+
         Label amount = new Label(formatter.format(planned.getAmount(), accountCurrencies.get(planned.getAccountId())));
-        amount.getStyleClass().add("calendar__row-text");
-        if (planned.getTransactionType() == TransactionType.EXPENSE) {
-            amount.getStyleClass().add("calendar__row-text--expense");
-        } else {
-            amount.getStyleClass().add("calendar__row-text--income");
-        }
+        amount.getStyleClass().add("calendar__cell-text");
+        amount.getStyleClass().add(planned.getTransactionType() == TransactionType.EXPENSE
+                ? "calendar__cell-text--expense"
+                : "calendar__cell-text--income");
 
-        HBox row = new HBox(8, date, description, spacer, amount);
-        row.setAlignment(Pos.CENTER_LEFT);
+        Button confirm = new Button();
+        confirm.setGraphic(new HeroIcon(HeroIcon.Icon.CHECK));
+        confirm.getStyleClass().add("calendar__cell-btn");
+        confirm.setOnAction(_ -> confirmPlanned(planned));
+        confirm.setOnMouseClicked(Event::consume);
 
-        if (!planned.getPlannedDate().isAfter(LocalDate.now())) {
-            Button confirm = new Button("Confirm");
-            confirm.getStyleClass().addAll("btn", "btn--primary");
-            confirm.setOnAction(_ -> confirmPlanned(planned));
-            row.getChildren().add(confirm);
-        }
-        Button delete = new Button("Delete");
-        delete.getStyleClass().add("btn");
+        Button delete = new Button();
+        delete.setGraphic(new HeroIcon(HeroIcon.Icon.X_MARK));
+        delete.getStyleClass().add("calendar__cell-btn");
         delete.setOnAction(_ -> deletePlanned(planned));
-        row.getChildren().add(delete);
+        delete.setOnMouseClicked(Event::consume);
 
+        HBox row = new HBox(4, description, amount, confirm, delete);
+        row.setAlignment(Pos.CENTER_LEFT);
         return row;
     }
 
@@ -183,7 +191,7 @@ public class CalendarView extends View implements Refreshable {
             transaction.setTransactionDate(planned.getPlannedDate());
             new TransactionRepository().create(transaction);
             new PlannedTransactionRepository().delete(planned);
-            reloadPlanned();
+            reloadData();
         } catch (RuntimeException e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setHeaderText(null);
@@ -194,7 +202,7 @@ public class CalendarView extends View implements Refreshable {
 
     private void deletePlanned(PlannedTransaction planned) {
         new PlannedTransactionRepository().delete(planned);
-        reloadPlanned();
+        reloadData();
     }
 
     private String descriptionText(PlannedTransaction planned) {

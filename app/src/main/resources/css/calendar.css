@@ -71,15 +71,33 @@
     -fx-padding: 0 4;
 }
 
-.calendar__row-text {
-    -fx-font-size: 13px;
+.calendar__cell-text {
+    -fx-font-size: 12px;
     -fx-text-fill: #272932;
+    -fx-text-overrun: ELLIPSIS;
 }
 
-.calendar__row-text--expense {
+.calendar__cell-text--expense {
     -fx-text-fill: #CA2E55;
 }
 
-.calendar__row-text--income {
+.calendar__cell-text--income {
     -fx-text-fill: #72A276;
+}
+
+.calendar__cell-btn {
+    -fx-background-color: transparent;
+    -fx-background-radius: 4;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.calendar__cell-btn .hero_icon {
+    -fx-stroke: #272932;
+    -fx-scale-x: 0.5;
+    -fx-scale-y: 0.5;
+}
+
+.calendar__cell-btn:hover {
+    -fx-background-color: #EFEFF2;
 }

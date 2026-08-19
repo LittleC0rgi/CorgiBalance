@@ -28,6 +28,11 @@
             </VBox>
 
             <VBox styleClass="card" spacing="6">
+                <Label text="Tag" styleClass="card__label"/>
+                <ComboBox fx:id="tagCombo" maxWidth="Infinity" styleClass="selector"/>
+            </VBox>
+
+            <VBox styleClass="card" spacing="6">
                 <Label text="Amount" styleClass="card__label"/>
                 <TextField fx:id="amountField" maxWidth="Infinity" styleClass="input"/>
             </VBox>

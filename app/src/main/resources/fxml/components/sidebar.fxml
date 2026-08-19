@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import com.corgibalance.components.*?>
+<?import com.corgibalance.components.HeroIcon?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 <fx:root xmlns:fx="http://javafx.com/fxml/1"
          type="javafx.scene.layout.VBox"
          xmlns="http://javafx.com/javafx/25"
@@ -32,11 +37,11 @@
             <HeroIcon icon="TRANSACTIONS"/>
         </graphic>
     </ToggleButton>
-    <!--    <ToggleButton text="Calendar" toggleGroup="$navGroup" styleClass="sidebar__btn">-->
-    <!--        <graphic>-->
-    <!--            <HeroIcon icon="CALENDAR"/>-->
-    <!--        </graphic>-->
-    <!--    </ToggleButton>-->
+    <ToggleButton text="Calendar" toggleGroup="$navGroup" styleClass="sidebar__btn">
+        <graphic>
+            <HeroIcon icon="CALENDAR"/>
+        </graphic>
+    </ToggleButton>
     <ToggleButton text="Accounts" toggleGroup="$navGroup" styleClass="sidebar__btn">
         <graphic>
             <HeroIcon icon="WALLET"/>

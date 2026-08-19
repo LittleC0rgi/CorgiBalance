@@ -1,12 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 <fx:root xmlns:fx="http://javafx.com/fxml/1"
          type="javafx.scene.layout.VBox"
          xmlns="http://javafx.com/javafx/25"
-         styleClass="placeholder-view"
-         alignment="CENTER">
+         spacing="12">
 
-    <Label text="Calendar" styleClass="placeholder-title"/>
+    <HBox alignment="CENTER_LEFT" spacing="12">
+        <Label text="Calendar" styleClass="title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="‹" styleClass="calendar__nav" onAction="#prevMonth"/>
+        <Label fx:id="monthLabel" styleClass="calendar__month"/>
+        <Button text="›" styleClass="calendar__nav" onAction="#nextMonth"/>
+    </HBox>
+
+    <GridPane fx:id="weekHeader" hgap="2">
+        <columnConstraints>
+            <ColumnConstraints percentWidth="14.28" hgrow="ALWAYS"/>
+            <ColumnConstraints percentWidth="14.28" hgrow="ALWAYS"/>
+            <ColumnConstraints percentWidth="14.28" hgrow="ALWAYS"/>
+            <ColumnConstraints percentWidth="14.28" hgrow="ALWAYS"/>
+            <ColumnConstraints percentWidth="14.28" hgrow="ALWAYS"/>
+            <ColumnConstraints percentWidth="14.28" hgrow="ALWAYS"/>
+            <ColumnConstraints percentWidth="14.28" hgrow="ALWAYS"/>
+        </columnConstraints>
+        <Label text="Mon" styleClass="calendar__weekday" GridPane.columnIndex="0"/>
+        <Label text="Tue" styleClass="calendar__weekday" GridPane.columnIndex="1"/>
+        <Label text="Wed" styleClass="calendar__weekday" GridPane.columnIndex="2"/>
+        <Label text="Thu" styleClass="calendar__weekday" GridPane.columnIndex="3"/>
+        <Label text="Fri" styleClass="calendar__weekday" GridPane.columnIndex="4"/>
+        <Label text="Sat" styleClass="calendar__weekday" GridPane.columnIndex="5"/>
+        <Label text="Sun" styleClass="calendar__weekday" GridPane.columnIndex="6"/>
+    </GridPane>
+
+    <GridPane fx:id="grid" hgap="2" vgap="2" styleClass="calendar__grid" VBox.vgrow="ALWAYS">
+        <columnConstraints>
+            <ColumnConstraints percentWidth="14.28" hgrow="ALWAYS"/>
+            <ColumnConstraints percentWidth="14.28" hgrow="ALWAYS"/>
+            <ColumnConstraints percentWidth="14.28" hgrow="ALWAYS"/>
+            <ColumnConstraints percentWidth="14.28" hgrow="ALWAYS"/>
+            <ColumnConstraints percentWidth="14.28" hgrow="ALWAYS"/>
+            <ColumnConstraints percentWidth="14.28" hgrow="ALWAYS"/>
+            <ColumnConstraints percentWidth="14.28" hgrow="ALWAYS"/>
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints vgrow="ALWAYS"/>
+            <RowConstraints vgrow="ALWAYS"/>
+            <RowConstraints vgrow="ALWAYS"/>
+            <RowConstraints vgrow="ALWAYS"/>
+            <RowConstraints vgrow="ALWAYS"/>
+            <RowConstraints vgrow="ALWAYS"/>
+        </rowConstraints>
+    </GridPane>
 </fx:root>

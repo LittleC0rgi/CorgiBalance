@@ -310,6 +310,57 @@ CREATE TABLE IF NOT EXISTS recurring_transactions (
 
 
 -- ============================================================
+-- Planned transactions
+-- ============================================================
+
+
+CREATE TABLE IF NOT EXISTS planned_transactions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+
+    account_id INTEGER NOT NULL,
+    tag_id INTEGER,
+
+
+    -- Stored in minor currency units.
+    amount INTEGER NOT NULL CHECK (amount >= 0),
+
+
+    description TEXT,
+
+
+    transaction_type TEXT NOT NULL
+        CHECK (
+            transaction_type IN (
+                'INCOME',
+                'EXPENSE'
+            )
+        ),
+
+
+    planned_date TEXT NOT NULL,
+
+
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+
+    FOREIGN KEY (account_id)
+        REFERENCES accounts(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+
+    FOREIGN KEY (tag_id)
+        REFERENCES tags(id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE
+);
+
+
+
+
+-- ============================================================
 -- Budgets
 -- ============================================================
 
@@ -463,6 +514,10 @@ CREATE INDEX IF NOT EXISTS idx_recurring_transactions_next_date
 
 CREATE INDEX IF NOT EXISTS idx_recurring_transactions_account_id
     ON recurring_transactions(account_id);
+
+
+CREATE INDEX IF NOT EXISTS idx_planned_transactions_date
+    ON planned_transactions(planned_date);
 
 
 

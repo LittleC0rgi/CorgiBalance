@@ -41,6 +41,11 @@
     -fx-padding: 6;
     -fx-fill-width: true;
     -fx-fill-height: true;
+    -fx-cursor: hand;
+}
+
+.calendar__day:hover {
+    -fx-background-color: #f6f6f6;
 }
 
 .calendar__day__number {
@@ -64,4 +69,17 @@
     -fx-background-radius: 4;
     -fx-text-fill: white;
     -fx-padding: 0 4;
+}
+
+.calendar__row-text {
+    -fx-font-size: 13px;
+    -fx-text-fill: #272932;
+}
+
+.calendar__row-text--expense {
+    -fx-text-fill: #CA2E55;
+}
+
+.calendar__row-text--income {
+    -fx-text-fill: #72A276;
 }

@@ -59,4 +59,13 @@
             <RowConstraints vgrow="ALWAYS"/>
         </rowConstraints>
     </GridPane>
+
+    <VBox spacing="6">
+        <HBox alignment="CENTER_LEFT" spacing="8">
+            <Label text="Planned" styleClass="card__label"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Add planned" styleClass="btn" onAction="#openAddPlannedDialog"/>
+        </HBox>
+        <VBox fx:id="plannedList" spacing="4"/>
+    </VBox>
 </fx:root>

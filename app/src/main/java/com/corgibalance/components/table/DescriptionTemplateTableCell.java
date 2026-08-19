@@ -68,6 +68,7 @@ public class DescriptionTemplateTableCell extends TableCell<Transaction, String>
         popup.setOnShown(_ -> popup.getScene().getStylesheets().add(SUGGESTION_CSS));
 
         textField.setOnAction(_ -> commitFromTextField());
+        textField.getStyleClass().add("input");
         textField.focusedProperty().addListener((_, _, isFocused) -> {
             if (!isFocused && !popup.isShowing() && isEditing()) {
                 cancelEdit();

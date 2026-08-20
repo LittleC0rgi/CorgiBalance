@@ -1,6 +1,7 @@
 .card {
     -fx-background-color: white;
     -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
     -fx-padding: 16px;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 8, 0, 0, 2);
 }
@@ -36,9 +37,9 @@
 .nearest__row {
     -fx-background-color: white;
     -fx-background-radius: 8px;
-    -fx-border-color: #EFEFF2;
+    -fx-border-color: transparent;
     -fx-border-radius: 8px;
-    -fx-padding: 6 8;
+    -fx-padding: 3 6;
 }
 
 .nearest__row--overdue {

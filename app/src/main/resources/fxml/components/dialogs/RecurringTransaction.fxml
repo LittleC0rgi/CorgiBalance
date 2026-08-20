@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.ButtonType?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.DialogPane?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+<fx:root xmlns:fx="http://javafx.com/fxml/1"
+         type="javafx.scene.control.DialogPane"
+         minWidth="350"
+         xmlns="http://javafx.com/javafx">
+    <buttonTypes>
+        <ButtonType text="Add" buttonData="OK_DONE"/>
+        <ButtonType fx:constant="CANCEL"/>
+    </buttonTypes>
+    <content>
+        <VBox spacing="12">
+            <VBox styleClass="card" spacing="6">
+                <Label text="Account" styleClass="card__label"/>
+                <ComboBox fx:id="accountCombo" maxWidth="Infinity" styleClass="selector"/>
+            </VBox>
+
+            <VBox styleClass="card" spacing="6">
+                <Label text="Type" styleClass="card__label"/>
+                <ComboBox fx:id="typeCombo" maxWidth="Infinity" styleClass="selector"/>
+            </VBox>
+
+            <VBox styleClass="card" spacing="6">
+                <Label text="Tag" styleClass="card__label"/>
+                <ComboBox fx:id="tagCombo" maxWidth="Infinity" styleClass="selector"/>
+            </VBox>
+
+            <VBox styleClass="card" spacing="6">
+                <Label text="Amount" styleClass="card__label"/>
+                <TextField fx:id="amountField" maxWidth="Infinity" styleClass="input"/>
+            </VBox>
+
+            <VBox styleClass="card" spacing="6">
+                <Label text="Description" styleClass="card__label"/>
+                <TextField fx:id="descriptionField" maxWidth="Infinity" styleClass="input"/>
+            </VBox>
+
+            <VBox styleClass="card" spacing="6">
+                <Label text="Interval" styleClass="card__label"/>
+                <ComboBox fx:id="intervalCombo" maxWidth="Infinity" styleClass="selector"/>
+            </VBox>
+
+            <VBox styleClass="card" spacing="6">
+                <Label text="Start date" styleClass="card__label"/>
+                <DatePicker fx:id="startDatePicker" maxWidth="Infinity" styleClass="input"/>
+            </VBox>
+
+            <VBox styleClass="card" spacing="6">
+                <Label text="End date (optional)" styleClass="card__label"/>
+                <DatePicker fx:id="endDatePicker" maxWidth="Infinity" styleClass="input"/>
+            </VBox>
+
+            <VBox fx:id="errorBox" styleClass="card" managed="false" visible="false">
+                <Label fx:id="errorLabel" wrapText="true" styleClass="card__text"/>
+            </VBox>
+        </VBox>
+    </content>
+</fx:root>

@@ -72,7 +72,7 @@ public class TransferDialog extends Dialog<Void> {
     }
 
     private DialogPane loadPane() {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/components/dialogs/transfer.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/components/dialogs/Transfer.fxml"));
         loader.setController(this);
         loader.setRoot(new DialogPane());
         try {

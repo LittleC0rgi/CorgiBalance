@@ -16,7 +16,7 @@ public class TransactionsView extends View implements Refreshable {
     private Button transferButton;
 
     public TransactionsView() {
-        super("Transactions", "/fxml/views/transactions.fxml");
+        super("Transactions", "/fxml/views/Transactions.fxml");
     }
 
     @Override

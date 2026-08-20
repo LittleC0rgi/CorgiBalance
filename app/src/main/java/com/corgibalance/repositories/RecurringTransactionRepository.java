@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,6 +32,16 @@ public class RecurringTransactionRepository {
             + "FROM recurring_transactions "
             + "WHERE active = 1 "
             + "ORDER BY next_date";
+    private static final String INSERT_SQL =
+            "INSERT INTO recurring_transactions (account_id, tag_id, amount, description, transaction_type, "
+            + "start_date, next_date, end_date, interval, active) "
+            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String UPDATE_SQL =
+            "UPDATE recurring_transactions SET account_id = ?, tag_id = ?, amount = ?, description = ?, "
+            + "transaction_type = ?, start_date = ?, next_date = ?, end_date = ?, interval = ?, active = ?, "
+            + "updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+    private static final String DELETE_SQL =
+            "DELETE FROM recurring_transactions WHERE id = ?";
 
     private final Database database;
 
@@ -44,6 +55,67 @@ public class RecurringTransactionRepository {
 
     public List<RecurringTransaction> findActiveUpcoming() {
         return query(FIND_ACTIVE_UPCOMING_SQL);
+    }
+
+    public RecurringTransaction create(RecurringTransaction recurringTransaction) {
+        try {
+            Connection connection = database.getConnection();
+            try (PreparedStatement statement = connection.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
+                bind(statement, recurringTransaction, 1);
+                statement.executeUpdate();
+                try (ResultSet keys = statement.getGeneratedKeys()) {
+                    if (keys.next()) {
+                        recurringTransaction.setId(keys.getLong(1));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to create recurring transaction", e);
+        }
+        return recurringTransaction;
+    }
+
+    public void update(RecurringTransaction recurringTransaction) {
+        try {
+            Connection connection = database.getConnection();
+            try (PreparedStatement statement = connection.prepareStatement(UPDATE_SQL)) {
+                int index = bind(statement, recurringTransaction, 1);
+                statement.setLong(index, recurringTransaction.getId());
+                statement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to update recurring transaction", e);
+        }
+    }
+
+    public void delete(RecurringTransaction recurringTransaction) {
+        try {
+            Connection connection = database.getConnection();
+            try (PreparedStatement statement = connection.prepareStatement(DELETE_SQL)) {
+                statement.setLong(1, recurringTransaction.getId());
+                statement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to delete recurring transaction", e);
+        }
+    }
+
+    private int bind(PreparedStatement statement, RecurringTransaction recurringTransaction, int index) throws SQLException {
+        statement.setLong(index++, recurringTransaction.getAccountId());
+        if (recurringTransaction.getTagId() == null) {
+            statement.setNull(index++, java.sql.Types.INTEGER);
+        } else {
+            statement.setLong(index++, recurringTransaction.getTagId());
+        }
+        statement.setLong(index++, recurringTransaction.getAmount());
+        statement.setString(index++, recurringTransaction.getDescription());
+        statement.setString(index++, recurringTransaction.getTransactionType().toString());
+        statement.setString(index++, recurringTransaction.getStartDate().toString());
+        statement.setString(index++, recurringTransaction.getNextDate().toString());
+        statement.setString(index++, recurringTransaction.getEndDate() == null ? null : recurringTransaction.getEndDate().toString());
+        statement.setString(index++, recurringTransaction.getInterval().toString());
+        statement.setInt(index++, recurringTransaction.isActive() ? 1 : 0);
+        return index;
     }
 
     private List<RecurringTransaction> query(String sql) {

@@ -17,6 +17,7 @@
         <Label text="Calendar" styleClass="title"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Button text="Add planned" styleClass="btn" onAction="#openAddPlannedDialog"/>
+        <Button text="Add recurring" styleClass="btn" onAction="#openAddRecurringDialog"/>
         <Button text="‹" styleClass="calendar__nav" onAction="#prevMonth"/>
         <Label fx:id="monthLabel" styleClass="calendar__month"/>
         <Button text="›" styleClass="calendar__nav" onAction="#nextMonth"/>
@@ -60,4 +61,6 @@
             <RowConstraints vgrow="ALWAYS"/>
         </rowConstraints>
     </GridPane>
+
+    <VBox fx:id="overdueBox" spacing="4" styleClass="calendar__overdue" managed="false" visible="false"/>
 </fx:root>

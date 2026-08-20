@@ -3,25 +3,26 @@ package com.corgibalance.components.dialogs;
 import com.corgibalance.components.table.TransactionSuggestionSupport;
 import com.corgibalance.models.Account;
 import com.corgibalance.models.Currency;
-import com.corgibalance.models.PlannedTransaction;
+import com.corgibalance.models.RecurrenceInterval;
+import com.corgibalance.models.RecurringTransaction;
 import com.corgibalance.models.Tag;
 import com.corgibalance.models.Transaction;
 import com.corgibalance.models.TransactionType;
 import com.corgibalance.repositories.AccountRepository;
-import com.corgibalance.repositories.PlannedTransactionRepository;
+import com.corgibalance.repositories.RecurringTransactionRepository;
 import com.corgibalance.repositories.TagRepository;
 import com.corgibalance.repositories.TransactionRepository;
 import com.corgibalance.services.CurrencyFormatter;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
-import javafx.geometry.Pos;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
@@ -38,11 +39,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class PlannedTransactionDialog extends Dialog<Void> {
+public class RecurringTransactionDialog extends Dialog<Void> {
 
     private final List<Account> accounts;
     private final List<Tag> tags;
-    private final PlannedTransaction editing;
+    private final RecurringTransaction editing;
     @Getter
     private boolean created;
 
@@ -53,11 +54,15 @@ public class PlannedTransactionDialog extends Dialog<Void> {
     @FXML
     private ComboBox<Tag> tagCombo;
     @FXML
+    private ComboBox<RecurrenceInterval> intervalCombo;
+    @FXML
     private TextField amountField;
     @FXML
     private TextField descriptionField;
     @FXML
-    private DatePicker datePicker;
+    private DatePicker startDatePicker;
+    @FXML
+    private DatePicker endDatePicker;
     @FXML
     private VBox errorBox;
     @FXML
@@ -68,19 +73,19 @@ public class PlannedTransactionDialog extends Dialog<Void> {
     private final Map<Long, String> tagColors = new HashMap<>();
     private final TransactionSuggestionSupport suggestions;
 
-    public PlannedTransactionDialog(List<Account> accounts, LocalDate initialDate) {
+    public RecurringTransactionDialog(List<Account> accounts, LocalDate initialDate) {
         this(accounts, null, initialDate);
     }
 
-    public static PlannedTransactionDialog forEdit(PlannedTransaction existing) {
-        return new PlannedTransactionDialog(new AccountRepository().findAll(), existing, existing.getPlannedDate());
+    public static RecurringTransactionDialog forEdit(RecurringTransaction existing) {
+        return new RecurringTransactionDialog(new AccountRepository().findAll(), existing, existing.getNextDate());
     }
 
-    private PlannedTransactionDialog(List<Account> accounts, PlannedTransaction editing, LocalDate initialDate) {
+    private RecurringTransactionDialog(List<Account> accounts, RecurringTransaction editing, LocalDate initialDate) {
         this.accounts = accounts;
         this.tags = new TagRepository().findAll();
         this.editing = editing;
-        setTitle(editing == null ? "Add planned transaction" : "Edit planned transaction");
+        setTitle(editing == null ? "Add recurring transaction" : "Edit recurring transaction");
         setDialogPane(loadPane());
         getDialogPane().getStylesheets().addAll(
                 Objects.requireNonNull(getClass().getResource("/css/base.css")).toExternalForm(),
@@ -88,6 +93,7 @@ public class PlannedTransactionDialog extends Dialog<Void> {
         configureAccounts();
         configureType();
         configureTags();
+        configureInterval();
         suggestions = new TransactionSuggestionSupport(
                 q -> new TransactionRepository().findByDescriptionLike(q, 5),
                 this::tagColorOf,
@@ -104,61 +110,62 @@ public class PlannedTransactionDialog extends Dialog<Void> {
             tagColors.put(tag.getId(), tag.getColor());
         }
         suggestions.bind(descriptionField);
-        datePicker.setValue(initialDate == null ? LocalDate.now() : initialDate);
+        startDatePicker.setValue(initialDate == null ? LocalDate.now() : initialDate);
         if (editing != null) {
             prefill(editing);
         }
         configureButtons();
     }
 
-    private void prefill(PlannedTransaction planned) {
+    private void prefill(RecurringTransaction recurring) {
         for (Account account : accounts) {
-            if (account.getId().equals(planned.getAccountId())) {
+            if (account.getId().equals(recurring.getAccountId())) {
                 accountCombo.setValue(account);
                 break;
             }
         }
-        typeCombo.setValue(planned.getTransactionType());
+        typeCombo.setValue(recurring.getTransactionType());
         for (Tag tag : tags) {
-            if (tag.getId().equals(planned.getTagId())) {
+            if (tag.getId().equals(recurring.getTagId())) {
                 tagCombo.setValue(tag);
                 break;
             }
         }
-        amountField.setText(formatter.toPlain(planned.getAmount(), accountCurrencies.get(planned.getAccountId())));
-        descriptionField.setText(planned.getDescription());
+        amountField.setText(formatter.toPlain(recurring.getAmount(), accountCurrencies.get(recurring.getAccountId())));
+        descriptionField.setText(recurring.getDescription());
+        intervalCombo.setValue(recurring.getInterval());
+        startDatePicker.setValue(recurring.getStartDate());
+        endDatePicker.setValue(recurring.getEndDate());
     }
 
     private DialogPane loadPane() {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/components/dialogs/PlannedTransaction.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/components/dialogs/RecurringTransaction.fxml"));
         loader.setController(this);
         loader.setRoot(new DialogPane());
         try {
             return loader.load();
         } catch (IOException e) {
-            throw new RuntimeException("Failed to load planned transaction dialog", e);
+            throw new RuntimeException("Failed to load recurring transaction dialog", e);
         }
     }
 
     private void configureAccounts() {
         accountCombo.getItems().setAll(accounts);
-        accountCombo.setCellFactory(_ -> new ListCell<>() {
-            @Override
-            protected void updateItem(Account account, boolean empty) {
-                super.updateItem(account, empty);
-                setText(empty || account == null ? null : accountText(account));
-            }
-        });
-        accountCombo.setButtonCell(new ListCell<>() {
-            @Override
-            protected void updateItem(Account account, boolean empty) {
-                super.updateItem(account, empty);
-                setText(empty || account == null ? null : accountText(account));
-            }
-        });
+        accountCombo.setCellFactory(_ -> accountCell());
+        accountCombo.setButtonCell(accountCell());
         if (!accounts.isEmpty()) {
             accountCombo.setValue(accounts.getFirst());
         }
+    }
+
+    private ListCell<Account> accountCell() {
+        return new ListCell<>() {
+            @Override
+            protected void updateItem(Account account, boolean empty) {
+                super.updateItem(account, empty);
+                setText(empty || account == null ? null : accountText(account));
+            }
+        };
     }
 
     private void configureType() {
@@ -200,6 +207,11 @@ public class PlannedTransactionDialog extends Dialog<Void> {
         };
     }
 
+    private void configureInterval() {
+        intervalCombo.getItems().setAll(RecurrenceInterval.values());
+        intervalCombo.setValue(RecurrenceInterval.MONTHLY);
+    }
+
     private Circle tagDot(String color) {
         if (color == null) {
             return null;
@@ -209,14 +221,6 @@ public class PlannedTransactionDialog extends Dialog<Void> {
         } catch (IllegalArgumentException e) {
             return null;
         }
-    }
-
-    private String tagColorOf(Long tagId) {
-        return tagId == null ? null : tagColors.get(tagId);
-    }
-
-    private Long currencyIdOf(Long accountId) {
-        return accountId == null ? null : accountCurrencies.get(accountId);
     }
 
     private void applySuggestion(Transaction template) {
@@ -240,6 +244,14 @@ public class PlannedTransactionDialog extends Dialog<Void> {
         amountField.setText(formatter.toPlain(template.getAmount(), accountCurrencies.get(template.getAccountId())));
     }
 
+    private String tagColorOf(Long tagId) {
+        return tagId == null ? null : tagColors.get(tagId);
+    }
+
+    private Long currencyIdOf(Long accountId) {
+        return accountId == null ? null : accountCurrencies.get(accountId);
+    }
+
     private void configureButtons() {
         Button createButton = (Button) getDialogPane().lookupButton(getDialogPane().getButtonTypes().get(0));
         createButton.getStyleClass().addAll("btn", "btn--primary");
@@ -255,7 +267,7 @@ public class PlannedTransactionDialog extends Dialog<Void> {
         errorBox.setVisible(false);
         errorBox.setManaged(false);
         try {
-            createPlannedTransaction();
+            saveRecurringTransaction();
             created = true;
         } catch (RuntimeException e) {
             event.consume();
@@ -265,31 +277,39 @@ public class PlannedTransactionDialog extends Dialog<Void> {
         }
     }
 
-    private void createPlannedTransaction() {
+    private void saveRecurringTransaction() {
         Account account = accountCombo.getValue();
         if (account == null) {
             throw new IllegalArgumentException("Choose an account.");
         }
-        LocalDate date = datePicker.getValue();
-        if (date == null) {
-            throw new IllegalArgumentException("Choose a planned date.");
+        LocalDate startDate = startDatePicker.getValue();
+        if (startDate == null) {
+            throw new IllegalArgumentException("Choose a start date.");
+        }
+        LocalDate endDate = endDatePicker.getValue();
+        if (endDate != null && endDate.isBefore(startDate)) {
+            throw new IllegalArgumentException("End date must not be before start date.");
         }
         BigDecimal amount = formatter.parse(amountField.getText());
         if (amount.signum() <= 0) {
             throw new IllegalArgumentException("Amount must be positive.");
         }
 
-        PlannedTransaction planned = editing == null ? new PlannedTransaction() : editing;
-        planned.setAccountId(account.getId());
-        planned.setTagId(tagCombo.getValue() == null ? null : tagCombo.getValue().getId());
-        planned.setTransactionType(typeCombo.getValue());
-        planned.setAmount(formatter.toMinorUnits(amount, account.getCurrencyId()));
-        planned.setDescription(descriptionField.getText() == null ? null : descriptionField.getText().trim());
-        planned.setPlannedDate(date);
+        RecurringTransaction recurring = editing == null ? new RecurringTransaction() : editing;
+        recurring.setAccountId(account.getId());
+        recurring.setTagId(tagCombo.getValue() == null ? null : tagCombo.getValue().getId());
+        recurring.setTransactionType(typeCombo.getValue());
+        recurring.setAmount(formatter.toMinorUnits(amount, account.getCurrencyId()));
+        recurring.setDescription(descriptionField.getText() == null ? null : descriptionField.getText().trim());
+        recurring.setInterval(intervalCombo.getValue());
+        recurring.setStartDate(startDate);
+        recurring.setEndDate(endDate);
         if (editing == null) {
-            new PlannedTransactionRepository().create(planned);
+            recurring.setNextDate(startDate);
+            recurring.setActive(true);
+            new RecurringTransactionRepository().create(recurring);
         } else {
-            new PlannedTransactionRepository().update(planned);
+            new RecurringTransactionRepository().update(recurring);
         }
     }
 

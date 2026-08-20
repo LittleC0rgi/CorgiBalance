@@ -9,7 +9,7 @@ public class BudgetsView extends View implements Refreshable {
     private BudgetTableController BudgetTableController;
 
     public BudgetsView() {
-        super("Budgets", "/fxml/views/budgets.fxml");
+        super("Budgets", "/fxml/views/Budgets.fxml");
     }
 
     @Override

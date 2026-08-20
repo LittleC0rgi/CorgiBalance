@@ -2,13 +2,17 @@ package com.corgibalance.components.views;
 
 import com.corgibalance.components.HeroIcon;
 import com.corgibalance.components.dialogs.PlannedTransactionDialog;
+import com.corgibalance.components.dialogs.RecurringTransactionDialog;
 import com.corgibalance.models.Account;
 import com.corgibalance.models.PlannedTransaction;
+import com.corgibalance.models.RecurrenceInterval;
+import com.corgibalance.models.RecurringTransaction;
 import com.corgibalance.models.Tag;
 import com.corgibalance.models.Transaction;
 import com.corgibalance.models.TransactionType;
 import com.corgibalance.repositories.AccountRepository;
 import com.corgibalance.repositories.PlannedTransactionRepository;
+import com.corgibalance.repositories.RecurringTransactionRepository;
 import com.corgibalance.repositories.TagRepository;
 import com.corgibalance.repositories.TransactionRepository;
 import com.corgibalance.services.CurrencyFormatter;
@@ -38,24 +42,40 @@ public class CalendarView extends View implements Refreshable {
 
     private static final DateTimeFormatter MONTH_FORMAT =
             DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH);
+    private static final DateTimeFormatter DATE_FORMAT =
+            DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     @FXML
     private Label monthLabel;
     @FXML
     private GridPane grid;
+    @FXML
+    private VBox overdueBox;
 
     private YearMonth currentMonth;
     private CurrencyFormatter formatter;
     private Map<Long, Long> accountCurrencies;
     private Map<Long, String> tagColors;
     private Map<LocalDate, List<PlannedTransaction>> plannedByDate;
+    private Map<LocalDate, List<RecurringTransaction>> recurringByDate;
+    private List<PlannedTransaction> overduePlanned;
+    private List<RecurringTransaction> overdueRecurring;
 
     public CalendarView() {
-        super("Calendar", "/fxml/views/calendar.fxml");
+        super("Calendar", "/fxml/views/Calendar.fxml");
     }
 
     public static int firstColumn(YearMonth month) {
         return month.atDay(1).getDayOfWeek().getValue() - 1;
+    }
+
+    public static LocalDate nextOccurrence(LocalDate date, RecurrenceInterval interval) {
+        return switch (interval) {
+            case DAILY -> date.plusDays(1);
+            case WEEKLY -> date.plusWeeks(1);
+            case MONTHLY -> date.plusMonths(1);
+            case YEARLY -> date.plusYears(1);
+        };
     }
 
     @FXML
@@ -64,6 +84,9 @@ public class CalendarView extends View implements Refreshable {
         accountCurrencies = new HashMap<>();
         tagColors = new HashMap<>();
         plannedByDate = new HashMap<>();
+        recurringByDate = new HashMap<>();
+        overduePlanned = new ArrayList<>();
+        overdueRecurring = new ArrayList<>();
         currentMonth = YearMonth.now();
         reloadData();
     }
@@ -102,6 +125,19 @@ public class CalendarView extends View implements Refreshable {
         }
     }
 
+    @FXML
+    private void openAddRecurringDialog() {
+        List<Account> accounts = new AccountRepository().findAll();
+        if (accounts.isEmpty()) {
+            return;
+        }
+        RecurringTransactionDialog dialog = new RecurringTransactionDialog(accounts, LocalDate.now());
+        dialog.showAndWait();
+        if (dialog.isCreated()) {
+            reloadData();
+        }
+    }
+
     private void reloadData() {
         accountCurrencies.clear();
         for (Account account : new AccountRepository().findAll()) {
@@ -112,8 +148,23 @@ public class CalendarView extends View implements Refreshable {
             tagColors.put(tag.getId(), tag.getColor());
         }
         plannedByDate.clear();
+        overduePlanned.clear();
+        LocalDate today = LocalDate.now();
         for (PlannedTransaction planned : new PlannedTransactionRepository().findAll()) {
-            plannedByDate.computeIfAbsent(planned.getPlannedDate(), _ -> new ArrayList<>()).add(planned);
+            if (planned.getPlannedDate().isBefore(today)) {
+                overduePlanned.add(planned);
+            } else {
+                plannedByDate.computeIfAbsent(planned.getPlannedDate(), _ -> new ArrayList<>()).add(planned);
+            }
+        }
+        recurringByDate.clear();
+        overdueRecurring.clear();
+        for (RecurringTransaction recurring : new RecurringTransactionRepository().findActiveUpcoming()) {
+            if (recurring.getNextDate().isBefore(today)) {
+                overdueRecurring.add(recurring);
+            } else {
+                recurringByDate.computeIfAbsent(recurring.getNextDate(), _ -> new ArrayList<>()).add(recurring);
+            }
         }
         render();
     }
@@ -130,6 +181,26 @@ public class CalendarView extends View implements Refreshable {
             grid.add(cell, position % 7, position / 7);
             GridPane.setHgrow(cell, Priority.ALWAYS);
             GridPane.setVgrow(cell, Priority.ALWAYS);
+        }
+        renderOverdue();
+    }
+
+    private void renderOverdue() {
+        overdueBox.getChildren().clear();
+        boolean hasOverdue = !overduePlanned.isEmpty() || !overdueRecurring.isEmpty();
+        overdueBox.setVisible(hasOverdue);
+        overdueBox.setManaged(hasOverdue);
+        if (!hasOverdue) {
+            return;
+        }
+        Label title = new Label("Overdue");
+        title.getStyleClass().add("calendar__overdue__title");
+        overdueBox.getChildren().add(title);
+        for (PlannedTransaction planned : overduePlanned) {
+            overdueBox.getChildren().add(plannedRow(planned, true));
+        }
+        for (RecurringTransaction recurring : overdueRecurring) {
+            overdueBox.getChildren().add(recurringRow(recurring, true));
         }
     }
 
@@ -150,6 +221,7 @@ public class CalendarView extends View implements Refreshable {
         VBox.setVgrow(plans, Priority.ALWAYS);
         plans.setMaxHeight(Double.MAX_VALUE);
         addPlannedRows(plans, plannedByDate.get(date));
+        addRecurringRows(plans, recurringByDate.get(date));
 
         cell.getChildren().addAll(number, plans);
         return cell;
@@ -160,13 +232,23 @@ public class CalendarView extends View implements Refreshable {
             return;
         }
         for (PlannedTransaction planned : dayPlans) {
-            plans.getChildren().add(plannedCellRow(planned));
+            plans.getChildren().add(plannedRow(planned, false));
         }
     }
 
-    private HBox plannedCellRow(PlannedTransaction planned) {
-        HBox row = new HBox(4);
-        row.setAlignment(Pos.CENTER_LEFT);
+    private void addRecurringRows(VBox plans, List<RecurringTransaction> dayRecurring) {
+        if (dayRecurring == null) {
+            return;
+        }
+        for (RecurringTransaction recurring : dayRecurring) {
+            plans.getChildren().add(recurringRow(recurring, false));
+        }
+    }
+
+    private HBox plannedRow(PlannedTransaction planned, boolean showDate) {
+        LocalDate date = planned.getPlannedDate();
+        boolean overdue = date.isBefore(LocalDate.now());
+        HBox row = baseRow(showDate, date, overdue);
 
         Button confirm = new Button();
         confirm.setGraphic(new HeroIcon(HeroIcon.Icon.CHECK));
@@ -177,28 +259,94 @@ public class CalendarView extends View implements Refreshable {
 
         row.getChildren().add(tagDot(planned.getTagId()));
 
-        Label description = new Label(descriptionText(planned));
-        description.getStyleClass().add("calendar__cell-text");
-        description.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(description, Priority.ALWAYS);
+        Label description = descriptionLabel(
+                descriptionText(planned.getTransactionType(), planned.getDescription()),
+                () -> editPlanned(planned),
+                overdue);
         row.getChildren().add(description);
 
-        Label amount = new Label(formatter.format(planned.getAmount(), accountCurrencies.get(planned.getAccountId())));
-        amount.getStyleClass().add("calendar__cell-text");
-        amount.getStyleClass().add(planned.getTransactionType() == TransactionType.EXPENSE
+        row.getChildren().add(amountLabel(planned.getAmount(), planned.getAccountId(), planned.getTransactionType()));
+        row.getChildren().add(deleteButton(() -> deletePlanned(planned)));
+        return row;
+    }
+
+    private HBox recurringRow(RecurringTransaction recurring, boolean showDate) {
+        LocalDate date = recurring.getNextDate();
+        boolean overdue = date.isBefore(LocalDate.now());
+        HBox row = baseRow(showDate, date, overdue);
+
+        Button confirm = new Button();
+        confirm.setGraphic(new HeroIcon(HeroIcon.Icon.CHECK));
+        confirm.getStyleClass().add("calendar__cell-btn");
+        confirm.setOnAction(_ -> confirmRecurring(recurring));
+        confirm.setOnMouseClicked(Event::consume);
+        row.getChildren().add(confirm);
+
+        HeroIcon refresh = new HeroIcon(HeroIcon.Icon.REFRESH);
+        refresh.getStyleClass().add("calendar__cell-icon");
+        row.getChildren().add(refresh);
+
+        row.getChildren().add(tagDot(recurring.getTagId()));
+
+        Label description = descriptionLabel(
+                descriptionText(recurring.getTransactionType(), recurring.getDescription()),
+                () -> editRecurring(recurring),
+                overdue);
+        row.getChildren().add(description);
+
+        row.getChildren().add(amountLabel(recurring.getAmount(), recurring.getAccountId(), recurring.getTransactionType()));
+        row.getChildren().add(deleteButton(() -> deleteRecurring(recurring)));
+        return row;
+    }
+
+    private HBox baseRow(boolean showDate, LocalDate date, boolean overdue) {
+        HBox row = new HBox(4);
+        row.setAlignment(Pos.CENTER_LEFT);
+        if (overdue) {
+            row.getStyleClass().add("calendar__row--overdue");
+        }
+        if (showDate) {
+            Label dateLabel = new Label(date.format(DATE_FORMAT));
+            dateLabel.getStyleClass().add("calendar__cell-text");
+            if (overdue) {
+                dateLabel.getStyleClass().add("calendar__cell-text--overdue");
+            }
+            row.getChildren().add(dateLabel);
+        }
+        return row;
+    }
+
+    private Label descriptionLabel(String text, Runnable onEdit, boolean overdue) {
+        Label description = new Label(text);
+        description.getStyleClass().add("calendar__cell-text");
+        if (overdue) {
+            description.getStyleClass().add("calendar__cell-text--overdue");
+        }
+        description.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(description, Priority.ALWAYS);
+        description.setOnMouseClicked(e -> {
+            e.consume();
+            onEdit.run();
+        });
+        return description;
+    }
+
+    private Label amountLabel(long amount, Long accountId, TransactionType type) {
+        Label amountLabel = new Label(formatter.format(amount, accountCurrencies.get(accountId)));
+        amountLabel.getStyleClass().add("calendar__cell-text");
+        amountLabel.getStyleClass().add(type == TransactionType.EXPENSE
                 ? "calendar__cell-text--expense"
                 : "calendar__cell-text--income");
-        row.getChildren().add(amount);
+        return amountLabel;
+    }
 
-
+    private Button deleteButton(Runnable action) {
         Button delete = new Button();
         delete.setGraphic(new HeroIcon(HeroIcon.Icon.X_MARK));
         delete.getStyleClass().add("calendar__cell-btn");
-        delete.setOnAction(_ -> deletePlanned(planned));
+        delete.setOnAction(_ -> action.run());
         delete.setOnMouseClicked(Event::consume);
-        row.getChildren().add(delete);
-
-        return row;
+        return delete;
     }
 
     private Circle tagDot(Long tagId) {
@@ -213,24 +361,60 @@ public class CalendarView extends View implements Refreshable {
         }
     }
 
+    private void editPlanned(PlannedTransaction planned) {
+        PlannedTransactionDialog dialog = PlannedTransactionDialog.forEdit(planned);
+        dialog.showAndWait();
+        if (dialog.isCreated()) {
+            reloadData();
+        }
+    }
+
+    private void editRecurring(RecurringTransaction recurring) {
+        RecurringTransactionDialog dialog = RecurringTransactionDialog.forEdit(recurring);
+        dialog.showAndWait();
+        if (dialog.isCreated()) {
+            reloadData();
+        }
+    }
+
     private void confirmPlanned(PlannedTransaction planned) {
         try {
-            Transaction transaction = new Transaction();
-            transaction.setAccountId(planned.getAccountId());
-            transaction.setTagId(planned.getTagId());
-            transaction.setAmount(planned.getAmount());
-            transaction.setDescription(planned.getDescription());
-            transaction.setTransactionType(planned.getTransactionType());
-            transaction.setTransactionDate(planned.getPlannedDate());
-            new TransactionRepository().create(transaction);
+            createTransaction(planned.getAccountId(), planned.getTagId(), planned.getAmount(),
+                    planned.getDescription(), planned.getTransactionType(), planned.getPlannedDate());
             new PlannedTransactionRepository().delete(planned);
             reloadData();
         } catch (RuntimeException e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setHeaderText(null);
-            alert.setContentText(e.getMessage());
-            alert.showAndWait();
+            showError(e);
         }
+    }
+
+    private void confirmRecurring(RecurringTransaction recurring) {
+        try {
+            createTransaction(recurring.getAccountId(), recurring.getTagId(), recurring.getAmount(),
+                    recurring.getDescription(), recurring.getTransactionType(), recurring.getNextDate());
+            LocalDate next = nextOccurrence(recurring.getNextDate(), recurring.getInterval());
+            if (recurring.getEndDate() != null && next.isAfter(recurring.getEndDate())) {
+                recurring.setActive(false);
+            } else {
+                recurring.setNextDate(next);
+            }
+            new RecurringTransactionRepository().update(recurring);
+            reloadData();
+        } catch (RuntimeException e) {
+            showError(e);
+        }
+    }
+
+    private void createTransaction(Long accountId, Long tagId, long amount, String description,
+                                   TransactionType type, LocalDate date) {
+        Transaction transaction = new Transaction();
+        transaction.setAccountId(accountId);
+        transaction.setTagId(tagId);
+        transaction.setAmount(amount);
+        transaction.setDescription(description);
+        transaction.setTransactionType(type);
+        transaction.setTransactionDate(date);
+        new TransactionRepository().create(transaction);
     }
 
     private void deletePlanned(PlannedTransaction planned) {
@@ -238,11 +422,22 @@ public class CalendarView extends View implements Refreshable {
         reloadData();
     }
 
-    private String descriptionText(PlannedTransaction planned) {
-        if (planned.getDescription() != null && !planned.getDescription().isBlank()) {
-            return planned.getDescription();
+    private void deleteRecurring(RecurringTransaction recurring) {
+        new RecurringTransactionRepository().delete(recurring);
+        reloadData();
+    }
+
+    private void showError(RuntimeException e) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setHeaderText(null);
+        alert.setContentText(e.getMessage());
+        alert.showAndWait();
+    }
+
+    private String descriptionText(TransactionType type, String description) {
+        if (description != null && !description.isBlank()) {
+            return description;
         }
-        return planned.getTransactionType() == TransactionType.EXPENSE
-                ? "Planned expense" : "Planned income";
+        return type == TransactionType.EXPENSE ? "Planned expense" : "Planned income";
     }
 }

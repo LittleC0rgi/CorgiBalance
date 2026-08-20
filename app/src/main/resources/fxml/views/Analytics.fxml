@@ -4,9 +4,6 @@
 <?import javafx.scene.layout.VBox?>
 <fx:root xmlns:fx="http://javafx.com/fxml/1"
          type="javafx.scene.layout.VBox"
-         xmlns="http://javafx.com/javafx/25"
-         styleClass="placeholder-view"
-         alignment="CENTER">
-
-    <Label text="Analytics" styleClass="placeholder-title"/>
+         xmlns="http://javafx.com/javafx/25">
+    <Label text="Analytics" styleClass="title"/>
 </fx:root>

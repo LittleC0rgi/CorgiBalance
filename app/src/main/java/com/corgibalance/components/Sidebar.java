@@ -22,7 +22,7 @@ public class Sidebar extends VBox {
             new SimpleObjectProperty<>(this, "currentView", "Overview");
 
     public Sidebar() {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/components/sidebar.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/components/Sidebar.fxml"));
         loader.setRoot(this);
         loader.setController(this);
         try {

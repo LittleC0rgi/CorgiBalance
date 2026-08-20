@@ -70,7 +70,7 @@ public class OverviewView extends View implements Refreshable {
     private Consumer<String> navigationHandler;
 
     public OverviewView() {
-        super("Overview", "/fxml/views/overview.fxml");
+        super("Overview", "/fxml/views/Overview.fxml");
     }
 
     @FXML

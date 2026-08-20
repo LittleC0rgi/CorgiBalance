@@ -14,7 +14,7 @@ import java.util.Optional;
 public class SettingsView extends View {
 
     public SettingsView() {
-        super("Settings", "/fxml/views/settings.fxml");
+        super("Settings", "/fxml/views/Settings.fxml");
     }
 
     public void exportDatabase() {

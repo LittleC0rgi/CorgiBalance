@@ -33,6 +33,50 @@
     -fx-text-fill: #272932;
 }
 
+.nearest__row {
+    -fx-background-color: white;
+    -fx-background-radius: 8px;
+    -fx-border-color: #EFEFF2;
+    -fx-border-radius: 8px;
+    -fx-padding: 6 8;
+}
+
+.nearest__row--overdue {
+    -fx-border-color: #CA2E55;
+}
+
+.nearest__date {
+    -fx-font-size: 11px;
+    -fx-text-fill: #8B8D99;
+}
+
+.nearest__desc {
+    -fx-font-size: 13px;
+    -fx-text-fill: #272932;
+    -fx-text-overrun: ELLIPSIS;
+}
+
+.nearest__amount {
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #272932;
+}
+
+.nearest__amount--income {
+    -fx-text-fill: #72A276;
+}
+
+.nearest__amount--expense {
+    -fx-text-fill: #CA2E55;
+}
+
+.nearest__row--overdue .nearest__date,
+.nearest__row--overdue .nearest__desc,
+.nearest__row--overdue .nearest__amount {
+    -fx-font-weight: bold;
+    -fx-text-fill: #CA2E55;
+}
+
 .card__link {
     -fx-font-size: 12px;
     -fx-text-fill: #272932;

@@ -68,6 +68,7 @@
             </VBox>
             <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="2">
                 <Label text="Nearest payments" styleClass="card__label"/>
+                <VBox fx:id="nearestList" spacing="8.0"/>
             </VBox>
         </GridPane>
 

@@ -91,7 +91,8 @@ public class PlannedTransactionDialog extends Dialog<Void> {
         suggestions = new TransactionSuggestionSupport(
                 q -> new TransactionRepository().findByDescriptionLike(q, 5),
                 this::tagColorOf,
-                this::currencyIdOf) {
+                this::currencyIdOf,
+                id -> accounts.stream().filter(a -> a.getId().equals(id)).map(Account::getName).findFirst().orElse(null)) {
             @Override
             protected void apply(Transaction template) {
                 applySuggestion(template);

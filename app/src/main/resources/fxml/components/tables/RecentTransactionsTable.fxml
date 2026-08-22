@@ -14,7 +14,7 @@
         <TableColumn fx:id="account" text="Account"/>
         <TableColumn fx:id="tag" text="Tag"/>
         <TableColumn fx:id="type" text="Type"/>
-        <TableColumn fx:id="description" text="Description"/>
         <TableColumn fx:id="amount" text="Amount"/>
+        <TableColumn fx:id="description" text="Description"/>
     </columns>
 </TableView>

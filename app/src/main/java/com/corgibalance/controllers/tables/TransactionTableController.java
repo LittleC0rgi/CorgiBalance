@@ -79,20 +79,21 @@ public class TransactionTableController extends BaseTableController<Transaction,
         });
         type.setOnEditCommit(this::onTypeCommitted);
 
-        description.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getDescription()));
-        description.setCellFactory(_ -> new DescriptionTemplateTableCell("+ Add transaction",
-                q -> repository.findByDescriptionLike(q, 5),
-                this::applyDescriptionTemplate,
-                this::tagColor,
-                this::currencyIdOfAccount));
-        description.setOnEditCommit(this::onDescriptionCommitted);
-
         amount.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getAmount()));
         amount.setCellFactory(_ -> new AmountTableCell<>(this::currencyIdOf,
                 t -> t.getTransactionType() == TransactionType.EXPENSE
                         || (t.getTransactionType() == TransactionType.TRANSFER && t.getDirection() == 0),
                 transaction -> transaction.getAmount() == 0));
         amount.setOnEditCommit(this::onAmountCommitted);
+
+        description.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getDescription()));
+        description.setCellFactory(_ -> new DescriptionTemplateTableCell("+ Add transaction",
+                q -> repository.findByDescriptionLike(q, 5),
+                this::applyDescriptionTemplate,
+                this::tagColor,
+                this::currencyIdOfAccount,
+                this::accountName));
+        description.setOnEditCommit(this::onDescriptionCommitted);
     }
 
     @Override

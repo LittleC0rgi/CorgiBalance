@@ -35,14 +35,17 @@ public abstract class TransactionSuggestionSupport {
     private final Function<String, List<Transaction>> searchFor;
     private final Function<Long, String> tagColorOf;
     private final Function<Long, Long> currencyIdOf;
+    private final Function<Long, String> accountNameOf;
     private TextField field;
 
     protected TransactionSuggestionSupport(Function<String, List<Transaction>> searchFor,
                                            Function<Long, String> tagColorOf,
-                                           Function<Long, Long> currencyIdOf) {
+                                           Function<Long, Long> currencyIdOf,
+                                           Function<Long, String> accountNameOf) {
         this.searchFor = searchFor;
         this.tagColorOf = tagColorOf;
         this.currencyIdOf = currencyIdOf;
+        this.accountNameOf = accountNameOf;
 
         suggestions.getStyleClass().add("suggestion-list");
         suggestions.setMaxHeight(220);
@@ -124,6 +127,12 @@ public abstract class TransactionSuggestionSupport {
                 Label amount = new Label(formatAmount(transaction));
                 amount.getStyleClass().add("suggestion__amount");
                 box.getChildren().add(amount);
+                String accountName = accountNameOf.apply(transaction.getAccountId());
+                if (accountName != null && !accountName.isEmpty()) {
+                    Label account = new Label("(" + accountName + ")");
+                    account.getStyleClass().add("suggestion__account");
+                    box.getChildren().add(account);
+                }
                 setGraphic(box);
                 setText(null);
             }

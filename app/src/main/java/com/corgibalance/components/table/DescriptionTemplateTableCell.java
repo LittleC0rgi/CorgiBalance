@@ -21,10 +21,11 @@ public class DescriptionTemplateTableCell extends TableCell<Transaction, String>
                                         Function<String, List<Transaction>> searchFor,
                                         BiConsumer<Transaction, Transaction> applyTemplate,
                                         Function<Long, String> tagColorOf,
-                                        Function<Long, Long> currencyIdOf) {
+                                        Function<Long, Long> currencyIdOf,
+                                        Function<Long, String> accountNameOf) {
         this.placeholderText = placeholderText;
         this.applyTemplate = applyTemplate;
-        this.suggestions = new TransactionSuggestionSupport(searchFor, tagColorOf, currencyIdOf) {
+        this.suggestions = new TransactionSuggestionSupport(searchFor, tagColorOf, currencyIdOf, accountNameOf) {
             @Override
             protected void apply(Transaction template) {
                 Transaction target = currentItem();

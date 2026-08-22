@@ -11,27 +11,28 @@
 
     <Label text="Settings" styleClass="title"/>
 
-    <VBox spacing="12">
-        <Label text="Database"/>
-        <Label text="Save a copy of your data or restore it from a backup."/>
+    <VBox spacing="6" styleClass="card">
+        <Label text="Database" styleClass="card__label"/>
+        <Label text="Save a copy of your data or restore it from a backup." styleClass="card__text"/>
         <HBox spacing="12">
-            <Button text="Save database" styleClass="btn, btn--primary" onAction="#exportDatabase"/>
+            <Button text="Connect to database" styleClass="btn, btn--primary" onAction="#connectDatabase"/>
+            <Button text="Save database" styleClass="btn" onAction="#exportDatabase"/>
             <Button text="Import database" styleClass="btn" onAction="#importDatabase"/>
         </HBox>
     </VBox>
 
-    <VBox spacing="12" VBox.vgrow="ALWAYS">
-        <Label text="Tags"/>
+    <VBox spacing="6" VBox.vgrow="ALWAYS">
+        <Label text="Tags" styleClass="card__label"/>
         <fx:include fx:id="TagTable" source="../components/tables/TagTable.fxml"/>
     </VBox>
 
-    <VBox spacing="12" VBox.vgrow="ALWAYS">
-        <Label text="Currencies"/>
+    <VBox spacing="6" VBox.vgrow="ALWAYS">
+        <Label text="Currencies" styleClass="card__label"/>
         <fx:include fx:id="CurrencyTable" source="../components/tables/CurrencyTable.fxml"/>
     </VBox>
 
-    <VBox spacing="12" VBox.vgrow="ALWAYS">
-        <Label text="Exchange rates"/>
+    <VBox spacing="6" VBox.vgrow="ALWAYS">
+        <Label text="Exchange rates" styleClass="card__label"/>
         <fx:include fx:id="ExchangeRateTable" source="../components/tables/ExchangeRateTable.fxml"/>
     </VBox>
 </fx:root>

@@ -1,6 +1,6 @@
 package com.corgibalance.components.views;
 
-import com.corgibalance.controllers.BudgetTableController;
+import com.corgibalance.controllers.tables.BudgetTableController;
 import javafx.fxml.FXML;
 
 public class BudgetsView extends View implements Refreshable {

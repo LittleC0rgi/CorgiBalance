@@ -20,4 +20,6 @@ module javafx.demo {
     opens com.corgibalance.components.dialogs to javafx.fxml;
     exports com.corgibalance.controllers;
     opens com.corgibalance.controllers to javafx.fxml;
+    exports com.corgibalance.controllers.tables;
+    opens com.corgibalance.controllers.tables to javafx.fxml;
 }

@@ -1,7 +1,7 @@
 package com.corgibalance.components.views;
 
 import com.corgibalance.components.dialogs.TransferDialog;
-import com.corgibalance.controllers.TransactionTableController;
+import com.corgibalance.controllers.tables.TransactionTableController;
 import com.corgibalance.repositories.AccountRepository;
 import com.corgibalance.services.CurrencyConverter;
 import javafx.fxml.FXML;

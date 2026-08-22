@@ -1,9 +1,9 @@
-package com.corgibalance.controllers;
+package com.corgibalance.controllers.tables;
 
 import com.corgibalance.components.table.AmountTableCell;
 import com.corgibalance.components.table.DateTableCell;
-import com.corgibalance.components.table.TextTableCell;
 import com.corgibalance.components.table.SelectTableCell;
+import com.corgibalance.components.table.TextTableCell;
 import com.corgibalance.models.Budget;
 import com.corgibalance.models.Currency;
 import com.corgibalance.models.Tag;
@@ -25,9 +25,8 @@ public class BudgetTableController extends BaseTableController<Budget, BudgetRep
     private static final String BASE_CURRENCY_KEY = "overview.baseCurrencyId";
 
     private final CurrencyFormatter currencyFormatter = new CurrencyFormatter();
-    private List<Tag> tags;
     private final Long currencyId;
-
+    private List<Tag> tags;
     @FXML
     private TableColumn<Budget, String> name;
     @FXML

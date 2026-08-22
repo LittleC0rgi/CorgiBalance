@@ -1,4 +1,4 @@
-package com.corgibalance.controllers;
+package com.corgibalance.controllers.tables;
 
 import com.corgibalance.components.table.DateTableCell;
 import com.corgibalance.components.table.SelectTableCell;

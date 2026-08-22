@@ -7,7 +7,7 @@
            styleClass="table"
            VBox.vgrow="ALWAYS"
            xmlns="http://javafx.com/javafx"
-           fx:controller="com.corgibalance.controllers.TransactionTableController"
+           fx:controller="com.corgibalance.controllers.tables.TransactionTableController"
 >
     <columns>
         <TableColumn fx:id="date" text="Date"/>

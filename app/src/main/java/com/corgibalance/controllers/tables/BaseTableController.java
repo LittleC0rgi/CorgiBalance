@@ -1,4 +1,4 @@
-package com.corgibalance.controllers;
+package com.corgibalance.controllers.tables;
 
 import com.corgibalance.models.BaseModel;
 import com.corgibalance.repositories.CrudRepository;
@@ -19,10 +19,9 @@ import java.util.function.Consumer;
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class BaseTableController<T extends BaseModel, R extends CrudRepository<T>> {
 
+    protected final R repository;
     @FXML
     protected TableView<T> table;
-
-    protected final R repository;
 
     @FXML
     public void initialize() {

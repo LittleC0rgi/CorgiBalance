@@ -1,7 +1,7 @@
 package com.corgibalance.components.views;
 
 import com.corgibalance.components.HeroIcon;
-import com.corgibalance.controllers.RecentTransactionsTableController;
+import com.corgibalance.controllers.tables.RecentTransactionsTableController;
 import com.corgibalance.models.Account;
 import com.corgibalance.models.Budget;
 import com.corgibalance.models.Currency;

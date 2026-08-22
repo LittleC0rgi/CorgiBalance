@@ -7,7 +7,7 @@
            styleClass="table"
            VBox.vgrow="ALWAYS"
            xmlns="http://javafx.com/javafx"
-           fx:controller="com.corgibalance.controllers.ExchangeRateTableController"
+           fx:controller="com.corgibalance.controllers.tables.ExchangeRateTableController"
 >
     <columns>
         <TableColumn fx:id="fromCurrency" text="From"/>

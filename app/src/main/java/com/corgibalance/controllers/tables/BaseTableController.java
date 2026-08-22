@@ -60,13 +60,32 @@ public abstract class BaseTableController<T extends BaseModel, R extends CrudRep
         apply.accept(item);
         if (isPlaceholder(item)) {
             if (createOnPlaceholder) {
-                repository.create(item);
+                try {
+                    repository.create(item);
+                } catch (RuntimeException e) {
+                    showError(e);
+                    return;
+                }
                 table.getItems().add(newPlaceholder());
             }
             table.refresh();
         } else {
-            repository.update(item);
+            try {
+                repository.update(item);
+            } catch (RuntimeException e) {
+                showError(e);
+            }
         }
+    }
+
+    private void showError(RuntimeException e) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setHeaderText(null);
+        alert.setContentText(e.getMessage());
+        alert.getDialogPane().getStylesheets().add(
+                Objects.requireNonNull(getClass().getResource("/css/base.css")).toExternalForm());
+        ((Button) alert.getDialogPane().lookupButton(ButtonType.OK)).getStyleClass().addAll("btn", "btn--primary");
+        alert.showAndWait();
     }
 
     protected void refresh() {

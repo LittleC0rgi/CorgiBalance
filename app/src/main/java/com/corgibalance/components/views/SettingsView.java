@@ -60,6 +60,33 @@ public class SettingsView extends View {
         }
     }
 
+    public void connectDatabase() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Connect to database");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("SQLite database", "*.db"));
+        File file = chooser.showOpenDialog(getScene().getWindow());
+        if (file == null) {
+            return;
+        }
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setHeaderText(null);
+        confirm.setContentText("The application will use this database as its primary one: "
+                + file.getAbsolutePath() + ". Continue?");
+        style(confirm);
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isEmpty() || result.get() != ButtonType.OK) {
+            return;
+        }
+        try {
+            Database.getInstance().connectTo(file.toPath());
+            showInfo("Database connected",
+                    "Connected to " + file.getAbsolutePath()
+                            + ". Restart the application to fully refresh all views.");
+        } catch (SQLException e) {
+            showError("Failed to connect database", e.getMessage());
+        }
+    }
+
     private void showInfo(String header, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setHeaderText(header);

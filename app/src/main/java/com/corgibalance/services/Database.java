@@ -2,6 +2,7 @@ package com.corgibalance.services;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -71,6 +73,8 @@ public final class Database {
             + "FOREIGN KEY (to_account_id) REFERENCES accounts(id) ON DELETE CASCADE ON UPDATE CASCADE"
             + ")";
 
+    private static final String DB_PATH_KEY = "db.path";
+
     private Connection connection;
 
     private Database() {
@@ -91,16 +95,65 @@ public final class Database {
         Path dbPath = dbPath();
         logger.info("Connecting to database: " + dbPath.toAbsolutePath());
         connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
+        if (isConfiguredExternal()) {
+            logger.info("Using configured database as-is, skipping initialization");
+            return;
+        }
         initDatabase();
+    }
+
+    private boolean isConfiguredExternal() throws SQLException {
+        try {
+            String path = loadConfig().getProperty(DB_PATH_KEY);
+            return path != null && !path.isBlank();
+        } catch (IOException e) {
+            throw new SQLException("Failed to read database configuration", e);
+        }
     }
 
     public synchronized Path dbPath() throws SQLException {
         try {
             Path dbDir = Path.of(System.getProperty("user.home"), ".corgibalance");
             Files.createDirectories(dbDir);
-            return dbDir.resolve("corgibalance.db");
+            String configured = loadConfig().getProperty(DB_PATH_KEY);
+            return configured != null && !configured.isBlank()
+                    ? Path.of(configured)
+                    : dbDir.resolve("corgibalance.db");
         } catch (IOException e) {
-            throw new SQLException("Failed to create database directory", e);
+            throw new SQLException("Failed to resolve database path", e);
+        }
+    }
+
+    public synchronized void connectTo(Path source) throws SQLException {
+        validateSource(source);
+        close();
+        try {
+            Properties properties = loadConfig();
+            properties.setProperty(DB_PATH_KEY, source.toAbsolutePath().toString());
+            saveConfig(properties);
+        } catch (IOException e) {
+            throw new SQLException("Failed to save database configuration", e);
+        }
+        connect();
+    }
+
+    private Path configFile() {
+        return Path.of(System.getProperty("user.home"), ".corgibalance", "config.properties");
+    }
+
+    private Properties loadConfig() throws IOException {
+        Properties properties = new Properties();
+        if (Files.isRegularFile(configFile())) {
+            try (InputStream input = Files.newInputStream(configFile())) {
+                properties.load(input);
+            }
+        }
+        return properties;
+    }
+
+    private void saveConfig(Properties properties) throws IOException {
+        try (OutputStream output = Files.newOutputStream(configFile())) {
+            properties.store(output, null);
         }
     }
 

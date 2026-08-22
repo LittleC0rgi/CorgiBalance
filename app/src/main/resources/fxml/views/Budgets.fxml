@@ -2,10 +2,10 @@
 
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.VBox?>
-<fx:root xmlns:fx="http://javafx.com/fxml/1"
-         type="javafx.scene.layout.VBox"
-         xmlns="http://javafx.com/javafx/25"
-         spacing="12">
+<VBox xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/25"
+      spacing="12"
+      fx:controller="com.corgibalance.controllers.views.BudgetsController">
     <Label text="Budgets" styleClass="title"/>
     <fx:include fx:id="BudgetTable" source="../components/tables/BudgetTable.fxml"/>
-</fx:root>
+</VBox>

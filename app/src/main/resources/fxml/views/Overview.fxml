@@ -8,9 +8,9 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
-<fx:root xmlns:fx="http://javafx.com/fxml/1"
-         type="javafx.scene.layout.VBox"
-         xmlns="http://javafx.com/javafx/25">
+<VBox xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/25"
+      fx:controller="com.corgibalance.controllers.views.OverviewController">
     <VBox spacing="12.0" VBox.vgrow="ALWAYS">
         <HBox alignment="CENTER_LEFT" spacing="12.0">
             <Label text="Overview" styleClass="title"/>
@@ -77,4 +77,4 @@
             <fx:include fx:id="RecentTransactionsTable" source="../components/tables/RecentTransactionsTable.fxml"/>
         </VBox>
     </VBox>
-</fx:root>
+</VBox>

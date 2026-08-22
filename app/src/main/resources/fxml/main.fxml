@@ -3,7 +3,6 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.StackPane?>
 <?import com.corgibalance.components.Sidebar?>
-<?import com.corgibalance.components.views.*?>
 <BorderPane xmlns:fx="http://javafx.com/fxml/1"
             xmlns="http://javafx.com/javafx/25"
             fx:controller="com.corgibalance.controllers.MainController"
@@ -15,13 +14,13 @@
 
     <center>
         <StackPane fx:id="contentArea" styleClass="content-area">
-            <OverviewView/>
-            <TransactionsView/>
-            <CalendarView/>
-            <AccountsView/>
-            <BudgetsView/>
-            <AnalyticsView/>
-            <SettingsView/>
+            <fx:include fx:id="overview" source="views/Overview.fxml"/>
+            <fx:include fx:id="transactions" source="views/Transactions.fxml"/>
+            <fx:include fx:id="calendar" source="views/Calendar.fxml"/>
+            <fx:include fx:id="accounts" source="views/Accounts.fxml"/>
+            <fx:include fx:id="budgets" source="views/Budgets.fxml"/>
+            <fx:include fx:id="analytics" source="views/Analytics.fxml"/>
+            <fx:include fx:id="settings" source="views/Settings.fxml"/>
         </StackPane>
     </center>
 </BorderPane>

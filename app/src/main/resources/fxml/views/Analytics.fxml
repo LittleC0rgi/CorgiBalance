@@ -2,8 +2,8 @@
 
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.VBox?>
-<fx:root xmlns:fx="http://javafx.com/fxml/1"
-         type="javafx.scene.layout.VBox"
-         xmlns="http://javafx.com/javafx/25">
+<VBox xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/25"
+      fx:controller="com.corgibalance.controllers.views.AnalyticsController">
     <Label text="Analytics" styleClass="title"/>
-</fx:root>
+</VBox>

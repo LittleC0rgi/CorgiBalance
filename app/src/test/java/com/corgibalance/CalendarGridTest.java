@@ -1,6 +1,6 @@
 package com.corgibalance;
 
-import com.corgibalance.components.views.CalendarView;
+import com.corgibalance.controllers.views.CalendarController;
 import org.junit.Test;
 
 import java.time.YearMonth;
@@ -11,9 +11,9 @@ public class CalendarGridTest {
 
     @Test
     public void firstColumnMatchesMondayBasedOffset() {
-        assertEquals(3, CalendarView.firstColumn(YearMonth.of(2026, 1)));
-        assertEquals(5, CalendarView.firstColumn(YearMonth.of(2026, 8)));
-        assertEquals(6, CalendarView.firstColumn(YearMonth.of(2026, 3)));
+        assertEquals(3, CalendarController.firstColumn(YearMonth.of(2026, 1)));
+        assertEquals(5, CalendarController.firstColumn(YearMonth.of(2026, 8)));
+        assertEquals(6, CalendarController.firstColumn(YearMonth.of(2026, 3)));
     }
 
     @Test

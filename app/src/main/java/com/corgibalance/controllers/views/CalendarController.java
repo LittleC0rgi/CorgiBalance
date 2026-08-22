@@ -1,4 +1,4 @@
-package com.corgibalance.components.views;
+package com.corgibalance.controllers.views;
 
 import com.corgibalance.components.HeroIcon;
 import com.corgibalance.components.dialogs.PlannedTransactionDialog;
@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class CalendarView extends View implements Refreshable {
+public class CalendarController implements Refreshable {
 
     private static final DateTimeFormatter MONTH_FORMAT =
             DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH);
@@ -60,10 +60,6 @@ public class CalendarView extends View implements Refreshable {
     private Map<LocalDate, List<RecurringTransaction>> recurringByDate;
     private List<PlannedTransaction> overduePlanned;
     private List<RecurringTransaction> overdueRecurring;
-
-    public CalendarView() {
-        super("Calendar", "/fxml/views/Calendar.fxml");
-    }
 
     public static int firstColumn(YearMonth month) {
         return month.atDay(1).getDayOfWeek().getValue() - 1;

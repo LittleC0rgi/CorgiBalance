@@ -1,4 +1,4 @@
-package com.corgibalance.components.views;
+package com.corgibalance.controllers.views;
 
 import com.corgibalance.components.HeroIcon;
 import com.corgibalance.controllers.tables.RecentTransactionsTableController;
@@ -50,7 +50,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class OverviewView extends View implements Refreshable {
+public class OverviewController implements Refreshable {
 
     private static final String BASE_CURRENCY_KEY = "overview.baseCurrencyId";
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
@@ -86,10 +86,6 @@ public class OverviewView extends View implements Refreshable {
     private SettingsRepository settingsRepository;
     @Setter
     private Consumer<String> navigationHandler;
-
-    public OverviewView() {
-        super("Overview", "/fxml/views/Overview.fxml");
-    }
 
     public static List<NearestPayment> nearestPayments(List<PlannedTransaction> planned, List<RecurringTransaction> recurring,
                                                        LocalDate today, int limit) {
@@ -338,7 +334,7 @@ public class OverviewView extends View implements Refreshable {
                 RecurringTransaction recurring = payment.recurring;
                 createTransaction(recurring.getAccountId(), recurring.getTagId(), recurring.getAmount(),
                         recurring.getDescription(), recurring.getTransactionType(), recurring.getNextDate());
-                LocalDate next = CalendarView.nextOccurrence(recurring.getNextDate(), recurring.getInterval());
+                LocalDate next = CalendarController.nextOccurrence(recurring.getNextDate(), recurring.getInterval());
                 if (recurring.getEndDate() != null && next.isAfter(recurring.getEndDate())) {
                     recurring.setActive(false);
                 } else {

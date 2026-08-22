@@ -1,4 +1,4 @@
-package com.corgibalance.components.views;
+package com.corgibalance.controllers.views;
 
 public interface Refreshable {
 

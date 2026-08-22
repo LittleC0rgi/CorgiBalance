@@ -4,10 +4,12 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<fx:root xmlns:fx="http://javafx.com/fxml/1"
-         type="javafx.scene.layout.VBox"
-         xmlns="http://javafx.com/javafx/25"
-         spacing="12">
+<VBox xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/25"
+      fx:id="root"
+      spacing="12"
+      fx:controller="com.corgibalance.controllers.views.SettingsController"
+>
 
     <Label text="Settings" styleClass="title"/>
 
@@ -35,4 +37,4 @@
         <Label text="Exchange rates" styleClass="card__label"/>
         <fx:include fx:id="ExchangeRateTable" source="../components/tables/ExchangeRateTable.fxml"/>
     </VBox>
-</fx:root>
+</VBox>

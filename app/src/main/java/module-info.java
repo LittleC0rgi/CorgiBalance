@@ -7,7 +7,6 @@ module javafx.demo {
 
     exports com.corgibalance;
     exports com.corgibalance.components;
-    exports com.corgibalance.components.views;
     exports com.corgibalance.components.dialogs;
     exports com.corgibalance.repositories;
     exports com.corgibalance.services;
@@ -16,10 +15,11 @@ module javafx.demo {
 
     opens com.corgibalance to javafx.fxml;
     opens com.corgibalance.components to javafx.fxml;
-    opens com.corgibalance.components.views to javafx.fxml;
     opens com.corgibalance.components.dialogs to javafx.fxml;
     exports com.corgibalance.controllers;
     opens com.corgibalance.controllers to javafx.fxml;
     exports com.corgibalance.controllers.tables;
     opens com.corgibalance.controllers.tables to javafx.fxml;
+    exports com.corgibalance.controllers.views;
+    opens com.corgibalance.controllers.views to javafx.fxml;
 }

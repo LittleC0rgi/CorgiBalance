@@ -1,4 +1,4 @@
-package com.corgibalance.components.views;
+package com.corgibalance.controllers.views;
 
 import com.corgibalance.components.dialogs.TransferDialog;
 import com.corgibalance.controllers.tables.TransactionTableController;
@@ -7,17 +7,13 @@ import com.corgibalance.services.CurrencyConverter;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 
-public class TransactionsView extends View implements Refreshable {
+public class TransactionsController implements Refreshable {
 
     @FXML
     private TransactionTableController TransactionTableController;
 
     @FXML
     private Button transferButton;
-
-    public TransactionsView() {
-        super("Transactions", "/fxml/views/Transactions.fxml");
-    }
 
     @Override
     public void onShow() {

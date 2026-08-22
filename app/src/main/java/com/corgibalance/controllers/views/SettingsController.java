@@ -1,28 +1,29 @@
-package com.corgibalance.components.views;
+package com.corgibalance.controllers.views;
 
+import com.corgibalance.services.Database;
+import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
-import com.corgibalance.services.Database;
 
 import java.io.File;
 import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Optional;
 
-public class SettingsView extends View {
+public class SettingsController {
 
-    public SettingsView() {
-        super("Settings", "/fxml/views/Settings.fxml");
-    }
+    @FXML
+    private VBox root;
 
     public void exportDatabase() {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Save database");
         chooser.setInitialFileName("corgibalance.db");
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("SQLite database", "*.db"));
-        File file = chooser.showSaveDialog(getScene().getWindow());
+        File file = chooser.showSaveDialog(root.getScene().getWindow());
         if (file == null) {
             return;
         }
@@ -38,7 +39,7 @@ public class SettingsView extends View {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Import database");
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("SQLite database", "*.db"));
-        File file = chooser.showOpenDialog(getScene().getWindow());
+        File file = chooser.showOpenDialog(root.getScene().getWindow());
         if (file == null) {
             return;
         }
@@ -64,7 +65,7 @@ public class SettingsView extends View {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Connect to database");
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("SQLite database", "*.db"));
-        File file = chooser.showOpenDialog(getScene().getWindow());
+        File file = chooser.showOpenDialog(root.getScene().getWindow());
         if (file == null) {
             return;
         }

@@ -8,10 +8,10 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
-<fx:root xmlns:fx="http://javafx.com/fxml/1"
-         type="javafx.scene.layout.VBox"
-         xmlns="http://javafx.com/javafx/25"
-         spacing="12">
+<VBox xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/25"
+      spacing="12"
+      fx:controller="com.corgibalance.controllers.views.CalendarController">
 
     <HBox alignment="CENTER_LEFT" spacing="12">
         <Label text="Calendar" styleClass="title"/>
@@ -63,4 +63,4 @@
     </GridPane>
 
     <VBox fx:id="overdueBox" spacing="4" styleClass="calendar__overdue" managed="false" visible="false"/>
-</fx:root>
+</VBox>

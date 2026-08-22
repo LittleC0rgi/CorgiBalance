@@ -1,16 +1,12 @@
-package com.corgibalance.components.views;
+package com.corgibalance.controllers.views;
 
 import com.corgibalance.controllers.tables.BudgetTableController;
 import javafx.fxml.FXML;
 
-public class BudgetsView extends View implements Refreshable {
+public class BudgetsController implements Refreshable {
 
     @FXML
     private BudgetTableController BudgetTableController;
-
-    public BudgetsView() {
-        super("Budgets", "/fxml/views/Budgets.fxml");
-    }
 
     @Override
     public void onShow() {

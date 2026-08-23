@@ -13,8 +13,9 @@ public class TagTableController extends BaseTableController<Tag, TagRepository> 
     private TableColumn<Tag, String> name;
     @FXML
     private TableColumn<Tag, String> color;
-    @FXML
-    private TableColumn<Tag, String> icon;
+
+//    @FXML
+//    private TableColumn<Tag, String> icon;
 
     public TagTableController() {
         super(new TagRepository());
@@ -30,9 +31,9 @@ public class TagTableController extends BaseTableController<Tag, TagRepository> 
         color.setCellFactory(_ -> new TextTableCell<>(Tag::getColor, null));
         color.setOnEditCommit(this::onColorCommitted);
 
-        icon.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getIcon()));
-        icon.setCellFactory(_ -> new TextTableCell<>(Tag::getIcon, null));
-        icon.setOnEditCommit(this::onIconCommitted);
+//        icon.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getIcon()));
+//        icon.setCellFactory(_ -> new TextTableCell<>(Tag::getIcon, null));
+//        icon.setOnEditCommit(this::onIconCommitted);
     }
 
     private void onNameCommitted(TableColumn.CellEditEvent<Tag, String> event) {

@@ -12,6 +12,6 @@
     <columns>
         <TableColumn fx:id="name" text="Name"/>
         <TableColumn fx:id="color" text="Color"/>
-        <TableColumn fx:id="icon" text="Icon"/>
+        <!--        <TableColumn fx:id="icon" text="Icon"/>-->
     </columns>
 </TableView>

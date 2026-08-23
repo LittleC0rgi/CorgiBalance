@@ -1,5 +1,6 @@
 package com.corgibalance.controllers.views;
 
+import com.corgibalance.App;
 import com.corgibalance.services.Database;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -53,9 +54,9 @@ public class SettingsController {
         }
         try {
             Database.getInstance().importFrom(file.toPath());
-            showInfo("Database imported",
-                    "Database imported from " + file.getAbsolutePath()
-                            + ". Restart the application to fully refresh all views.");
+            showInfo("Database imported", "Database imported from " + file.getAbsolutePath()
+                    + ". The application will restart now.");
+            App.restart();
         } catch (SQLException e) {
             showError("Failed to import database", e.getMessage());
         }
@@ -80,9 +81,9 @@ public class SettingsController {
         }
         try {
             Database.getInstance().connectTo(file.toPath());
-            showInfo("Database connected",
-                    "Connected to " + file.getAbsolutePath()
-                            + ". Restart the application to fully refresh all views.");
+            showInfo("Database connected", "Connected to " + file.getAbsolutePath()
+                    + ". The application will restart now.");
+            App.restart();
         } catch (SQLException e) {
             showError("Failed to connect database", e.getMessage());
         }

@@ -4,6 +4,7 @@ module javafx.demo {
     requires java.sql;
     requires org.xerial.sqlitejdbc;
     requires static lombok;
+    requires java.management;
 
     exports com.corgibalance;
     exports com.corgibalance.components;

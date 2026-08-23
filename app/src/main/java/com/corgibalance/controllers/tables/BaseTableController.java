@@ -75,6 +75,7 @@ public abstract class BaseTableController<T extends BaseModel, R extends CrudRep
             } catch (RuntimeException e) {
                 showError(e);
             }
+            table.refresh();
         }
     }
 

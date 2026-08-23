@@ -85,6 +85,8 @@ public class CurrencyTableController extends BaseTableController<Currency, Curre
     @Override
     protected Currency newPlaceholder() {
         Currency currency = new Currency();
+        currency.setName("");
+        currency.setSymbol("");
         currency.setMinorUnit(2);
         return currency;
     }

@@ -19,15 +19,25 @@ public class SelectTableCell<T extends BaseModel, V> extends TableCell<T, V> {
     private final ComboBox<V> comboBox = new ComboBox<>();
     private final Function<V, String> labelFor;
     private final Function<V, String> colorFor;
+    private final String noneLabel;
 
     public SelectTableCell(List<V> values, Function<V, String> labelFor) {
         this(values, labelFor, null);
     }
 
     public SelectTableCell(List<V> values, Function<V, String> labelFor, Function<V, String> colorFor) {
+        this(values, labelFor, colorFor, null);
+    }
+
+    public SelectTableCell(List<V> values, Function<V, String> labelFor, Function<V, String> colorFor,
+                           String noneLabel) {
         this.labelFor = labelFor;
         this.colorFor = colorFor;
+        this.noneLabel = noneLabel;
         ObservableList<V> items = FXCollections.observableArrayList(values);
+        if (noneLabel != null) {
+            items.add(0, null);
+        }
         comboBox.setItems(items);
         comboBox.getStyleClass().add("selector");
         comboBox.setCellFactory(_ -> selectListCell());
@@ -45,8 +55,11 @@ public class SelectTableCell<T extends BaseModel, V> extends TableCell<T, V> {
             @Override
             protected void updateItem(V value, boolean empty) {
                 super.updateItem(value, empty);
-                if (empty || value == null) {
+                if (empty) {
                     setText(null);
+                    setGraphic(null);
+                } else if (value == null) {
+                    setText(noneLabel);
                     setGraphic(null);
                 } else {
                     setText(labelFor.apply(value));
@@ -84,8 +97,13 @@ public class SelectTableCell<T extends BaseModel, V> extends TableCell<T, V> {
             setGraphic(null);
             getStyleClass().remove(PLACEHOLDER_STYLE_CLASS);
         } else {
-            setText(labelFor.apply(value));
-            setGraphic(circleFor(value));
+            if (value == null && noneLabel != null) {
+                setText(noneLabel);
+                setGraphic(null);
+            } else {
+                setText(labelFor.apply(value));
+                setGraphic(circleFor(value));
+            }
             if (item.getId() == null) {
                 if (!getStyleClass().contains(PLACEHOLDER_STYLE_CLASS)) {
                     getStyleClass().add(PLACEHOLDER_STYLE_CLASS);
@@ -126,7 +144,7 @@ public class SelectTableCell<T extends BaseModel, V> extends TableCell<T, V> {
             return;
         }
         V selected = comboBox.getValue();
-        if (selected == null) {
+        if (selected == null && noneLabel == null) {
             cancelEdit();
         } else {
             commitEdit(selected);

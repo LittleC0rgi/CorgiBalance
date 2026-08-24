@@ -106,6 +106,31 @@
     -fx-border-color: #F3A712;
 }
 
+.input--readonly {
+    -fx-background-color: #F5F5F6;
+    -fx-text-fill: #27293280;
+}
+
+.seg {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: #EFEFF2;
+    -fx-padding: 6 16;
+    -fx-font-size: 13px;
+    -fx-text-fill: #272932;
+    -fx-cursor: hand;
+}
+
+.seg:hover {
+    -fx-border-color: #272932;
+}
+
+.seg:selected {
+    -fx-background-color: #272932;
+    -fx-text-fill: white;
+}
+
 .selector {
     -fx-background-color: white;
     -fx-background-radius: 8;

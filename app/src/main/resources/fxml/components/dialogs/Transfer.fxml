@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.ButtonType?>
-<?import javafx.scene.control.CheckBox?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.DialogPane?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <fx:root xmlns:fx="http://javafx.com/fxml/1"
          type="javafx.scene.control.DialogPane"
          minWidth="350"
@@ -33,17 +28,29 @@
                 <TextField fx:id="amountField" maxWidth="Infinity" styleClass="input"/>
             </VBox>
 
-
             <VBox fx:id="rateRow" managed="false" visible="false" spacing="6">
-
-                <Label text="Or" styleClass="card__text"/>
+                <VBox>
+                    <Label text="Calculate by" styleClass="card__label"/>
+                    <fx:define>
+                        <ToggleGroup fx:id="calcGroup"/>
+                    </fx:define>
+                    <HBox spacing="6">
+                        <ToggleButton fx:id="byRateToggle" text="Rate" toggleGroup="$calcGroup"
+                                      selected="true" styleClass="seg"/>
+                        <ToggleButton fx:id="byAmountToggle" text="Received amount" toggleGroup="$calcGroup"
+                                      styleClass="seg"/>
+                    </HBox>
+                </VBox>
 
                 <VBox styleClass="card" spacing="6">
                     <Label text="Rate" styleClass="card__label"/>
                     <TextField fx:id="rateField" maxWidth="Infinity" styleClass="input"/>
                 </VBox>
 
-                <CheckBox fx:id="autoRateCheckBox" text="Disable auto-calculated rate"/>
+                <VBox styleClass="card" spacing="6">
+                    <Label text="Amount received" styleClass="card__label"/>
+                    <TextField fx:id="receivedField" maxWidth="Infinity" styleClass="input"/>
+                </VBox>
             </VBox>
 
             <VBox fx:id="errorBox" styleClass="card" managed="false" visible="false">

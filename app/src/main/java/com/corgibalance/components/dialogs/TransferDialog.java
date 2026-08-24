@@ -10,24 +10,28 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import lombok.Getter;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
 public class TransferDialog extends Dialog<Void> {
+
+    private static final int RATE_SCALE = 12;
 
     private final CurrencyConverter converter;
     private final List<Account> accounts;
@@ -43,7 +47,13 @@ public class TransferDialog extends Dialog<Void> {
     @FXML
     private TextField rateField;
     @FXML
-    private CheckBox autoRateCheckBox;
+    private TextField receivedField;
+    @FXML
+    private ToggleButton byRateToggle;
+    @FXML
+    private ToggleButton byAmountToggle;
+    @FXML
+    private ToggleGroup calcGroup;
     @FXML
     private VBox rateRow;
     @FXML
@@ -57,6 +67,7 @@ public class TransferDialog extends Dialog<Void> {
 
     private final CurrencyFormatter formatter = new CurrencyFormatter();
     private final AccountRepository accountRepository = new AccountRepository();
+    private boolean updating;
 
     public TransferDialog(List<Account> accounts, CurrencyConverter converter) {
         this.accounts = accounts;
@@ -122,14 +133,94 @@ public class TransferDialog extends Dialog<Void> {
         Runnable updateRateRow = () -> {
             boolean different = differentCurrency(fromCombo.getValue(), toCombo.getValue());
             showRow(rateRow, different);
-            if (different && !autoRateCheckBox.isSelected()) {
+            if (different && byRateToggle.isSelected()) {
                 converter.rate(fromCombo.getValue().getCurrencyId(), toCombo.getValue().getCurrencyId())
                         .ifPresent(rate -> rateField.setText(rate.toPlainString()));
             }
         };
         fromCombo.valueProperty().addListener((_, _, _) -> updateRateRow.run());
         toCombo.valueProperty().addListener((_, _, _) -> updateRateRow.run());
+        fromCombo.valueProperty().addListener((_, _, _) -> updateCalculated());
+        toCombo.valueProperty().addListener((_, _, _) -> updateCalculated());
+        amountField.textProperty().addListener((_, _, _) -> updateCalculated());
+        rateField.textProperty().addListener((_, _, _) -> updateCalculated());
+        receivedField.textProperty().addListener((_, _, _) -> updateCalculated());
+        calcGroup.selectedToggleProperty().addListener((_, _, _) -> applyCalcMode());
         updateRateRow.run();
+        applyCalcMode();
+    }
+
+    private void applyCalcMode() {
+        boolean byRate = byRateToggle.isSelected();
+        rateField.setEditable(byRate);
+        receivedField.setEditable(!byRate);
+        rateField.getStyleClass().remove("input--readonly");
+        receivedField.getStyleClass().remove("input--readonly");
+        (byRate ? receivedField : rateField).getStyleClass().add("input--readonly");
+        updateCalculated();
+    }
+
+    private void updateCalculated() {
+        if (updating) {
+            return;
+        }
+        Account from = fromCombo.getValue();
+        Account to = toCombo.getValue();
+        updating = true;
+        try {
+            if (!differentCurrency(from, to)) {
+                if (byRateToggle.isSelected()) {
+                    receivedField.clear();
+                } else {
+                    rateField.clear();
+                }
+                return;
+            }
+            if (byRateToggle.isSelected()) {
+                fillReceived(from, to);
+            } else {
+                fillRate(from, to);
+            }
+        } finally {
+            updating = false;
+        }
+    }
+
+    private void fillReceived(Account from, Account to) {
+        try {
+            BigDecimal amount = formatter.parse(amountField.getText());
+            BigDecimal rate = formatter.parse(rateField.getText());
+            if (amount.signum() > 0 && rate.signum() > 0) {
+                long sourceMinor = formatter.toMinorUnits(amount, from.getCurrencyId());
+                long targetMinor = rate.multiply(BigDecimal.valueOf(sourceMinor))
+                        .setScale(0, RoundingMode.HALF_UP)
+                        .longValueExact();
+                receivedField.setText(formatter.toPlain(targetMinor, to.getCurrencyId()));
+                return;
+            }
+        } catch (NumberFormatException | ArithmeticException ignored) {
+        }
+        receivedField.clear();
+    }
+
+    private void fillRate(Account from, Account to) {
+        try {
+            BigDecimal amount = formatter.parse(amountField.getText());
+            BigDecimal received = formatter.parse(receivedField.getText());
+            if (amount.signum() > 0 && received.signum() > 0) {
+                long sourceMinor = formatter.toMinorUnits(amount, from.getCurrencyId());
+                if (sourceMinor == 0) {
+                    return;
+                }
+                long targetMinor = formatter.toMinorUnits(received, to.getCurrencyId());
+                BigDecimal rate = BigDecimal.valueOf(targetMinor)
+                        .divide(BigDecimal.valueOf(sourceMinor), RATE_SCALE, RoundingMode.HALF_UP);
+                rateField.setText(rate.toPlainString());
+                return;
+            }
+        } catch (NumberFormatException | ArithmeticException ignored) {
+        }
+        rateField.clear();
     }
 
     private void configureButtons() {
@@ -175,9 +266,23 @@ public class TransferDialog extends Dialog<Void> {
         }
         BigDecimal rate = null;
         if (differentCurrency(from, to)) {
-            rate = formatter.parse(rateField.getText());
-            if (rate.signum() <= 0) {
-                throw new IllegalArgumentException("Rate must be positive.");
+            if (byRateToggle.isSelected()) {
+                rate = formatter.parse(rateField.getText());
+                if (rate.signum() <= 0) {
+                    throw new IllegalArgumentException("Rate must be positive.");
+                }
+            } else {
+                BigDecimal received = formatter.parse(receivedField.getText());
+                if (received.signum() <= 0) {
+                    throw new IllegalArgumentException("Amount received must be positive.");
+                }
+                long sourceMinor = formatter.toMinorUnits(amount, from.getCurrencyId());
+                if (sourceMinor == 0) {
+                    throw new IllegalArgumentException("Rate cannot be calculated.");
+                }
+                long targetMinor = formatter.toMinorUnits(received, to.getCurrencyId());
+                rate = BigDecimal.valueOf(targetMinor)
+                        .divide(BigDecimal.valueOf(sourceMinor), RATE_SCALE, RoundingMode.HALF_UP);
             }
         }
         long amountMinor = formatter.toMinorUnits(amount, from.getCurrencyId());

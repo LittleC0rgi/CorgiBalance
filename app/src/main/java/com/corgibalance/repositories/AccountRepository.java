@@ -122,7 +122,8 @@ public class AccountRepository implements CrudRepository<Account> {
         account.setId(resultSet.getLong("id"));
         account.setName(resultSet.getString("name"));
         account.setInitialBalance(resultSet.getLong("initial_balance"));
-        account.setCurrencyId(resultSet.getObject("currency_id", Long.class));
+        long currencyId = resultSet.getLong("currency_id");
+        account.setCurrencyId(resultSet.wasNull() ? null : currencyId);
         account.setCreatedAt(toLocalDateTime(resultSet.getTimestamp("created_at")));
         account.setUpdatedAt(toLocalDateTime(resultSet.getTimestamp("updated_at")));
         return account;

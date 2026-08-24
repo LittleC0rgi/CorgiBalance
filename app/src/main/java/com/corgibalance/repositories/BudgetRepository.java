@@ -105,7 +105,8 @@ public class BudgetRepository implements CrudRepository<Budget> {
         Budget budget = new Budget();
         budget.setId(resultSet.getLong("id"));
         budget.setName(resultSet.getString("name"));
-        budget.setTagId(resultSet.getObject("tag_id", Long.class));
+        long tagId = resultSet.getLong("tag_id");
+        budget.setTagId(resultSet.wasNull() ? null : tagId);
         budget.setPlannedAmount(resultSet.getLong("planned_amount"));
         budget.setStartDate(toLocalDate(resultSet.getString("start_date")));
         budget.setEndDate(toLocalDate(resultSet.getString("end_date")));

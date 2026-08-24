@@ -315,12 +315,12 @@ public class OverviewController implements Refreshable {
     private Circle tagDot(Long tagId, Map<Long, String> tagColors) {
         String color = tagId == null ? null : tagColors.get(tagId);
         if (color == null) {
-            return null;
+            return new Circle(4, Color.TRANSPARENT);
         }
         try {
             return new Circle(4, Color.web(color));
         } catch (IllegalArgumentException e) {
-            return null;
+            return new Circle(4, Color.TRANSPARENT);
         }
     }
 

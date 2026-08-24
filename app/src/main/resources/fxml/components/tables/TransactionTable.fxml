@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
+<?import com.corgibalance.components.PaginationBar?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.VBox?>
-<TableView xmlns:fx="http://javafx.com/fxml" fx:id="table"
-           styleClass="table"
-           VBox.vgrow="ALWAYS"
-           xmlns="http://javafx.com/javafx"
-           fx:controller="com.corgibalance.controllers.tables.TransactionTableController"
->
-    <columns>
-        <TableColumn fx:id="date" text="Date"/>
-        <TableColumn fx:id="account" text="Account"/>
-        <TableColumn fx:id="tag" text="Tag"/>
-        <TableColumn fx:id="type" text="Type"/>
-        <TableColumn fx:id="amount" text="Amount"/>
-        <TableColumn fx:id="description" text="Description"/>
-    </columns>
-</TableView>
+<VBox xmlns:fx="http://javafx.com/fxml/1"
+      VBox.vgrow="ALWAYS"
+      xmlns="http://javafx.com/javafx/25"
+      fx:controller="com.corgibalance.controllers.tables.TransactionTableController">
+
+    <TableView fx:id="table"
+               styleClass="table, table--paged"
+               VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="date" text="Date"/>
+            <TableColumn fx:id="account" text="Account"/>
+            <TableColumn fx:id="tag" text="Tag"/>
+            <TableColumn fx:id="type" text="Type"/>
+            <TableColumn fx:id="amount" text="Amount"/>
+            <TableColumn fx:id="description" text="Description"/>
+        </columns>
+    </TableView>
+    <PaginationBar fx:id="paginationBar"/>
+</VBox>

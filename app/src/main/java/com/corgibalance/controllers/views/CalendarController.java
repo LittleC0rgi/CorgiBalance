@@ -348,12 +348,12 @@ public class CalendarController implements Refreshable {
     private Circle tagDot(Long tagId) {
         String color = tagId == null ? null : tagColors.get(tagId);
         if (color == null) {
-            return null;
+            return new Circle(5, Color.TRANSPARENT);
         }
         try {
             return new Circle(5, Color.web(color));
         } catch (IllegalArgumentException e) {
-            return null;
+            return new Circle(5, Color.TRANSPARENT);
         }
     }
 

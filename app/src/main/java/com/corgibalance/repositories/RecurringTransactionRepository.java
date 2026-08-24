@@ -138,7 +138,8 @@ public class RecurringTransactionRepository {
         RecurringTransaction recurringTransaction = new RecurringTransaction();
         recurringTransaction.setId(resultSet.getLong("id"));
         recurringTransaction.setAccountId(resultSet.getLong("account_id"));
-        recurringTransaction.setTagId(resultSet.getObject("tag_id", Long.class));
+        long tagId = resultSet.getLong("tag_id");
+        recurringTransaction.setTagId(resultSet.wasNull() ? null : tagId);
         recurringTransaction.setAmount(resultSet.getLong("amount"));
         recurringTransaction.setDescription(resultSet.getString("description"));
         recurringTransaction.setTransactionType(TransactionType.valueOf(resultSet.getString("transaction_type")));

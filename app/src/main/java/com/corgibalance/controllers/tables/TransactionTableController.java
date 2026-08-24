@@ -20,7 +20,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class TransactionTableController extends BaseTableController<Transaction, TransactionRepository> {
+public class TransactionTableController extends PagedTableController<Transaction, TransactionRepository> {
 
     private List<Account> accounts;
     private List<Tag> tags;

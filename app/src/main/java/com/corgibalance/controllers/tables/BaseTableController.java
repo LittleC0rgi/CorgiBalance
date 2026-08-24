@@ -78,7 +78,7 @@ public abstract class BaseTableController<T extends BaseModel, R extends CrudRep
         }
     }
 
-    private void showError(RuntimeException e) {
+    protected void showError(RuntimeException e) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setHeaderText(null);
         alert.setContentText(e.getMessage());
@@ -107,7 +107,11 @@ public abstract class BaseTableController<T extends BaseModel, R extends CrudRep
         if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
             repository.delete(selected);
             table.getItems().remove(selected);
+            onItemDeleted(selected);
         }
+    }
+
+    protected void onItemDeleted(T item) {
     }
 
     public void setItems(ObservableList<T> items) {

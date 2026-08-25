@@ -1,13 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.Hyperlink?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <VBox xmlns:fx="http://javafx.com/fxml/1"
       xmlns="http://javafx.com/javafx/25"
       fx:controller="com.corgibalance.controllers.views.OverviewController">
@@ -21,36 +16,33 @@
         </HBox>
         <GridPane styleClass="grid">
             <columnConstraints>
-                <ColumnConstraints percentWidth="33.33" hgrow="ALWAYS"/>
-                <ColumnConstraints percentWidth="33.33" hgrow="ALWAYS"/>
-                <ColumnConstraints percentWidth="33.33" hgrow="ALWAYS"/>
+                <ColumnConstraints percentWidth="25" hgrow="ALWAYS"/>
+                <ColumnConstraints percentWidth="25" hgrow="ALWAYS"/>
+                <ColumnConstraints percentWidth="25" hgrow="ALWAYS"/>
+                <ColumnConstraints percentWidth="25" hgrow="ALWAYS"/>
             </columnConstraints>
+            <rowConstraints>
+                <RowConstraints/>
+                <RowConstraints vgrow="ALWAYS"/>
+            </rowConstraints>
 
-            <VBox styleClass="card, card--active" spacing="6.0" GridPane.columnIndex="0">
+            <VBox styleClass="card, card--active" spacing="6.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
                 <HBox alignment="CENTER_LEFT" spacing="8.0">
                     <Label fx:id="balanceValue" styleClass="card__value, card__value--active"/>
                     <ComboBox fx:id="baseCurrencyCombo" styleClass="overview__combo, card__value--active"/>
                 </HBox>
                 <Label text="Balance" styleClass="card__label, card__value--active"/>
             </VBox>
-            <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="1">
+            <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
                 <Label fx:id="incomeValue" styleClass="card__value, card__value--income"/>
                 <Label text="Income" styleClass="card__label"/>
             </VBox>
-            <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="2">
+            <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="2" GridPane.rowIndex="0">
                 <Label fx:id="expenseValue" styleClass="card__value, card__value--expense"/>
                 <Label text="Expenses" styleClass="card__label"/>
             </VBox>
-        </GridPane>
 
-        <GridPane styleClass="grid">
-            <columnConstraints>
-                <ColumnConstraints percentWidth="33.33" hgrow="ALWAYS"/>
-                <ColumnConstraints percentWidth="33.33" hgrow="ALWAYS"/>
-                <ColumnConstraints percentWidth="33.33" hgrow="ALWAYS"/>
-            </columnConstraints>
-
-            <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="0">
+            <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="0" GridPane.rowIndex="1">
                 <HBox>
                     <Label text="Accounts" styleClass="card__label"/>
                     <Region HBox.hgrow="ALWAYS"/>
@@ -58,7 +50,7 @@
                 </HBox>
                 <VBox fx:id="accountList" spacing="4.0"/>
             </VBox>
-            <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="1">
+            <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                 <HBox>
                     <Label text="Budgets" styleClass="card__label"/>
                     <Region HBox.hgrow="ALWAYS"/>
@@ -66,9 +58,15 @@
                 </HBox>
                 <VBox fx:id="budgetList" spacing="10.0"/>
             </VBox>
-            <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="2">
+            <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
                 <Label text="Nearest payments" styleClass="card__label"/>
                 <VBox fx:id="nearestList" spacing="3.0"/>
+            </VBox>
+
+            <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="3" GridPane.rowIndex="0"
+                  GridPane.rowSpan="2" GridPane.vgrow="ALWAYS">
+                <Label text="Expenses by tags" styleClass="card__label"/>
+                <PieChart fx:id="tagExpenseChart" styleClass="tag-chart" VBox.vgrow="ALWAYS" legendVisible="false"/>
             </VBox>
         </GridPane>
 

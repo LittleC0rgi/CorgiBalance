@@ -152,3 +152,12 @@
     -fx-background-radius: 4px;
 }
 
+.tag-chart {
+    -fx-background-color: transparent;
+}
+
+.tag-chart .chart-pie-label {
+    -fx-font-size: 11px;
+    -fx-fill: #272932;
+}
+

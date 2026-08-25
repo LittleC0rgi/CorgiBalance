@@ -18,8 +18,11 @@ import com.corgibalance.repositories.SettingsRepository;
 import com.corgibalance.repositories.TagRepository;
 import com.corgibalance.repositories.TransactionRepository;
 import com.corgibalance.services.CurrencyConverter;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.chart.PieChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -77,6 +80,8 @@ public class OverviewController implements Refreshable {
     private ComboBox<Integer> monthCombo;
     @FXML
     private ComboBox<Integer> yearCombo;
+    @FXML
+    private PieChart tagExpenseChart;
     @FXML
     private RecentTransactionsTableController RecentTransactionsTableController;
     private CurrencyConverter converter;
@@ -246,6 +251,7 @@ public class OverviewController implements Refreshable {
         }
 
         refreshNearestPayments();
+        refreshTagExpenses(year, month, baseCurrencyId);
     }
 
     private void refreshNearestPayments() {
@@ -267,6 +273,47 @@ public class OverviewController implements Refreshable {
         for (NearestPayment payment : payments) {
             nearestList.getChildren().add(paymentRow(payment, today, accountCurrencies, tagColors));
         }
+    }
+
+    private void refreshTagExpenses(int year, int month, Long baseCurrencyId) {
+        Map<Long, Tag> tagsById = new HashMap<>();
+        for (Tag tag : new TagRepository().findAll()) {
+            tagsById.put(tag.getId(), tag);
+        }
+        Map<Long, Map<Long, Long>> totals = transactionRepository.sumByTag(TransactionType.EXPENSE, year, month);
+
+        List<TagTotal> tagTotals = new ArrayList<>();
+        for (Map.Entry<Long, Map<Long, Long>> entry : totals.entrySet()) {
+            Tag tag = tagsById.get(entry.getKey());
+            if (tag == null) {
+                continue;
+            }
+            long total = 0;
+            for (Map.Entry<Long, Long> currencyTotal : entry.getValue().entrySet()) {
+                total += converter.convert(Math.abs(currencyTotal.getValue()), currencyTotal.getKey(), baseCurrencyId);
+            }
+            if (total > 0) {
+                tagTotals.add(new TagTotal(tag, total));
+            }
+        }
+        tagTotals.sort(Comparator.comparingLong(TagTotal::total).reversed());
+
+        List<PieChart.Data> slices = new ArrayList<>();
+        for (TagTotal tagTotal : tagTotals) {
+            PieChart.Data slice = new PieChart.Data(tagTotal.tag().getName(), tagTotal.total());
+            if (tagTotal.tag().getColor() != null) {
+                slice.nodeProperty().addListener((obs, oldNode, newNode) -> {
+                    if (newNode != null) {
+                        newNode.setStyle("-fx-pie-color: " + tagTotal.tag().getColor() + ";");
+                    }
+                });
+            }
+            slices.add(slice);
+        }
+        tagExpenseChart.setData(FXCollections.observableArrayList(slices));
+    }
+
+    private record TagTotal(Tag tag, long total) {
     }
 
     private HBox paymentRow(NearestPayment payment, LocalDate today, Map<Long, Long> accountCurrencies,

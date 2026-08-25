@@ -63,7 +63,16 @@ public class TransactionTableController extends PagedTableController<Transaction
         account.setOnEditCommit(this::onAccountCommitted);
 
         tag.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getTagId()));
-        tag.setCellFactory(_ -> new SelectTableCell<>(tagIds(), this::tagName, this::tagColor, ""));
+        tag.setCellFactory(_ -> new SelectTableCell<>(tagIds(), this::tagName, this::tagColor, "") {
+            @Override
+            public void startEdit() {
+                Transaction transaction = getTableRow() == null ? null : getTableRow().getItem();
+                if (transaction != null && transaction.getTransactionType() == TransactionType.TRANSFER) {
+                    return;
+                }
+                super.startEdit();
+            }
+        });
         tag.setOnEditCommit(this::onTagCommitted);
 
         type.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getTransactionType()));

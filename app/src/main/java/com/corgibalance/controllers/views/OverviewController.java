@@ -2,39 +2,16 @@ package com.corgibalance.controllers.views;
 
 import com.corgibalance.components.HeroIcon;
 import com.corgibalance.controllers.tables.RecentTransactionsTableController;
-import com.corgibalance.models.Account;
-import com.corgibalance.models.Budget;
+import com.corgibalance.models.*;
 import com.corgibalance.models.Currency;
-import com.corgibalance.models.PlannedTransaction;
-import com.corgibalance.models.RecurringTransaction;
-import com.corgibalance.models.Tag;
-import com.corgibalance.models.Transaction;
-import com.corgibalance.models.TransactionType;
-import com.corgibalance.repositories.AccountRepository;
-import com.corgibalance.repositories.BudgetRepository;
-import com.corgibalance.repositories.PlannedTransactionRepository;
-import com.corgibalance.repositories.RecurringTransactionRepository;
-import com.corgibalance.repositories.SettingsRepository;
-import com.corgibalance.repositories.TagRepository;
-import com.corgibalance.repositories.TransactionRepository;
+import com.corgibalance.repositories.*;
 import com.corgibalance.services.CurrencyConverter;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.chart.PieChart;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.Tooltip;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.util.Callback;
@@ -44,13 +21,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class OverviewController implements Refreshable {
@@ -313,9 +284,6 @@ public class OverviewController implements Refreshable {
         tagExpenseChart.setData(FXCollections.observableArrayList(slices));
     }
 
-    private record TagTotal(Tag tag, long total) {
-    }
-
     private HBox paymentRow(NearestPayment payment, LocalDate today, Map<Long, Long> accountCurrencies,
                             Map<Long, String> tagColors) {
         boolean overdue = payment.date().isBefore(today);
@@ -330,8 +298,12 @@ public class OverviewController implements Refreshable {
         description.getStyleClass().add("nearest__desc");
         description.setMaxWidth(Double.MAX_VALUE);
 
-        Label date = new Label(payment.date().format(DATE_FORMAT));
+        Label date = new Label(String.valueOf(payment.date().getDayOfMonth()));
         date.getStyleClass().add("nearest__date");
+
+        StackPane dateCard = new StackPane(date);
+        dateCard.getStyleClass().add("nearest__date_card");
+        Tooltip.install(dateCard, new Tooltip(payment.date().format(DATE_FORMAT)));
 
         Label amount = new Label(converter.format(payment.amount(), accountCurrencies.get(payment.accountId())));
         amount.getStyleClass().add("nearest__amount");
@@ -340,7 +312,7 @@ public class OverviewController implements Refreshable {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        HBox row = new HBox(date, tagDot(payment.tagId(), tagColors), description, spacer, amount, confirm, deleteButton(payment));
+        HBox row = new HBox(dateCard, tagDot(payment.tagId(), tagColors), description, spacer, amount, confirm, deleteButton(payment));
         row.setAlignment(Pos.CENTER_LEFT);
         row.setSpacing(6);
         row.getStyleClass().add("nearest__row");
@@ -508,6 +480,9 @@ public class OverviewController implements Refreshable {
                 setText(currency == null ? "" : currency.getCode());
             }
         };
+    }
+
+    private record TagTotal(Tag tag, long total) {
     }
 
     public record NearestPayment(PlannedTransaction planned, RecurringTransaction recurring) {

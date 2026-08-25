@@ -47,8 +47,16 @@
 }
 
 .nearest__date {
-    -fx-font-size: 11px;
-    -fx-text-fill: #8B8D99;
+    -fx-font-size: 15px;
+    -fx-text-fill: #272932;
+}
+
+.nearest__date_card {
+    -fx-background-color: white;
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-padding: 8px;
+    -fx-border-color: #8B8D99;
 }
 
 .nearest__desc {

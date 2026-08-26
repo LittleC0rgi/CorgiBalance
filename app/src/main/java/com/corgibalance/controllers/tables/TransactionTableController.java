@@ -12,6 +12,7 @@ import com.corgibalance.models.TransactionType;
 import com.corgibalance.repositories.AccountRepository;
 import com.corgibalance.repositories.TagRepository;
 import com.corgibalance.repositories.TransactionRepository;
+import com.corgibalance.services.CurrencyFormatter;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -25,6 +26,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
@@ -36,12 +38,15 @@ public class TransactionTableController extends PagedTableController<Transaction
     private List<Account> accounts;
     private List<Tag> tags;
     private LocalDate lastEnteredDate;
+    private final CurrencyFormatter currencyFormatter = new CurrencyFormatter();
 
     private Long accountFilter;
     private Long tagFilter;
     private TransactionType typeFilter;
     private LocalDate dateFrom;
     private LocalDate dateTo;
+    private BigDecimal amountMin;
+    private BigDecimal amountMax;
     private String descriptionFilter;
 
     @FXML
@@ -133,6 +138,7 @@ public class TransactionTableController extends PagedTableController<Transaction
         attachChoiceFilter(tag, tagIds(), this::tagName, "All tags", v -> tagFilter = v);
         attachChoiceFilter(type, List.of(TransactionType.INCOME, TransactionType.EXPENSE, TransactionType.TRANSFER),
                 this::typeName, "All types", v -> typeFilter = v);
+        attachAmountFilter(amount);
         attachDescriptionFilter(description);
     }
 
@@ -158,6 +164,39 @@ public class TransactionTableController extends PagedTableController<Transaction
             to.setValue(null);
         });
         installHeader(column, menu);
+    }
+
+    private void attachAmountFilter(TableColumn<?, ?> column) {
+        TextField minField = new TextField();
+        minField.setPromptText("Min");
+        minField.getStyleClass().add("input");
+        minField.setMaxWidth(Double.MAX_VALUE);
+        TextField maxField = new TextField();
+        maxField.setPromptText("Max");
+        maxField.getStyleClass().add("input");
+        maxField.setMaxWidth(Double.MAX_VALUE);
+
+        FilterMenu menu = new FilterMenu(new VBox(6, minField, maxField));
+        Runnable apply = () -> {
+            amountMin = parseAmountOrNull(minField.getText());
+            amountMax = parseAmountOrNull(maxField.getText());
+            updateFilter();
+            menu.setActive(amountMin != null || amountMax != null);
+        };
+        minField.textProperty().addListener((_, _, _) -> apply.run());
+        maxField.textProperty().addListener((_, _, _) -> apply.run());
+        installHeader(column, menu);
+    }
+
+    private BigDecimal parseAmountOrNull(String text) {
+        if (text == null || text.isBlank()) {
+            return null;
+        }
+        try {
+            return currencyFormatter.parse(text);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     private <V> void attachChoiceFilter(TableColumn<?, ?> column, List<V> values, Function<V, String> labelFor,
@@ -240,6 +279,20 @@ public class TransactionTableController extends PagedTableController<Transaction
         if (descriptionFilter != null && !descriptionFilter.isBlank()) {
             String description = transaction.getDescription() == null ? "" : transaction.getDescription();
             if (!description.toLowerCase().contains(descriptionFilter.toLowerCase())) {
+                return false;
+            }
+        }
+        long amount = transaction.getAmount();
+        if (amountMin != null || amountMax != null) {
+            Long currencyId = currencyIdOf(transaction);
+            int minorUnit = currencyFormatter.minorUnit(currencyId);
+            BigDecimal amountUnits = minorUnit <= 0
+                    ? BigDecimal.valueOf(amount)
+                    : BigDecimal.valueOf(amount).movePointLeft(minorUnit);
+            if (amountMin != null && amountUnits.compareTo(amountMin) < 0) {
+                return false;
+            }
+            if (amountMax != null && amountUnits.compareTo(amountMax) > 0) {
                 return false;
             }
         }

@@ -9,8 +9,13 @@ import com.corgibalance.services.CurrencyConverter;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DataFormat;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -30,6 +35,7 @@ public class OverviewController implements Refreshable {
     private static final String SHOW_EXPENSES_BY_TAG_KEY = "overview.showExpensesByTag";
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     private static final int NEAREST_LIMIT = 5;
+    private static final DataFormat ACCOUNT_ID_DATA = new DataFormat("application/x-corgibalance-account-id");
     @FXML
     private Label balanceValue;
     @FXML
@@ -62,6 +68,7 @@ public class OverviewController implements Refreshable {
     private RecentTransactionsTableController RecentTransactionsTableController;
     private CurrencyConverter converter;
     private AccountRepository accountRepository;
+    private AccountFolderRepository accountFolderRepository;
     private TransactionRepository transactionRepository;
     private BudgetRepository budgetRepository;
     private SettingsRepository settingsRepository;
@@ -88,6 +95,7 @@ public class OverviewController implements Refreshable {
     private void initialize() {
         converter = new CurrencyConverter();
         accountRepository = new AccountRepository();
+        accountFolderRepository = new AccountFolderRepository();
         transactionRepository = new TransactionRepository();
         budgetRepository = new BudgetRepository();
         settingsRepository = new SettingsRepository();
@@ -203,18 +211,7 @@ public class OverviewController implements Refreshable {
         toggleColor(incomeValue, "card__value--income", income == 0);
         toggleColor(expenseValue, "card__value--expense", expense == 0);
 
-        accountList.getChildren().clear();
-        for (Account account : accountRepository.findAll()) {
-            long balance = accountRepository.currentBalance(account.getId());
-            Label name = new Label(account.getName());
-            name.getStyleClass().add("card__text");
-            Label amount = new Label(converter.format(balance, account.getCurrencyId()));
-            amount.getStyleClass().add("card__text");
-            Region spacer = new Region();
-            HBox.setHgrow(spacer, Priority.ALWAYS);
-            HBox row = new HBox(name, spacer, amount);
-            accountList.getChildren().add(row);
-        }
+        renderAccountList();
 
         budgetList.getChildren().clear();
         LocalDate from = LocalDate.of(year, month, 1);
@@ -253,6 +250,156 @@ public class OverviewController implements Refreshable {
             col3.setHgrow(Priority.NEVER);
             col3.setMaxWidth(0);
             col3.setMinWidth(0);
+        }
+    }
+
+    private void renderAccountList() {
+        accountList.getChildren().clear();
+        List<Account> accounts = accountRepository.findAll();
+        List<AccountFolder> folders = accountFolderRepository.findAll();
+        Set<Long> folderIds = folders.stream().map(AccountFolder::getId).collect(java.util.stream.Collectors.toSet());
+        for (AccountFolder folder : folders) {
+            List<Account> inFolder = accounts.stream()
+                    .filter(account -> folder.getId().equals(account.getFolderId()))
+                    .toList();
+            accountList.getChildren().add(folderHeader(folder, inFolder));
+            for (Account account : inFolder) {
+                accountList.getChildren().add(accountRow(account));
+            }
+        }
+        List<Account> unassigned = accounts.stream()
+                .filter(account -> account.getFolderId() == null || !folderIds.contains(account.getFolderId()))
+                .toList();
+        accountList.getChildren().add(unassignedHeader());
+        for (Account account : unassigned) {
+            accountList.getChildren().add(accountRow(account));
+        }
+    }
+
+    private Node folderHeader(AccountFolder folder, List<Account> accounts) {
+        Long baseCurrencyId = baseCurrencyCombo.getValue();
+        long total = 0;
+        for (Account account : accounts) {
+            long balance = accountRepository.currentBalance(account.getId());
+            total += converter.convert(balance, account.getCurrencyId(), baseCurrencyId);
+        }
+
+        HeroIcon icon = new HeroIcon(HeroIcon.Icon.FOLDER);
+        icon.getStyleClass().add("account-folder__icon");
+        Label name = new Label(folder.getName());
+        name.getStyleClass().add("account-folder__name");
+        Label amount = new Label(converter.format(total, baseCurrencyId));
+        amount.getStyleClass().add("account-folder__amount");
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox header = new HBox(icon, name, spacer, amount);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setSpacing(6);
+        header.getStyleClass().add("account-folder");
+        dropTarget(header, folder.getId());
+        return header;
+    }
+
+    private Node unassignedHeader() {
+        Label name = new Label("No folder");
+        name.getStyleClass().add("account-folder__name");
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox header = new HBox(name, spacer);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setSpacing(6);
+        header.getStyleClass().addAll("account-folder", "account-folder--muted");
+        dropTarget(header, null);
+        return header;
+    }
+
+    private Node accountRow(Account account) {
+        long balance = accountRepository.currentBalance(account.getId());
+        Label name = new Label(account.getName());
+        name.getStyleClass().add("card__text");
+        Label amount = new Label(converter.format(balance, account.getCurrencyId()));
+        amount.getStyleClass().add("card__text");
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox row = new HBox(name, spacer, amount);
+        row.getStyleClass().add("account-row");
+        dragSource(row, account);
+        return row;
+    }
+
+    private void dragSource(Node node, Account account) {
+        node.setOnDragDetected(event -> {
+            Dragboard dragboard = node.startDragAndDrop(TransferMode.MOVE);
+            ClipboardContent content = new ClipboardContent();
+            content.put(ACCOUNT_ID_DATA, String.valueOf(account.getId()));
+            dragboard.setContent(content);
+            dragboard.setDragView(node.snapshot(null, null));
+            event.consume();
+        });
+    }
+
+    private void dropTarget(Node node, Long folderId) {
+        node.setOnDragOver(event -> {
+            if (event.getGestureSource() != node && event.getDragboard().hasContent(ACCOUNT_ID_DATA)) {
+                event.acceptTransferModes(TransferMode.MOVE);
+                node.getStyleClass().add("account-folder--drag-over");
+            }
+            event.consume();
+        });
+        node.setOnDragExited(event -> node.getStyleClass().remove("account-folder--drag-over"));
+        node.setOnDragDropped(event -> {
+            Dragboard dragboard = event.getDragboard();
+            boolean success = false;
+            if (dragboard.hasContent(ACCOUNT_ID_DATA)) {
+                long accountId = Long.parseLong((String) dragboard.getContent(ACCOUNT_ID_DATA));
+                moveAccountToFolder(accountId, folderId);
+                success = true;
+            }
+            node.getStyleClass().remove("account-folder--drag-over");
+            event.setDropCompleted(success);
+            event.consume();
+        });
+    }
+
+    private void moveAccountToFolder(long accountId, Long folderId) {
+        try {
+            for (Account account : accountRepository.findAll()) {
+                if (account.getId() != null && account.getId() == accountId) {
+                    account.setFolderId(folderId);
+                    accountRepository.update(account);
+                    refresh();
+                    return;
+                }
+            }
+        } catch (RuntimeException e) {
+            showError(e);
+        }
+    }
+
+    @FXML
+    private void onAddFolder() {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("New folder");
+        dialog.setHeaderText(null);
+        dialog.setContentText("Folder name:");
+        Optional<String> result = dialog.showAndWait();
+        if (result.isEmpty()) {
+            return;
+        }
+        String name = result.get().trim();
+        if (name.isEmpty()) {
+            return;
+        }
+        AccountFolder folder = new AccountFolder();
+        folder.setName(name);
+        try {
+            accountFolderRepository.create(folder);
+            refresh();
+        } catch (RuntimeException e) {
+            showError(e);
         }
     }
 

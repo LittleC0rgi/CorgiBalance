@@ -69,6 +69,25 @@ CREATE TABLE IF NOT EXISTS tags (
 
 
 -- ============================================================
+-- Account folders
+-- ============================================================
+
+
+CREATE TABLE IF NOT EXISTS account_folders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+
+    name TEXT NOT NULL UNIQUE,
+
+
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
+
+-- ============================================================
 -- Accounts
 -- ============================================================
 
@@ -90,6 +109,9 @@ CREATE TABLE IF NOT EXISTS accounts (
     currency_id INTEGER NOT NULL,
 
 
+    folder_id INTEGER,
+
+
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -97,6 +119,12 @@ CREATE TABLE IF NOT EXISTS accounts (
     FOREIGN KEY (currency_id)
         REFERENCES currencies(id)
         ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+
+
+    FOREIGN KEY (folder_id)
+        REFERENCES account_folders(id)
+        ON DELETE SET NULL
         ON UPDATE CASCADE
 );
 

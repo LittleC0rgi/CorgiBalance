@@ -132,6 +132,10 @@
     -fx-cursor: default;
 }
 
+.btn--mini {
+    -fx-padding: 4;
+}
+
 .btn--primary {
     -fx-background-color: #F3A712;
     -fx-text-fill: white;

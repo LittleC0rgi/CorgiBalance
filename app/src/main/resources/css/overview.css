@@ -50,6 +50,53 @@
 }
 
 /* ============================================
+   Account Folders (Overview)
+   ============================================ */
+.account-folder {
+    -fx-background-color: #F5F5F6;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+    -fx-padding: 6 10;
+    -fx-cursor: hand;
+}
+
+.account-folder--muted {
+    -fx-background-color: transparent;
+    -fx-border-color: #EFEFF2;
+}
+
+.account-folder--drag-over {
+    -fx-background-color: #FDF3E0;
+    -fx-border-color: #F3A712;
+}
+
+.account-folder__icon.hero_icon {
+    -fx-stroke: #8B8D99;
+}
+
+.account-folder--muted .account-folder__name {
+    -fx-text-fill: #8B8D99;
+}
+
+.account-folder__name {
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #272932;
+}
+
+.account-folder__amount {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #5A5C66;
+}
+
+.account-row {
+    -fx-padding: 2 0 2 12;
+}
+
+/* ============================================
    Nearest Payments
    ============================================ */
 .nearest__row {

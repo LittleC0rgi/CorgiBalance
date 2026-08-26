@@ -37,6 +37,10 @@ public final class Database {
             "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'transactions'";
     private static final String TRANSACTIONS_COLUMNS_SQL =
             "PRAGMA table_info(transactions)";
+    private static final String ACCOUNTS_COLUMNS_SQL =
+            "PRAGMA table_info(accounts)";
+    private static final String ADD_FOLDER_ID_COLUMN_SQL =
+            "ALTER TABLE accounts ADD COLUMN folder_id INTEGER REFERENCES account_folders(id) ON DELETE SET NULL";
     private static final String RENAME_TRANSACTIONS_SQL =
             "ALTER TABLE transactions RENAME TO transactions_migrate";
     private static final String MIGRATE_TRANSACTIONS_SQL =
@@ -204,6 +208,28 @@ public final class Database {
             applyScript("/db/seed.sql");
         }
         migrateTransactions();
+        migrateAccountFolders();
+    }
+
+    private void migrateAccountFolders() throws SQLException {
+        if (accountColumnNames().contains("folder_id")) {
+            return;
+        }
+        logger.info("Adding folder_id column to accounts table");
+        try (Statement statement = connection.createStatement()) {
+            statement.execute(ADD_FOLDER_ID_COLUMN_SQL);
+        }
+    }
+
+    private Set<String> accountColumnNames() throws SQLException {
+        Set<String> columns = new HashSet<>();
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(ACCOUNTS_COLUMNS_SQL)) {
+            while (resultSet.next()) {
+                columns.add(resultSet.getString("name"));
+            }
+        }
+        return columns;
     }
 
     private void applyScript(String resource) throws SQLException {

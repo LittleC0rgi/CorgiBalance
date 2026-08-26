@@ -4,7 +4,9 @@ import com.corgibalance.components.table.AmountTableCell;
 import com.corgibalance.components.table.SelectTableCell;
 import com.corgibalance.components.table.TextTableCell;
 import com.corgibalance.models.Account;
+import com.corgibalance.models.AccountFolder;
 import com.corgibalance.models.Currency;
+import com.corgibalance.repositories.AccountFolderRepository;
 import com.corgibalance.repositories.AccountRepository;
 import com.corgibalance.services.CurrencyFormatter;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -18,11 +20,14 @@ import java.util.List;
 public class AccountTableController extends BaseTableController<Account, AccountRepository> {
 
     private final CurrencyFormatter currencyFormatter = new CurrencyFormatter();
+    private final AccountFolderRepository folderRepository = new AccountFolderRepository();
 
     @FXML
     private TableColumn<Account, String> name;
     @FXML
     private TableColumn<Account, Long> currency;
+    @FXML
+    private TableColumn<Account, Long> folder;
     @FXML
     private TableColumn<Account, Long> initialBalance;
     @FXML
@@ -41,6 +46,10 @@ public class AccountTableController extends BaseTableController<Account, Account
         currency.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getCurrencyId()));
         currency.setCellFactory(_ -> new SelectTableCell<>(currencyIds(), this::currencyName));
         currency.setOnEditCommit(this::onCurrencyCommitted);
+
+        folder.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getFolderId()));
+        folder.setCellFactory(_ -> new SelectTableCell<>(folderIds(), this::folderName, null, "None"));
+        folder.setOnEditCommit(this::onFolderCommitted);
 
         initialBalance.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getInitialBalance()));
         initialBalance.setCellFactory(_ -> new AmountTableCell<>(Account::getCurrencyId));
@@ -89,6 +98,17 @@ public class AccountTableController extends BaseTableController<Account, Account
         }
     }
 
+    private void onFolderCommitted(TableColumn.CellEditEvent<Account, Long> event) {
+        Account account = event.getRowValue();
+        if (isPlaceholder(account)) {
+            refresh();
+            return;
+        }
+        account.setFolderId(event.getNewValue());
+        repository.update(account);
+        refresh();
+    }
+
     @Override
     protected Account newPlaceholder() {
         Account account = new Account();
@@ -106,6 +126,21 @@ public class AccountTableController extends BaseTableController<Account, Account
         }
         var currency = currencyFormatter.currency(currencyId);
         return currency == null ? String.valueOf(currencyId) : currency.getName();
+    }
+
+    private List<Long> folderIds() {
+        return folderRepository.findAll().stream().map(AccountFolder::getId).toList();
+    }
+
+    private String folderName(Long folderId) {
+        if (folderId == null) {
+            return "";
+        }
+        return folderRepository.findAll().stream()
+                .filter(f -> f.getId().equals(folderId))
+                .map(AccountFolder::getName)
+                .findFirst()
+                .orElse(String.valueOf(folderId));
     }
 
     private Long defaultCurrencyId() {

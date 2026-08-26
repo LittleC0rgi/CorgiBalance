@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.corgibalance.components.HeroIcon?>
 <?import javafx.scene.chart.PieChart?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -43,9 +44,18 @@
             </VBox>
 
             <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="0" GridPane.rowIndex="1">
-                <HBox>
+                <HBox alignment="CENTER_LEFT" spacing="4.0">
                     <Label text="Accounts" styleClass="card__label"/>
                     <Region HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="addFolderButton" styleClass="btn, btn--transparent, btn--mini" maxHeight="24"
+                            onAction="#onAddFolder">
+                        <graphic>
+                            <HeroIcon icon="PLUS"/>
+                        </graphic>
+                        <tooltip>
+                            <Tooltip text="Add folder"/>
+                        </tooltip>
+                    </Button>
                     <Hyperlink fx:id="allAccountsLink" text="All" styleClass="card__link"/>
                 </HBox>
                 <VBox fx:id="accountList" spacing="4.0"/>

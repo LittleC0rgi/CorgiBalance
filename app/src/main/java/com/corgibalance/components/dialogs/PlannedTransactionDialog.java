@@ -193,7 +193,9 @@ public class PlannedTransactionDialog extends Dialog<Void> {
                     if (dot != null) {
                         box.getChildren().add(dot);
                     }
-                    box.getChildren().add(new Label(tag.getName()));
+                    Label nameLabel = new Label(tag.getName());
+                    nameLabel.setStyle("-fx-text-fill: #272932;");
+                    box.getChildren().add(nameLabel);
                     setGraphic(box);
                     setText(null);
                 }

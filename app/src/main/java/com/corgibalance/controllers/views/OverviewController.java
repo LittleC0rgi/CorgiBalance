@@ -27,6 +27,7 @@ import java.util.function.Consumer;
 public class OverviewController implements Refreshable {
 
     private static final String BASE_CURRENCY_KEY = "overview.baseCurrencyId";
+    private static final String SHOW_EXPENSES_BY_TAG_KEY = "overview.showExpensesByTag";
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     private static final int NEAREST_LIMIT = 5;
     @FXML
@@ -53,6 +54,10 @@ public class OverviewController implements Refreshable {
     private ComboBox<Integer> yearCombo;
     @FXML
     private PieChart tagExpenseChart;
+    @FXML
+    private VBox tagExpenseCard;
+    @FXML
+    private GridPane grid;
     @FXML
     private RecentTransactionsTableController RecentTransactionsTableController;
     private CurrencyConverter converter;
@@ -222,7 +227,33 @@ public class OverviewController implements Refreshable {
         }
 
         refreshNearestPayments();
-        refreshTagExpenses(year, month, baseCurrencyId);
+
+        boolean showByTag = settingsRepository.get(SHOW_EXPENSES_BY_TAG_KEY)
+                .map(Boolean::parseBoolean)
+                .orElse(true);
+        tagExpenseCard.setVisible(showByTag);
+        tagExpenseCard.setManaged(showByTag);
+        ColumnConstraints col3 = grid.getColumnConstraints().get(3);
+        if (showByTag) {
+            for (int i = 0; i < 4; i++) {
+                grid.getColumnConstraints().get(i).setPercentWidth(25);
+                grid.getColumnConstraints().get(i).setHgrow(Priority.ALWAYS);
+                grid.getColumnConstraints().get(i).setMaxWidth(Double.MAX_VALUE);
+                grid.getColumnConstraints().get(i).setMinWidth(0);
+            }
+            refreshTagExpenses(year, month, baseCurrencyId);
+        } else {
+            for (int i = 0; i < 3; i++) {
+                grid.getColumnConstraints().get(i).setPercentWidth(33.33);
+                grid.getColumnConstraints().get(i).setHgrow(Priority.ALWAYS);
+                grid.getColumnConstraints().get(i).setMaxWidth(Double.MAX_VALUE);
+                grid.getColumnConstraints().get(i).setMinWidth(0);
+            }
+            col3.setPercentWidth(0);
+            col3.setHgrow(Priority.NEVER);
+            col3.setMaxWidth(0);
+            col3.setMinWidth(0);
+        }
     }
 
     private void refreshNearestPayments() {

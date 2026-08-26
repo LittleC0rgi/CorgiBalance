@@ -1,10 +1,12 @@
 package com.corgibalance.controllers.views;
 
 import com.corgibalance.App;
+import com.corgibalance.repositories.SettingsRepository;
 import com.corgibalance.services.Database;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ButtonType;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -16,8 +18,31 @@ import java.util.Optional;
 
 public class SettingsController {
 
+    private static final String SHOW_EXPENSES_BY_TAG_KEY = "overview.showExpensesByTag";
+
     @FXML
     private VBox root;
+    @FXML
+    private CheckBox showExpensesByTagCheckBox;
+
+    private SettingsRepository settingsRepository;
+
+    @FXML
+    private void initialize() {
+        settingsRepository = new SettingsRepository();
+        showExpensesByTagCheckBox.setSelected(isShowExpensesByTag());
+    }
+
+    private boolean isShowExpensesByTag() {
+        return settingsRepository.get(SHOW_EXPENSES_BY_TAG_KEY)
+                .map(Boolean::parseBoolean)
+                .orElse(true);
+    }
+
+    public void toggleShowExpensesByTag() {
+        settingsRepository.set(SHOW_EXPENSES_BY_TAG_KEY,
+                String.valueOf(showExpensesByTagCheckBox.isSelected()));
+    }
 
     public void exportDatabase() {
         FileChooser chooser = new FileChooser();

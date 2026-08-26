@@ -35,11 +35,10 @@ import java.util.function.Function;
 
 public class TransactionTableController extends PagedTableController<Transaction, TransactionRepository> {
 
+    private final CurrencyFormatter currencyFormatter = new CurrencyFormatter();
     private List<Account> accounts;
     private List<Tag> tags;
     private LocalDate lastEnteredDate;
-    private final CurrencyFormatter currencyFormatter = new CurrencyFormatter();
-
     private Long accountFilter;
     private Long tagFilter;
     private TransactionType typeFilter;
@@ -148,7 +147,7 @@ public class TransactionTableController extends PagedTableController<Transaction
         DatePicker to = new DatePicker();
         to.setPromptText("To");
         Button clear = new Button("Clear");
-        clear.getStyleClass().addAll("btn", "btn--transparent");
+        clear.getStyleClass().addAll("btn");
 
         FilterMenu menu = new FilterMenu(new VBox(6, from, to, clear));
         Runnable apply = () -> {
@@ -204,7 +203,7 @@ public class TransactionTableController extends PagedTableController<Transaction
         ComboBox<V> combo = new ComboBox<>();
         combo.getStyleClass().add("selector");
         combo.setItems(FXCollections.observableArrayList(values));
-        combo.getItems().add(0, null);
+        combo.getItems().addFirst(null);
         combo.setValue(null);
         combo.setCellFactory(_ -> choiceListCell(labelFor, allLabel));
         combo.setButtonCell(choiceListCell(labelFor, allLabel));

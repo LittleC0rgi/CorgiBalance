@@ -14,7 +14,7 @@
                 <ComboBox fx:id="yearCombo" styleClass="overview__combo"/>
             </HBox>
         </HBox>
-        <GridPane styleClass="grid">
+        <GridPane fx:id="grid" styleClass="grid">
             <columnConstraints>
                 <ColumnConstraints percentWidth="25" hgrow="ALWAYS"/>
                 <ColumnConstraints percentWidth="25" hgrow="ALWAYS"/>
@@ -63,7 +63,7 @@
                 <VBox fx:id="nearestList" spacing="3.0"/>
             </VBox>
 
-            <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="3" GridPane.rowIndex="0"
+            <VBox fx:id="tagExpenseCard" styleClass="card" spacing="6.0" GridPane.columnIndex="3" GridPane.rowIndex="0"
                   GridPane.rowSpan="2" GridPane.vgrow="ALWAYS">
                 <Label text="Expenses by tags" styleClass="card__label"/>
                 <PieChart fx:id="tagExpenseChart" styleClass="tag-chart" VBox.vgrow="ALWAYS" legendVisible="false"/>

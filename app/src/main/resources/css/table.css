@@ -34,6 +34,37 @@
     -fx-text-fill: #F3A712;
 }
 
+.table .column-header .column-header__title {
+    -fx-padding: 0 6 0 0;
+}
+
+.column-header__filter {
+    -fx-background-color: transparent;
+    -fx-padding: 1;
+    -fx-border-width: 0;
+    -fx-cursor: hand;
+}
+
+.column-header__filter .hero_icon {
+    -fx-stroke: rgba(255, 255, 255, 0.65);
+    -fx-scale-x: 0.7;
+    -fx-scale-y: 0.7;
+}
+
+.column-header__filter:hover .hero_icon,
+.column-header__filter--active .hero_icon {
+    -fx-stroke: #F3A712;
+}
+
+.filter-popup {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-border-color: #EFEFF2;
+    -fx-border-radius: 10;
+    -fx-padding: 4;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.14), 16, 0, 0, 4);
+}
+
 /* Data Cells */
 .table .table-cell {
     -fx-font-size: 13px;

@@ -13,6 +13,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public abstract class PagedTableController<T extends BaseModel, R extends CrudRepository<T>>
         extends BaseTableController<T, R> {
@@ -25,6 +26,7 @@ public abstract class PagedTableController<T extends BaseModel, R extends CrudRe
     private int pageSize = PaginationBar.DEFAULT_PAGE_SIZE;
     private int currentPage = 1;
     private Comparator<T> activeSort;
+    private Predicate<T> filter = item -> true;
 
     protected PagedTableController(R repository) {
         super(repository);
@@ -145,10 +147,17 @@ public abstract class PagedTableController<T extends BaseModel, R extends CrudRe
 
     private void rebuildDisplayList() {
         displayList.clear();
-        displayList.addAll(baseList);
+        displayList.addAll(baseList.stream().filter(filter).toList());
         if (activeSort != null) {
             displayList.sort(activeSort);
         }
+    }
+
+    protected void setFilter(Predicate<T> predicate) {
+        this.filter = predicate == null ? item -> true : predicate;
+        currentPage = 1;
+        rebuildDisplayList();
+        applyPage();
     }
 
     private void configureSorting() {

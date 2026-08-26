@@ -1,17 +1,23 @@
+/* ============================================
+   Cards
+   ============================================ */
 .card {
     -fx-background-color: white;
-    -fx-background-radius: 12px;
-    -fx-border-radius: 12px;
-    -fx-padding: 16px;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 8, 0, 0, 2);
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-padding: 16;
+    -fx-border-color: #EFEFF2;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.04), 6, 0, 0, 1);
 }
 
 .card--active {
     -fx-background-color: #272932;
+    -fx-border-color: #272932;
 }
 
 .card__value {
-    -fx-font-size: 20px;
+    -fx-font-size: 22px;
     -fx-font-weight: 700;
     -fx-text-fill: #272932;
 }
@@ -24,9 +30,18 @@
     -fx-text-fill: #CA2E55;
 }
 
+.card__value--active {
+    -fx-text-fill: white;
+}
+
 .card__label {
     -fx-font-size: 12px;
-    -fx-text-fill: #27293250;
+    -fx-font-weight: 500;
+    -fx-text-fill: #8B8D99;
+}
+
+.card__label--active {
+    -fx-text-fill: rgba(255, 255, 255, 0.55);
 }
 
 .card__text {
@@ -34,29 +49,39 @@
     -fx-text-fill: #272932;
 }
 
+/* ============================================
+   Nearest Payments
+   ============================================ */
 .nearest__row {
     -fx-background-color: white;
-    -fx-background-radius: 8px;
+    -fx-background-radius: 8;
     -fx-border-color: transparent;
-    -fx-border-radius: 8px;
-    -fx-padding: 3 6;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-padding: 6 8;
+}
+
+.nearest__row:hover {
+    -fx-background-color: #F8F8FA;
 }
 
 .nearest__row--overdue {
-    -fx-border-color: #CA2E55;
+    -fx-border-color: rgba(202, 46, 85, 0.25);
+    -fx-background-color: #FFF5F7;
 }
 
 .nearest__date {
-    -fx-font-size: 15px;
-    -fx-text-fill: #272932;
+    -fx-font-size: 13px;
+    -fx-text-fill: #5A5C66;
 }
 
 .nearest__date_card {
-    -fx-background-color: white;
-    -fx-background-radius: 12px;
-    -fx-border-radius: 12px;
-    -fx-padding: 8px;
-    -fx-border-color: #8B8D99;
+    -fx-background-color: #F5F5F6;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 6 8;
+    -fx-min-width: 44;
+    -fx-alignment: CENTER;
 }
 
 .nearest__desc {
@@ -86,9 +111,13 @@
     -fx-text-fill: #CA2E55;
 }
 
+/* ============================================
+   Links
+   ============================================ */
 .card__link {
     -fx-font-size: 12px;
-    -fx-text-fill: #272932;
+    -fx-font-weight: 600;
+    -fx-text-fill: #8B8D99;
     -fx-border-width: 0;
 }
 
@@ -96,23 +125,36 @@
     -fx-text-fill: #F3A712;
 }
 
-.card__value--active {
-    -fx-text-fill: white;
-}
-
+/* ============================================
+   Overview Combo
+   ============================================ */
 .overview__combo {
     -fx-background-color: white;
-    -fx-background-radius: 8px;
+    -fx-background-radius: 8;
     -fx-font-size: 12px;
     -fx-font-weight: 600;
     -fx-text-fill: #272932;
     -fx-padding: 2 6;
+    -fx-border-color: #EFEFF2;
+    -fx-border-radius: 8;
+}
+
+.overview__combo:hover {
+    -fx-border-color: #D0D2D8;
+}
+
+.overview__combo:focused {
+    -fx-border-color: #F3A712;
+    -fx-effect: dropshadow(gaussian, rgba(243, 167, 18, 0.35), 6, 0, 0, 0);
 }
 
 .overview__combo .list-cell {
     -fx-padding: 2 6;
 }
 
+/* ============================================
+   Budget Items (Overview cards)
+   ============================================ */
 .budget__name {
     -fx-font-size: 13px;
     -fx-font-weight: 600;
@@ -126,7 +168,7 @@
 
 .budget__amount {
     -fx-font-size: 12px;
-    -fx-text-fill: #272932;
+    -fx-text-fill: #5A5C66;
 }
 
 .budget__percent {
@@ -141,25 +183,28 @@
 
 .budget__track {
     -fx-background-color: #EFEFF2;
-    -fx-background-radius: 4px;
-    -fx-pref-height: 6px;
-    -fx-min-height: 6px;
-    -fx-max-height: 6px;
+    -fx-background-radius: 4;
+    -fx-pref-height: 6;
+    -fx-min-height: 6;
+    -fx-max-height: 6;
 }
 
 .budget__fill {
     -fx-background-color: #272932;
-    -fx-background-radius: 4px;
-    -fx-pref-height: 6px;
-    -fx-min-height: 6px;
-    -fx-max-height: 6px;
+    -fx-background-radius: 4;
+    -fx-pref-height: 6;
+    -fx-min-height: 6;
+    -fx-max-height: 6;
 }
 
 .budget__fill--over {
     -fx-background-color: #CA2E55;
-    -fx-background-radius: 4px;
+    -fx-background-radius: 4;
 }
 
+/* ============================================
+   Tag Pie Chart
+   ============================================ */
 .tag-chart {
     -fx-background-color: transparent;
 }
@@ -168,4 +213,3 @@
     -fx-font-size: 11px;
     -fx-fill: #272932;
 }
-

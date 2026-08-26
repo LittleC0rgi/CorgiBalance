@@ -1,3 +1,6 @@
+/* ============================================
+   Calendar Navigation
+   ============================================ */
 .calendar__nav {
     -fx-background-color: white;
     -fx-background-radius: 8;
@@ -11,7 +14,12 @@
 }
 
 .calendar__nav:hover {
-    -fx-background-color: #f6f6f6;
+    -fx-background-color: #F0F1F4;
+    -fx-border-color: #D0D2D8;
+}
+
+.calendar__nav:pressed {
+    -fx-background-color: #E4E6EB;
 }
 
 .calendar__month {
@@ -20,23 +28,32 @@
     -fx-text-fill: #272932;
 }
 
+/* ============================================
+   Weekday Headers
+   ============================================ */
 .calendar__weekday {
     -fx-font-size: 12px;
     -fx-font-weight: 600;
     -fx-text-fill: #8B8D99;
     -fx-alignment: CENTER;
+    -fx-padding: 4 0;
 }
 
+/* ============================================
+   Calendar Grid
+   ============================================ */
 .calendar__grid {
     -fx-background-color: #EFEFF2;
     -fx-background-radius: 12;
-    -fx-border-color: #EFEFF2;
+    -fx-border-color: transparent;
     -fx-border-radius: 12;
     -fx-padding: 2;
 }
 
+/* Day Cells */
 .calendar__day {
     -fx-background-color: white;
+    -fx-background-radius: 6;
     -fx-alignment: TOP_LEFT;
     -fx-padding: 6;
     -fx-fill-width: true;
@@ -45,46 +62,59 @@
 }
 
 .calendar__day:hover {
-    -fx-background-color: #f6f6f6;
+    -fx-background-color: #F5F5F6;
 }
 
+.calendar__day:pressed {
+    -fx-background-color: #EFEFF2;
+}
+
+/* Day Number */
 .calendar__day__number {
     -fx-font-size: 13px;
     -fx-font-weight: 600;
     -fx-text-fill: #272932;
 }
 
+/* Plan Indicators Container */
 .calendar__day__plans {
     -fx-alignment: TOP_LEFT;
     -fx-min-height: 20px;
 }
 
+/* Today */
 .calendar__day--today {
-    -fx-background-color: #FFF6E3;
+    -fx-background-color: #FFFBF0;
     -fx-border-color: #F3A712;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
 }
 
 .calendar__day--today .calendar__day__number {
     -fx-background-color: #F3A712;
     -fx-background-radius: 4;
     -fx-text-fill: white;
-    -fx-padding: 0 4;
+    -fx-padding: 1 5;
 }
 
+/* Cell Content */
 .calendar__cell-text {
-    -fx-font-size: 12px;
-    -fx-text-fill: #272932;
+    -fx-font-size: 11px;
+    -fx-text-fill: #5A5C66;
     -fx-text-overrun: ELLIPSIS;
 }
 
 .calendar__cell-text--expense {
     -fx-text-fill: #CA2E55;
+    -fx-font-weight: 600;
 }
 
 .calendar__cell-text--income {
     -fx-text-fill: #72A276;
+    -fx-font-weight: 600;
 }
 
+/* Cell Action Button */
 .calendar__cell-btn {
     -fx-background-color: transparent;
     -fx-background-radius: 4;
@@ -93,13 +123,17 @@
 }
 
 .calendar__cell-btn .hero_icon {
-    -fx-stroke: #272932;
+    -fx-stroke: #8B8D99;
     -fx-scale-x: 0.5;
     -fx-scale-y: 0.5;
 }
 
 .calendar__cell-btn:hover {
     -fx-background-color: #EFEFF2;
+}
+
+.calendar__cell-btn:hover .hero_icon {
+    -fx-stroke: #272932;
 }
 
 .calendar__cell-icon {
@@ -112,6 +146,9 @@
     -fx-scale-y: 0.5;
 }
 
+/* ============================================
+   Overdue Items (in calendar)
+   ============================================ */
 .calendar__row--overdue .calendar__cell-text {
     -fx-font-weight: bold;
     -fx-text-fill: #CA2E55;
@@ -123,11 +160,12 @@
 }
 
 .calendar__overdue {
-    -fx-background-color: white;
+    -fx-background-color: #FFF5F7;
     -fx-background-radius: 12;
-    -fx-border-color: #CA2E55;
+    -fx-border-color: rgba(202, 46, 85, 0.25);
+    -fx-border-width: 1;
     -fx-border-radius: 12;
-    -fx-padding: 12;
+    -fx-padding: 14;
 }
 
 .calendar__overdue__title {

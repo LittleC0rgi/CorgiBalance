@@ -53,7 +53,7 @@
                 </VBox>
             </VBox>
 
-            <VBox fx:id="errorBox" styleClass="card" managed="false" visible="false">
+            <VBox fx:id="errorBox" styleClass="error-box" managed="false" visible="false">
                 <Label text="Error" styleClass="card__label"/>
                 <Label fx:id="errorLabel" wrapText="true" styleClass="card__text"/>
             </VBox>

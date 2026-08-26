@@ -31,7 +31,7 @@
                     <Label fx:id="balanceValue" styleClass="card__value, card__value--active"/>
                     <ComboBox fx:id="baseCurrencyCombo" styleClass="overview__combo, card__value--active"/>
                 </HBox>
-                <Label text="Balance" styleClass="card__label, card__value--active"/>
+                <Label text="Balance" styleClass="card__label, card__label--active"/>
             </VBox>
             <VBox styleClass="card" spacing="6.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
                 <Label fx:id="incomeValue" styleClass="card__value, card__value--income"/>

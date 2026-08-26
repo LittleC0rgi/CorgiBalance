@@ -1,7 +1,10 @@
+/* ============================================
+   Table
+   ============================================ */
 .table {
     -fx-background-color: white;
-    -fx-background-radius: 12px;
-    -fx-border-radius: 12px;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
     -fx-border-color: #EFEFF2;
     -fx-padding: 0;
     -fx-table-cell-border-color: transparent;
@@ -9,9 +12,10 @@
     -fx-faint-focus-color: transparent;
 }
 
+/* Column Headers */
 .table .column-header-background {
     -fx-background-color: #272932;
-    -fx-background-radius: 12px 12px 0 0;
+    -fx-background-radius: 12 12 0 0;
 }
 
 .table .column-header {
@@ -20,34 +24,40 @@
 
 .table .column-header .label {
     -fx-alignment: CENTER_LEFT;
-    -fx-font-size: 14px;
+    -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-text-fill: white;
-    -fx-padding: 12px 8px;
+    -fx-padding: 10 10;
 }
 
+.table .column-header .label:hover {
+    -fx-text-fill: #F3A712;
+}
+
+/* Data Cells */
 .table .table-cell {
-    -fx-font-size: 14px;
+    -fx-font-size: 13px;
     -fx-text-fill: #272932;
-    -fx-padding: 6px 8px;
+    -fx-padding: 8 10;
     -fx-alignment: CENTER_LEFT;
     -fx-border-color: transparent;
 }
 
+/* Rows */
 .table .table-row-cell {
     -fx-background-color: white;
 }
 
 .table .table-row-cell:odd {
-    -fx-background-color: #FAFAFB;
+    -fx-background-color: #F8F8FA;
 }
 
 .table .table-row-cell:hover {
-    -fx-background-color: #EFEFF2;
+    -fx-background-color: #F0F1F4;
 }
 
 .table .table-row-cell:selected {
-    -fx-background-color: #E4E6EB;
+    -fx-background-color: #E8EAEE;
 }
 
 .table .table-row-cell:selected .table-cell {
@@ -55,45 +65,18 @@
     -fx-font-weight: 600;
 }
 
+.table .table-row-cell:selected .table-cell.table__amount--positive {
+    -fx-text-fill: #5E9162;
+}
+
+.table .table-row-cell:selected .table-cell.table__amount--negative {
+    -fx-text-fill: #B52648;
+}
+
+/* Placeholder */
 .table .placeholder .label {
-    -fx-font-size: 14px;
-    -fx-text-fill: #27293250;
-}
-
-.table .table-cell.table__amount--zero {
-    -fx-text-fill: #CA2E55;
-    -fx-font-weight: bold;
-}
-
-.suggestion-list {
-    -fx-background-color: white;
-    -fx-background-radius: 8px;
-    -fx-border-color: #EFEFF2;
-    -fx-border-radius: 8px;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 8, 0, 0, 2);
-}
-
-.suggestion-list .list-cell {
-    -fx-background-color: white;
-    -fx-text-fill: #272932;
     -fx-font-size: 13px;
-    -fx-padding: 6px 8px;
-}
-
-.suggestion-list .list-cell:hover {
-    -fx-background-color: #EFEFF2;
-}
-
-.suggestion-list .list-cell:filled:selected {
-    -fx-background-color: #E4E6EB;
-}
-
-.suggestion__amount {
-    -fx-font-weight: bold;
-}
-
-.suggestion__account {
-    -fx-text-fill: #27293280;
+    -fx-text-fill: #27293250;
 }
 
 .table .table-cell.table__placeholder {
@@ -101,22 +84,74 @@
     -fx-font-style: italic;
 }
 
+/* Amount States */
+.table .table-cell.table__amount--zero {
+    -fx-text-fill: #CA2E55;
+    -fx-font-weight: bold;
+}
+
+.table .table-cell.table__amount--positive {
+    -fx-text-fill: #72A276;
+}
+
+.table .table-cell.table__amount--negative {
+    -fx-text-fill: #CA2E55;
+}
+
+/* Paged Table */
 .table--paged {
-    -fx-background-radius: 12px 12px 0 0;
+    -fx-background-radius: 12 12 0 0;
     -fx-border-width: 1 1 0 1;
 }
 
+/* ============================================
+   Suggestion List (autocomplete dropdown)
+   ============================================ */
+.suggestion-list {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-border-color: #EFEFF2;
+    -fx-border-radius: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.12), 12, 0, 0, 3);
+}
+
+.suggestion-list .list-cell {
+    -fx-background-color: white;
+    -fx-text-fill: #272932;
+    -fx-font-size: 13px;
+    -fx-padding: 8 10;
+}
+
+.suggestion-list .list-cell:hover {
+    -fx-background-color: #F0F1F4;
+}
+
+.suggestion-list .list-cell:filled:selected {
+    -fx-background-color: #E8EAEE;
+}
+
+.suggestion__amount {
+    -fx-font-weight: bold;
+}
+
+.suggestion__account {
+    -fx-text-fill: #8B8D99;
+}
+
+/* ============================================
+   Pagination
+   ============================================ */
 .pagination {
     -fx-background-color: white;
-    -fx-background-radius: 0 0 12px 12px;
+    -fx-background-radius: 0 0 12 12;
     -fx-border-color: #EFEFF2;
     -fx-border-width: 0 1 1 1;
-    -fx-padding: 6 12;
+    -fx-padding: 8 12;
     -fx-alignment: CENTER_LEFT;
 }
 
 .pagination__info {
-    -fx-text-fill: #27293280;
+    -fx-text-fill: #8B8D99;
     -fx-font-size: 12px;
 }
 
@@ -128,21 +163,28 @@
     -fx-background-radius: 6;
     -fx-border-color: #EFEFF2;
     -fx-border-radius: 6;
-    -fx-padding: 4 12;
+    -fx-padding: 5 14;
     -fx-cursor: hand;
 }
 
 .pagination__btn:hover {
     -fx-background-color: #F3A712;
     -fx-text-fill: white;
+    -fx-border-color: #F3A712;
+}
+
+.pagination__btn:pressed {
+    -fx-background-color: #ce8e10;
+    -fx-text-fill: white;
 }
 
 .pagination__btn:disabled {
-    -fx-opacity: 0.4;
+    -fx-opacity: 0.35;
     -fx-cursor: default;
 }
 
 .pagination__btn:disabled:hover {
     -fx-background-color: white;
     -fx-text-fill: #272932;
+    -fx-border-color: #EFEFF2;
 }

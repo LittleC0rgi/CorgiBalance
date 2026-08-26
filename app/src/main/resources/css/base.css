@@ -1,3 +1,18 @@
+/* ============================================
+   CorgiBalance — Design System
+   ============================================
+   Color Palette:
+     Primary:    #272932 (dark)
+     Accent:     #F3A712 (gold)
+     Income:     #72A276 (green)
+     Expense:    #CA2E55 (red)
+     Muted:      #8B8D99
+     Border:     #EFEFF2
+   ============================================ */
+
+/* ============================================
+   Root Pane
+   ============================================ */
 .root-pane {
     -fx-font-family: "Inter 18pt";
     -fx-background-color: white;
@@ -8,17 +23,58 @@
     -fx-padding: 24;
 }
 
+/* ============================================
+   Typography Scale
+   ============================================ */
 .title {
     -fx-text-fill: #272932;
     -fx-font-size: 24px;
     -fx-font-weight: bold;
 }
 
-.grid {
-    -fx-hgap: 14px;
-    -fx-vgap: 14px;
+.heading {
+    -fx-text-fill: #272932;
+    -fx-font-size: 18px;
+    -fx-font-weight: 700;
 }
 
+.subheading {
+    -fx-text-fill: #5A5C66;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+}
+
+.body {
+    -fx-text-fill: #272932;
+    -fx-font-size: 14px;
+}
+
+.body-secondary {
+    -fx-text-fill: #5A5C66;
+    -fx-font-size: 13px;
+}
+
+.caption {
+    -fx-text-fill: #8B8D99;
+    -fx-font-size: 12px;
+}
+
+.caption--faint {
+    -fx-text-fill: #27293250;
+    -fx-font-size: 12px;
+}
+
+/* ============================================
+   Grid
+   ============================================ */
+.grid {
+    -fx-hgap: 12;
+    -fx-vgap: 12;
+}
+
+/* ============================================
+   Buttons
+   ============================================ */
 .btn {
     -fx-background-color: #272932;
     -fx-text-fill: white;
@@ -26,18 +82,29 @@
     -fx-font-size: 13px;
     -fx-background-radius: 8;
     -fx-border-radius: 8;
-    -fx-padding: 6 18;
+    -fx-padding: 7 18;
     -fx-cursor: hand;
     -fx-border-width: 1;
     -fx-border-color: transparent;
 }
 
 .btn:focused {
-    -fx-border-color: white;
+    -fx-border-color: #F3A712;
+    -fx-effect: dropshadow(gaussian, rgba(243, 167, 18, 0.35), 6, 0, 0, 0);
 }
 
 .btn:hover {
     -fx-background-color: #16171c;
+}
+
+.btn:pressed {
+    -fx-background-color: #0e0f13;
+    -fx-padding: 8 17 6 19;
+}
+
+.btn:disabled {
+    -fx-opacity: 0.4;
+    -fx-cursor: default;
 }
 
 .btn--transparent {
@@ -52,8 +119,17 @@
 }
 
 .btn--transparent:hover {
-    -fx-background-color: #e3e3e3;
-    -fx-border-color: #16171c;
+    -fx-background-color: #EFEFF2;
+    -fx-border-color: #272932;
+}
+
+.btn--transparent:pressed {
+    -fx-background-color: #E4E6EB;
+}
+
+.btn--transparent:disabled {
+    -fx-opacity: 0.35;
+    -fx-cursor: default;
 }
 
 .btn--primary {
@@ -65,6 +141,20 @@
     -fx-background-color: #ce8e10;
 }
 
+.btn--primary:focused {
+    -fx-border-color: #F3A712;
+    -fx-effect: dropshadow(gaussian, rgba(243, 167, 18, 0.35), 6, 0, 0, 0);
+}
+
+.btn--primary:pressed {
+    -fx-background-color: #b87d0e;
+}
+
+.btn--primary:disabled {
+    -fx-opacity: 0.4;
+    -fx-cursor: default;
+}
+
 .btn--danger {
     -fx-background-color: #CA2E55;
     -fx-text-fill: white;
@@ -73,6 +163,20 @@
 
 .btn--danger:hover {
     -fx-background-color: #b4284b;
+}
+
+.btn--danger:focused {
+    -fx-border-color: #CA2E55;
+    -fx-effect: dropshadow(gaussian, rgba(202, 46, 85, 0.3), 6, 0, 0, 0);
+}
+
+.btn--danger:pressed {
+    -fx-background-color: #9e2242;
+}
+
+.btn--danger:disabled {
+    -fx-opacity: 0.4;
+    -fx-cursor: default;
 }
 
 .btn--danger-transparent {
@@ -91,19 +195,35 @@
     -fx-border-color: #b4284b;
 }
 
+.btn--danger-transparent:pressed {
+    -fx-background-color: #ffe0e8;
+}
 
+.btn--danger-transparent:disabled {
+    -fx-opacity: 0.35;
+    -fx-cursor: default;
+}
+
+/* ============================================
+   Inputs
+   ============================================ */
 .input {
     -fx-background-color: white;
     -fx-background-radius: 8;
     -fx-border-color: #EFEFF2;
     -fx-border-radius: 8;
-    -fx-padding: 6 12;
+    -fx-padding: 7 12;
     -fx-font-size: 13px;
     -fx-text-fill: #272932;
 }
 
 .input:focused {
     -fx-border-color: #F3A712;
+    -fx-effect: dropshadow(gaussian, rgba(243, 167, 18, 0.35), 6, 0, 0, 0);
+}
+
+.input:hover {
+    -fx-border-color: #D0D2D8;
 }
 
 .input--readonly {
@@ -111,6 +231,18 @@
     -fx-text-fill: #27293280;
 }
 
+.input--error {
+    -fx-border-color: #CA2E55;
+}
+
+.input--error:focused {
+    -fx-border-color: #CA2E55;
+    -fx-effect: dropshadow(gaussian, rgba(202, 46, 85, 0.3), 6, 0, 0, 0);
+}
+
+/* ============================================
+   Segmented Controls
+   ============================================ */
 .seg {
     -fx-background-color: white;
     -fx-background-radius: 8;
@@ -131,6 +263,14 @@
     -fx-text-fill: white;
 }
 
+.seg:focused {
+    -fx-border-color: #F3A712;
+    -fx-effect: dropshadow(gaussian, rgba(243, 167, 18, 0.35), 6, 0, 0, 0);
+}
+
+/* ============================================
+   Selectors / ComboBox
+   ============================================ */
 .selector {
     -fx-background-color: white;
     -fx-background-radius: 8;
@@ -152,5 +292,74 @@
 
 .selector .list-cell:filled:selected {
     -fx-background-color: white;
+    -fx-text-fill: #272932;
+}
+
+.selector:focused {
+    -fx-border-color: #F3A712;
+    -fx-effect: dropshadow(gaussian, rgba(243, 167, 18, 0.35), 6, 0, 0, 0);
+}
+
+/* ============================================
+   Scrollbar Theming
+   ============================================ */
+.scroll-bar {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #E4E6EB;
+    -fx-background-radius: 9999;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #D0D2D8;
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
+}
+
+.scroll-bar .track {
+    -fx-background-color: transparent;
+}
+
+/* ============================================
+   Tooltip
+   ============================================ */
+.tooltip {
+    -fx-background-color: #272932;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-background-radius: 6;
+    -fx-padding: 4 8;
+}
+
+/* ============================================
+   Error Box (for dialogs)
+   ============================================ */
+.error-box {
+    -fx-background-color: #fff0f4;
+    -fx-background-radius: 8;
+    -fx-border-color: #CA2E55;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-padding: 8;
+}
+
+.error-box .card__label {
+    -fx-text-fill: #CA2E55;
+    -fx-font-weight: 600;
+}
+
+.error-box .card__text {
     -fx-text-fill: #272932;
 }

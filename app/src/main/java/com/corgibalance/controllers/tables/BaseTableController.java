@@ -5,9 +5,7 @@ import com.corgibalance.repositories.CrudRepository;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +34,20 @@ public abstract class BaseTableController<T extends BaseModel, R extends CrudRep
             if (e.getCode() == KeyCode.DELETE) {
                 deleteSelected();
             }
+        });
+        table.setRowFactory(tv -> {
+            TableRow<T> row = new TableRow<>();
+            MenuItem deleteItem = new MenuItem("Delete");
+            deleteItem.setOnAction(_ -> {
+                T item = row.getItem();
+                if (item != null && !isPlaceholder(item)) {
+                    deleteWithConfirmation(item);
+                }
+            });
+            ContextMenu menu = new ContextMenu(deleteItem);
+            row.contextMenuProperty().bind(
+                    javafx.beans.binding.Bindings.when(row.emptyProperty()).then((ContextMenu) null).otherwise(menu));
+            return row;
         });
     }
 
@@ -97,17 +109,21 @@ public abstract class BaseTableController<T extends BaseModel, R extends CrudRep
         if (selected == null || isPlaceholder(selected)) {
             return;
         }
+        deleteWithConfirmation(selected);
+    }
+
+    private void deleteWithConfirmation(T item) {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setHeaderText(null);
-        confirm.setContentText(deleteConfirmationText(selected));
+        confirm.setContentText(deleteConfirmationText(item));
         confirm.getDialogPane().getStylesheets().add(
                 Objects.requireNonNull(getClass().getResource("/css/base.css")).toExternalForm());
-        confirm.getDialogPane().lookupButton(ButtonType.OK).getStyleClass().addAll("btn", "btn--primary");
+        confirm.getDialogPane().lookupButton(ButtonType.OK).getStyleClass().addAll("btn", "btn--danger");
         confirm.getDialogPane().lookupButton(ButtonType.CANCEL).getStyleClass().add("btn");
         if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
-            repository.delete(selected);
-            table.getItems().remove(selected);
-            onItemDeleted(selected);
+            repository.delete(item);
+            table.getItems().remove(item);
+            onItemDeleted(item);
         }
     }
 

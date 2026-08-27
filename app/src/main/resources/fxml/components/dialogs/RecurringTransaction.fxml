@@ -1,20 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.ButtonType?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.DatePicker?>
-<?import javafx.scene.control.DialogPane?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <fx:root xmlns:fx="http://javafx.com/fxml/1"
          type="javafx.scene.control.DialogPane"
          minWidth="350"
          xmlns="http://javafx.com/javafx">
-    <buttonTypes>
-        <ButtonType text="Add" buttonData="OK_DONE"/>
-        <ButtonType fx:constant="CANCEL"/>
-    </buttonTypes>
     <content>
         <VBox spacing="12">
             <VBox styleClass="card" spacing="6">
@@ -62,4 +53,6 @@
             </VBox>
         </VBox>
     </content>
+    <ButtonType text="Add" buttonData="OK_DONE"/>
+    <ButtonType fx:constant="CANCEL"/>
 </fx:root>

@@ -6,10 +6,6 @@
          type="javafx.scene.control.DialogPane"
          minWidth="350"
          xmlns="http://javafx.com/javafx">
-    <buttonTypes>
-        <ButtonType text="Transfer" buttonData="OK_DONE"/>
-        <ButtonType fx:constant="CANCEL"/>
-    </buttonTypes>
     <content>
         <VBox spacing="12">
             <VBox styleClass="card" spacing="6">
@@ -59,4 +55,6 @@
             </VBox>
         </VBox>
     </content>
+    <ButtonType text="Transfer" buttonData="OK_DONE"/>
+    <ButtonType fx:constant="CANCEL"/>
 </fx:root>

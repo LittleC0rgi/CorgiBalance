@@ -84,8 +84,17 @@ CREATE TABLE IF NOT EXISTS account_folders (
     is_expanded INTEGER NOT NULL DEFAULT 1,
 
 
+    -- Parent folder for nesting. NULL = root-level folder.
+    parent_id INTEGER,
+
+
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (parent_id)
+        REFERENCES account_folders(id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE
 );
 
 

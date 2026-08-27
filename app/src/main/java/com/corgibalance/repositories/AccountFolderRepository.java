@@ -19,13 +19,15 @@ import lombok.RequiredArgsConstructor;
 public class AccountFolderRepository implements CrudRepository<AccountFolder> {
 
     private static final String FIND_ALL_SQL =
-            "SELECT id, name, is_expanded, created_at, updated_at FROM account_folders ORDER BY name COLLATE NOCASE";
+            "SELECT id, name, is_expanded, parent_id, created_at, updated_at FROM account_folders ORDER BY name COLLATE NOCASE";
     private static final String INSERT_SQL =
-            "INSERT INTO account_folders (name) VALUES (?)";
+            "INSERT INTO account_folders (name, parent_id) VALUES (?, ?)";
     private static final String UPDATE_SQL =
-            "UPDATE account_folders SET name = ?, is_expanded = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+            "UPDATE account_folders SET name = ?, is_expanded = ?, parent_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
     private static final String DELETE_SQL =
             "DELETE FROM account_folders WHERE id = ?";
+    private static final String SET_PARENT_NULL_SQL =
+            "UPDATE account_folders SET parent_id = NULL WHERE parent_id = ?";
 
     private final Database database;
 
@@ -54,6 +56,11 @@ public class AccountFolderRepository implements CrudRepository<AccountFolder> {
             Connection connection = database.getConnection();
             try (PreparedStatement statement = connection.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
                 statement.setString(1, folder.getName());
+                if (folder.getParentId() != null) {
+                    statement.setLong(2, folder.getParentId());
+                } else {
+                    statement.setNull(2, java.sql.Types.INTEGER);
+                }
                 statement.executeUpdate();
                 try (ResultSet keys = statement.getGeneratedKeys()) {
                     if (keys.next()) {
@@ -73,7 +80,12 @@ public class AccountFolderRepository implements CrudRepository<AccountFolder> {
             try (PreparedStatement statement = connection.prepareStatement(UPDATE_SQL)) {
                 statement.setString(1, folder.getName());
                 statement.setLong(2, folder.isExpanded() ? 1 : 0);
-                statement.setLong(3, folder.getId());
+                if (folder.getParentId() != null) {
+                    statement.setLong(3, folder.getParentId());
+                } else {
+                    statement.setNull(3, java.sql.Types.INTEGER);
+                }
+                statement.setLong(4, folder.getId());
                 statement.executeUpdate();
             }
         } catch (SQLException e) {
@@ -84,6 +96,10 @@ public class AccountFolderRepository implements CrudRepository<AccountFolder> {
     public void delete(AccountFolder folder) {
         try {
             Connection connection = database.getConnection();
+            try (PreparedStatement reparent = connection.prepareStatement(SET_PARENT_NULL_SQL)) {
+                reparent.setLong(1, folder.getId());
+                reparent.executeUpdate();
+            }
             try (PreparedStatement statement = connection.prepareStatement(DELETE_SQL)) {
                 statement.setLong(1, folder.getId());
                 statement.executeUpdate();
@@ -98,6 +114,8 @@ public class AccountFolderRepository implements CrudRepository<AccountFolder> {
         folder.setId(resultSet.getLong("id"));
         folder.setName(resultSet.getString("name"));
         folder.setExpanded(resultSet.getInt("is_expanded") != 0);
+        long parentId = resultSet.getLong("parent_id");
+        folder.setParentId(resultSet.wasNull() ? null : parentId);
         folder.setCreatedAt(toLocalDateTime(resultSet.getTimestamp("created_at")));
         folder.setUpdatedAt(toLocalDateTime(resultSet.getTimestamp("updated_at")));
         return folder;

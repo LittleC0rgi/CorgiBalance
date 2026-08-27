@@ -45,6 +45,8 @@ public final class Database {
             "PRAGMA table_info(account_folders)";
     private static final String ADD_FOLDER_EXPANDED_COLUMN_SQL =
             "ALTER TABLE account_folders ADD COLUMN is_expanded INTEGER NOT NULL DEFAULT 1";
+    private static final String ADD_FOLDER_PARENT_ID_COLUMN_SQL =
+            "ALTER TABLE account_folders ADD COLUMN parent_id INTEGER REFERENCES account_folders(id) ON DELETE SET NULL";
     private static final String RENAME_TRANSACTIONS_SQL =
             "ALTER TABLE transactions RENAME TO transactions_migrate";
     private static final String MIGRATE_TRANSACTIONS_SQL =
@@ -105,6 +107,7 @@ public final class Database {
         connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
         if (isConfiguredExternal()) {
             logger.info("Using configured database as-is, running migrations only");
+            ensureSchema();
             migrate();
             return;
         }
@@ -117,6 +120,17 @@ public final class Database {
             return path != null && !path.isBlank();
         } catch (IOException e) {
             throw new SQLException("Failed to read database configuration", e);
+        }
+    }
+
+    private void ensureSchema() throws SQLException {
+        try (Statement statement = connection.createStatement();
+             ResultSet rs = statement.executeQuery(
+                     "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='account_folders'")) {
+            if (rs.next() && rs.getInt(1) == 0) {
+                logger.info("Schema missing, applying init.sql");
+                applyScript("/db/init.sql");
+            }
         }
     }
 
@@ -219,6 +233,7 @@ public final class Database {
         migrateTransactions();
         migrateAccountFolders();
         migrateAccountFolderExpanded();
+        migrateAccountFolderParentId();
     }
 
     private void migrateAccountFolders() throws SQLException {
@@ -238,6 +253,16 @@ public final class Database {
         logger.info("Adding is_expanded column to account_folders table");
         try (Statement statement = connection.createStatement()) {
             statement.execute(ADD_FOLDER_EXPANDED_COLUMN_SQL);
+        }
+    }
+
+    private void migrateAccountFolderParentId() throws SQLException {
+        if (accountFolderColumnNames().contains("parent_id")) {
+            return;
+        }
+        logger.info("Adding parent_id column to account_folders table");
+        try (Statement statement = connection.createStatement()) {
+            statement.execute(ADD_FOLDER_PARENT_ID_COLUMN_SQL);
         }
     }
 

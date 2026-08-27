@@ -36,6 +36,7 @@ public class OverviewController implements Refreshable {
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     private static final int NEAREST_LIMIT = 5;
     private static final DataFormat ACCOUNT_ID_DATA = new DataFormat("application/x-corgibalance-account-id");
+    private static final DataFormat FOLDER_ID_DATA = new DataFormat("application/x-corgibalance-folder-id");
     @FXML
     private Label balanceValue;
     @FXML
@@ -263,29 +264,42 @@ public class OverviewController implements Refreshable {
         List<AccountFolder> folders = accountFolderRepository.findAll();
         Set<Long> folderIds = folders.stream().map(AccountFolder::getId).collect(java.util.stream.Collectors.toSet());
 
+        Map<Long, List<AccountFolder>> childrenByParent = new HashMap<>();
+        for (AccountFolder f : folders) {
+            Long pid = f.getParentId();
+            childrenByParent.computeIfAbsent(pid, _ -> new ArrayList<>()).add(f);
+        }
+
         List<Account> unassigned = accounts.stream()
                 .filter(account -> account.getFolderId() == null || !folderIds.contains(account.getFolderId()))
                 .toList();
         for (Account account : unassigned) {
             accountList.getChildren().add(accountRow(account));
         }
-        for (AccountFolder folder : folders) {
-            List<Account> inFolder = accounts.stream()
-                    .filter(account -> folder.getId().equals(account.getFolderId()))
-                    .toList();
-            accountList.getChildren().add(folderHeader(folder, inFolder));
-            if (folder.isExpanded()) {
-                for (Account account : inFolder) {
-                    accountList.getChildren().add(accountRow(account));
-                }
-            }
-        }
+        renderFolderTree(childrenByParent, accounts, null, 0);
         accountList.getChildren().add(unassignedHeader);
         unassignedHeader.setVisible(false);
         unassignedHeader.setManaged(false);
     }
 
-    private Node folderHeader(AccountFolder folder, List<Account> accounts) {
+    private void renderFolderTree(Map<Long, List<AccountFolder>> childrenByParent,
+                                   List<Account> accounts, Long parentId, int depth) {
+        List<AccountFolder> children = childrenByParent.getOrDefault(parentId, List.of());
+        for (AccountFolder folder : children) {
+            List<Account> inFolder = accounts.stream()
+                    .filter(account -> folder.getId().equals(account.getFolderId()))
+                    .toList();
+            accountList.getChildren().add(folderHeader(folder, inFolder, depth));
+            if (folder.isExpanded()) {
+                for (Account account : inFolder) {
+                    accountList.getChildren().add(accountRow(account, depth + 1));
+                }
+                renderFolderTree(childrenByParent, accounts, folder.getId(), depth + 1);
+            }
+        }
+    }
+
+    private Node folderHeader(AccountFolder folder, List<Account> accounts, int depth) {
         Long baseCurrencyId = baseCurrencyCombo.getValue();
         long total = 0;
         for (Account account : accounts) {
@@ -306,12 +320,18 @@ public class OverviewController implements Refreshable {
         header.setAlignment(Pos.CENTER_LEFT);
         header.setSpacing(6);
         header.getStyleClass().add("account-folder");
+        if (depth > 0) {
+            header.setStyle("-fx-padding: 6 10 6 " + (12 + depth * 16) + ";");
+        }
         header.setOnMouseClicked(_ -> toggleFolder(folder));
         dropTarget(header, folder.getId());
+        folderDragSource(header, folder);
 
+        MenuItem addSubfolder = new MenuItem("Add subfolder");
+        addSubfolder.setOnAction(_ -> onAddSubfolder(folder));
         MenuItem deleteItem = new MenuItem("Delete");
         deleteItem.setOnAction(_ -> deleteFolder(folder));
-        ContextMenu menu = new ContextMenu(deleteItem);
+        ContextMenu menu = new ContextMenu(addSubfolder, deleteItem);
         header.setOnContextMenuRequested(e -> {
             menu.show(header, e.getScreenX(), e.getScreenY());
             e.consume();
@@ -345,6 +365,10 @@ public class OverviewController implements Refreshable {
     }
 
     private Node accountRow(Account account) {
+        return accountRow(account, 0);
+    }
+
+    private Node accountRow(Account account, int depth) {
         long balance = accountRepository.currentBalance(account.getId());
         Label name = new Label(account.getName());
         name.getStyleClass().add("card__text");
@@ -355,6 +379,9 @@ public class OverviewController implements Refreshable {
 
         HBox row = new HBox(name, spacer, amount);
         row.getStyleClass().add("account-row");
+        if (depth > 0) {
+            row.setStyle("-fx-padding: 2 0 2 " + (12 + depth * 16) + ";");
+        }
         dragSource(row, account);
         return row;
     }
@@ -376,9 +403,21 @@ public class OverviewController implements Refreshable {
         });
     }
 
+    private void folderDragSource(Node node, AccountFolder folder) {
+        node.setOnDragDetected(event -> {
+            Dragboard dragboard = node.startDragAndDrop(TransferMode.MOVE);
+            ClipboardContent content = new ClipboardContent();
+            content.put(FOLDER_ID_DATA, String.valueOf(folder.getId()));
+            dragboard.setContent(content);
+            dragboard.setDragView(node.snapshot(null, null));
+            event.consume();
+        });
+    }
+
     private void dropTarget(Node node, Long folderId) {
         node.setOnDragOver(event -> {
-            if (event.getGestureSource() != node && event.getDragboard().hasContent(ACCOUNT_ID_DATA)) {
+            if (event.getGestureSource() != node
+                    && (event.getDragboard().hasContent(ACCOUNT_ID_DATA) || event.getDragboard().hasContent(FOLDER_ID_DATA))) {
                 event.acceptTransferModes(TransferMode.MOVE);
                 node.getStyleClass().add("account-folder--drag-over");
             }
@@ -392,6 +431,15 @@ public class OverviewController implements Refreshable {
                 long accountId = Long.parseLong((String) dragboard.getContent(ACCOUNT_ID_DATA));
                 moveAccountToFolder(accountId, folderId);
                 success = true;
+            } else if (dragboard.hasContent(FOLDER_ID_DATA)) {
+                long draggedFolderId = Long.parseLong((String) dragboard.getContent(FOLDER_ID_DATA));
+                if (folderId != null && draggedFolderId != folderId && !isDescendant(draggedFolderId, folderId)) {
+                    moveFolderToFolder(draggedFolderId, folderId);
+                    success = true;
+                } else if (folderId == null && draggedFolderId != 0) {
+                    moveFolderToRoot(draggedFolderId);
+                    success = true;
+                }
             }
             node.getStyleClass().remove("account-folder--drag-over");
             event.setDropCompleted(success);
@@ -414,10 +462,61 @@ public class OverviewController implements Refreshable {
         }
     }
 
+    private void moveFolderToFolder(long childId, Long newParentId) {
+        try {
+            for (AccountFolder folder : accountFolderRepository.findAll()) {
+                if (folder.getId() == childId) {
+                    folder.setParentId(newParentId);
+                    accountFolderRepository.update(folder);
+                    refresh();
+                    return;
+                }
+            }
+        } catch (RuntimeException e) {
+            showError(e);
+        }
+    }
+
+    private void moveFolderToRoot(long folderId) {
+        try {
+            for (AccountFolder folder : accountFolderRepository.findAll()) {
+                if (folder.getId() == folderId) {
+                    folder.setParentId(null);
+                    accountFolderRepository.update(folder);
+                    refresh();
+                    return;
+                }
+            }
+        } catch (RuntimeException e) {
+            showError(e);
+        }
+    }
+
+    private boolean isDescendant(long ancestorId, long folderId) {
+        List<AccountFolder> folders = accountFolderRepository.findAll();
+        Map<Long, AccountFolder> byId = new HashMap<>();
+        for (AccountFolder f : folders) {
+            byId.put(f.getId(), f);
+        }
+        Long current = folderId;
+        while (current != null) {
+            if (current == ancestorId) {
+                return true;
+            }
+            AccountFolder f = byId.get(current);
+            current = f == null ? null : f.getParentId();
+        }
+        return false;
+    }
+
     @FXML
     private void onAddFolder() {
+        onAddSubfolder(null);
+    }
+
+    private void onAddSubfolder(AccountFolder parent) {
         TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("New folder");
+        dialog.setTitle(parent == null ? "New folder" : "New subfolder");
         dialog.setHeaderText(null);
         dialog.setContentText("Folder name:");
         dialog.getDialogPane().getStylesheets().add(
@@ -434,6 +533,7 @@ public class OverviewController implements Refreshable {
         }
         AccountFolder folder = new AccountFolder();
         folder.setName(name);
+        folder.setParentId(parent != null ? parent.getId() : null);
         try {
             accountFolderRepository.create(folder);
             refresh();
@@ -446,7 +546,7 @@ public class OverviewController implements Refreshable {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Delete folder");
         confirm.setHeaderText(null);
-        confirm.setContentText("Delete folder \"" + folder.getName() + "\"? Accounts in it will become unassigned.");
+        confirm.setContentText("Delete folder \"" + folder.getName() + "\"? Accounts and subfolders will become unassigned.");
         confirm.getDialogPane().getStylesheets().add(
                 Objects.requireNonNull(getClass().getResource("/css/base.css")).toExternalForm());
         confirm.getDialogPane().lookupButton(ButtonType.OK).getStyleClass().addAll("btn", "btn--danger");

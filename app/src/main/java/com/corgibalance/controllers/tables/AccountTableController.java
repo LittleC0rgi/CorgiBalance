@@ -15,7 +15,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AccountTableController extends BaseTableController<Account, AccountRepository> {
 
@@ -136,11 +138,22 @@ public class AccountTableController extends BaseTableController<Account, Account
         if (folderId == null) {
             return "";
         }
-        return folderRepository.findAll().stream()
-                .filter(f -> f.getId().equals(folderId))
-                .map(AccountFolder::getName)
-                .findFirst()
-                .orElse(String.valueOf(folderId));
+        List<AccountFolder> folders = folderRepository.findAll();
+        Map<Long, AccountFolder> byId = new HashMap<>();
+        for (AccountFolder f : folders) {
+            byId.put(f.getId(), f);
+        }
+        AccountFolder folder = byId.get(folderId);
+        if (folder == null) {
+            return String.valueOf(folderId);
+        }
+        List<String> parts = new java.util.ArrayList<>();
+        AccountFolder current = folder;
+        while (current != null) {
+            parts.addFirst(current.getName());
+            current = current.getParentId() != null ? byId.get(current.getParentId()) : null;
+        }
+        return String.join(" > ", parts);
     }
 
     private Long defaultCurrencyId() {

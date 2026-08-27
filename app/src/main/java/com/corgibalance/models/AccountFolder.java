@@ -9,4 +9,5 @@ public class AccountFolder extends BaseModel {
 
     private String name;
     private boolean expanded = true;
+    private Long parentId;
 }

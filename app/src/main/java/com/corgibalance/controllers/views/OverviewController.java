@@ -274,8 +274,10 @@ public class OverviewController implements Refreshable {
                     .filter(account -> folder.getId().equals(account.getFolderId()))
                     .toList();
             accountList.getChildren().add(folderHeader(folder, inFolder));
-            for (Account account : inFolder) {
-                accountList.getChildren().add(accountRow(account));
+            if (folder.isExpanded()) {
+                for (Account account : inFolder) {
+                    accountList.getChildren().add(accountRow(account));
+                }
             }
         }
         accountList.getChildren().add(unassignedHeader);
@@ -291,7 +293,7 @@ public class OverviewController implements Refreshable {
             total += converter.convert(balance, account.getCurrencyId(), baseCurrencyId);
         }
 
-        HeroIcon icon = new HeroIcon(HeroIcon.Icon.FOLDER);
+        HeroIcon icon = new HeroIcon(folder.isExpanded() ? HeroIcon.Icon.FOLDER : HeroIcon.Icon.FOLDER_PLUS);
         icon.getStyleClass().add("account-folder__icon");
         Label name = new Label(folder.getName());
         name.getStyleClass().add("account-folder__name");
@@ -304,6 +306,7 @@ public class OverviewController implements Refreshable {
         header.setAlignment(Pos.CENTER_LEFT);
         header.setSpacing(6);
         header.getStyleClass().add("account-folder");
+        header.setOnMouseClicked(_ -> toggleFolder(folder));
         dropTarget(header, folder.getId());
 
         MenuItem deleteItem = new MenuItem("Delete");
@@ -315,6 +318,16 @@ public class OverviewController implements Refreshable {
         });
 
         return header;
+    }
+
+    private void toggleFolder(AccountFolder folder) {
+        folder.setExpanded(!folder.isExpanded());
+        try {
+            accountFolderRepository.update(folder);
+            refresh();
+        } catch (RuntimeException e) {
+            showError(e);
+        }
     }
 
     private HBox createUnassignedHeader() {

@@ -19,11 +19,11 @@ import lombok.RequiredArgsConstructor;
 public class AccountFolderRepository implements CrudRepository<AccountFolder> {
 
     private static final String FIND_ALL_SQL =
-            "SELECT id, name, created_at, updated_at FROM account_folders ORDER BY name COLLATE NOCASE";
+            "SELECT id, name, is_expanded, created_at, updated_at FROM account_folders ORDER BY name COLLATE NOCASE";
     private static final String INSERT_SQL =
             "INSERT INTO account_folders (name) VALUES (?)";
     private static final String UPDATE_SQL =
-            "UPDATE account_folders SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+            "UPDATE account_folders SET name = ?, is_expanded = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
     private static final String DELETE_SQL =
             "DELETE FROM account_folders WHERE id = ?";
 
@@ -72,7 +72,8 @@ public class AccountFolderRepository implements CrudRepository<AccountFolder> {
             Connection connection = database.getConnection();
             try (PreparedStatement statement = connection.prepareStatement(UPDATE_SQL)) {
                 statement.setString(1, folder.getName());
-                statement.setLong(2, folder.getId());
+                statement.setLong(2, folder.isExpanded() ? 1 : 0);
+                statement.setLong(3, folder.getId());
                 statement.executeUpdate();
             }
         } catch (SQLException e) {
@@ -96,6 +97,7 @@ public class AccountFolderRepository implements CrudRepository<AccountFolder> {
         AccountFolder folder = new AccountFolder();
         folder.setId(resultSet.getLong("id"));
         folder.setName(resultSet.getString("name"));
+        folder.setExpanded(resultSet.getInt("is_expanded") != 0);
         folder.setCreatedAt(toLocalDateTime(resultSet.getTimestamp("created_at")));
         folder.setUpdatedAt(toLocalDateTime(resultSet.getTimestamp("updated_at")));
         return folder;

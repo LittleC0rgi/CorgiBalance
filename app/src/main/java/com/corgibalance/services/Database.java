@@ -41,6 +41,10 @@ public final class Database {
             "PRAGMA table_info(accounts)";
     private static final String ADD_FOLDER_ID_COLUMN_SQL =
             "ALTER TABLE accounts ADD COLUMN folder_id INTEGER REFERENCES account_folders(id) ON DELETE SET NULL";
+    private static final String ACCOUNT_FOLDERS_COLUMNS_SQL =
+            "PRAGMA table_info(account_folders)";
+    private static final String ADD_FOLDER_EXPANDED_COLUMN_SQL =
+            "ALTER TABLE account_folders ADD COLUMN is_expanded INTEGER NOT NULL DEFAULT 1";
     private static final String RENAME_TRANSACTIONS_SQL =
             "ALTER TABLE transactions RENAME TO transactions_migrate";
     private static final String MIGRATE_TRANSACTIONS_SQL =
@@ -100,7 +104,8 @@ public final class Database {
         logger.info("Connecting to database: " + dbPath.toAbsolutePath());
         connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
         if (isConfiguredExternal()) {
-            logger.info("Using configured database as-is, skipping initialization");
+            logger.info("Using configured database as-is, running migrations only");
+            migrate();
             return;
         }
         initDatabase();
@@ -207,8 +212,13 @@ public final class Database {
         if (isTableEmpty("currencies")) {
             applyScript("/db/seed.sql");
         }
+        migrate();
+    }
+
+    private void migrate() throws SQLException {
         migrateTransactions();
         migrateAccountFolders();
+        migrateAccountFolderExpanded();
     }
 
     private void migrateAccountFolders() throws SQLException {
@@ -219,6 +229,27 @@ public final class Database {
         try (Statement statement = connection.createStatement()) {
             statement.execute(ADD_FOLDER_ID_COLUMN_SQL);
         }
+    }
+
+    private void migrateAccountFolderExpanded() throws SQLException {
+        if (accountFolderColumnNames().contains("is_expanded")) {
+            return;
+        }
+        logger.info("Adding is_expanded column to account_folders table");
+        try (Statement statement = connection.createStatement()) {
+            statement.execute(ADD_FOLDER_EXPANDED_COLUMN_SQL);
+        }
+    }
+
+    private Set<String> accountFolderColumnNames() throws SQLException {
+        Set<String> columns = new HashSet<>();
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(ACCOUNT_FOLDERS_COLUMNS_SQL)) {
+            while (resultSet.next()) {
+                columns.add(resultSet.getString("name"));
+            }
+        }
+        return columns;
     }
 
     private Set<String> accountColumnNames() throws SQLException {

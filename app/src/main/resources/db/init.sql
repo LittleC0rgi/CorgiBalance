@@ -80,6 +80,10 @@ CREATE TABLE IF NOT EXISTS account_folders (
     name TEXT NOT NULL UNIQUE,
 
 
+    -- Whether the folder is expanded (accounts visible) in the UI.
+    is_expanded INTEGER NOT NULL DEFAULT 1,
+
+
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

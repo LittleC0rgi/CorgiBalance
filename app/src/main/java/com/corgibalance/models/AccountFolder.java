@@ -8,4 +8,5 @@ import lombok.Setter;
 public class AccountFolder extends BaseModel {
 
     private String name;
+    private boolean expanded = true;
 }

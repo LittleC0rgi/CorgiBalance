@@ -469,6 +469,32 @@ public class TransactionTableController extends PagedTableController<Transaction
         return "Delete this transaction?";
     }
 
+    @Override
+    protected List<MenuItem> contextMenuItems(Transaction item) {
+        MenuItem copyItem = new MenuItem("Copy");
+        copyItem.setDisable(item.getTransactionType() == TransactionType.TRANSFER);
+        copyItem.setOnAction(_ -> copyTransaction(item));
+        return List.of(copyItem);
+    }
+
+    private void copyTransaction(Transaction original) {
+        Transaction copy = new Transaction();
+        copy.setAccountId(original.getAccountId());
+        copy.setTagId(original.getTagId());
+        copy.setAmount(original.getAmount());
+        copy.setDescription(original.getDescription());
+        copy.setTransactionType(original.getTransactionType());
+        copy.setTransactionDate(original.getTransactionDate());
+        repository.create(copy);
+        int index = table.getItems().indexOf(original);
+        if (index >= 0) {
+            table.getItems().add(index + 1, copy);
+        } else {
+            table.getItems().add(copy);
+        }
+        table.refresh();
+    }
+
     private static final class FilterMenu {
         private final Button button = new Button();
         private final Popup popup = new Popup();

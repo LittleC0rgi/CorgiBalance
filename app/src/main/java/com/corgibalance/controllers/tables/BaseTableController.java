@@ -10,6 +10,7 @@ import javafx.scene.input.KeyCode;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -37,16 +38,18 @@ public abstract class BaseTableController<T extends BaseModel, R extends CrudRep
         });
         table.setRowFactory(tv -> {
             TableRow<T> row = new TableRow<>();
-            MenuItem deleteItem = new MenuItem("Delete");
-            deleteItem.setOnAction(_ -> {
-                T item = row.getItem();
+            row.itemProperty().addListener((_, _, item) -> {
                 if (item != null && !isPlaceholder(item)) {
-                    deleteWithConfirmation(item);
+                    ContextMenu menu = new ContextMenu();
+                    menu.getItems().addAll(contextMenuItems(item));
+                    MenuItem deleteItem = new MenuItem("Delete");
+                    deleteItem.setOnAction(_ -> deleteWithConfirmation(row.getItem()));
+                    menu.getItems().add(deleteItem);
+                    row.setContextMenu(menu);
+                } else {
+                    row.setContextMenu(null);
                 }
             });
-            ContextMenu menu = new ContextMenu(deleteItem);
-            row.contextMenuProperty().bind(
-                    javafx.beans.binding.Bindings.when(row.emptyProperty()).then((ContextMenu) null).otherwise(menu));
             return row;
         });
     }
@@ -65,6 +68,10 @@ public abstract class BaseTableController<T extends BaseModel, R extends CrudRep
 
     protected boolean isPlaceholder(T item) {
         return item.getId() == null;
+    }
+
+    protected List<MenuItem> contextMenuItems(T item) {
+        return List.of();
     }
 
     protected void commit(T item, Consumer<T> apply, boolean createOnPlaceholder) {

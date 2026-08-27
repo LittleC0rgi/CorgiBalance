@@ -72,6 +72,7 @@ public class OverviewController implements Refreshable {
     private TransactionRepository transactionRepository;
     private BudgetRepository budgetRepository;
     private SettingsRepository settingsRepository;
+    private HBox unassignedHeader;
     @Setter
     private Consumer<String> navigationHandler;
 
@@ -122,6 +123,9 @@ public class OverviewController implements Refreshable {
         });
         monthCombo.valueProperty().addListener((obs, oldValue, newValue) -> refresh());
         yearCombo.valueProperty().addListener((obs, oldValue, newValue) -> refresh());
+
+        unassignedHeader = createUnassignedHeader();
+        accountList.getChildren().add(unassignedHeader);
 
         refresh();
     }
@@ -258,6 +262,13 @@ public class OverviewController implements Refreshable {
         List<Account> accounts = accountRepository.findAll();
         List<AccountFolder> folders = accountFolderRepository.findAll();
         Set<Long> folderIds = folders.stream().map(AccountFolder::getId).collect(java.util.stream.Collectors.toSet());
+
+        List<Account> unassigned = accounts.stream()
+                .filter(account -> account.getFolderId() == null || !folderIds.contains(account.getFolderId()))
+                .toList();
+        for (Account account : unassigned) {
+            accountList.getChildren().add(accountRow(account));
+        }
         for (AccountFolder folder : folders) {
             List<Account> inFolder = accounts.stream()
                     .filter(account -> folder.getId().equals(account.getFolderId()))
@@ -267,13 +278,9 @@ public class OverviewController implements Refreshable {
                 accountList.getChildren().add(accountRow(account));
             }
         }
-        List<Account> unassigned = accounts.stream()
-                .filter(account -> account.getFolderId() == null || !folderIds.contains(account.getFolderId()))
-                .toList();
-        accountList.getChildren().add(unassignedHeader());
-        for (Account account : unassigned) {
-            accountList.getChildren().add(accountRow(account));
-        }
+        accountList.getChildren().add(unassignedHeader);
+        unassignedHeader.setVisible(false);
+        unassignedHeader.setManaged(false);
     }
 
     private Node folderHeader(AccountFolder folder, List<Account> accounts) {
@@ -298,10 +305,19 @@ public class OverviewController implements Refreshable {
         header.setSpacing(6);
         header.getStyleClass().add("account-folder");
         dropTarget(header, folder.getId());
+
+        MenuItem deleteItem = new MenuItem("Delete");
+        deleteItem.setOnAction(_ -> deleteFolder(folder));
+        ContextMenu menu = new ContextMenu(deleteItem);
+        header.setOnContextMenuRequested(e -> {
+            menu.show(header, e.getScreenX(), e.getScreenY());
+            e.consume();
+        });
+
         return header;
     }
 
-    private Node unassignedHeader() {
+    private HBox createUnassignedHeader() {
         Label name = new Label("No folder");
         name.getStyleClass().add("account-folder__name");
         Region spacer = new Region();
@@ -337,7 +353,13 @@ public class OverviewController implements Refreshable {
             content.put(ACCOUNT_ID_DATA, String.valueOf(account.getId()));
             dragboard.setContent(content);
             dragboard.setDragView(node.snapshot(null, null));
+            unassignedHeader.setVisible(true);
+            unassignedHeader.setManaged(true);
             event.consume();
+        });
+        node.setOnDragDone(event -> {
+            unassignedHeader.setVisible(false);
+            unassignedHeader.setManaged(false);
         });
     }
 
@@ -385,6 +407,10 @@ public class OverviewController implements Refreshable {
         dialog.setTitle("New folder");
         dialog.setHeaderText(null);
         dialog.setContentText("Folder name:");
+        dialog.getDialogPane().getStylesheets().add(
+                Objects.requireNonNull(getClass().getResource("/css/base.css")).toExternalForm());
+        dialog.getDialogPane().lookupButton(ButtonType.OK).getStyleClass().addAll("btn", "btn--primary");
+        dialog.getDialogPane().lookupButton(ButtonType.CANCEL).getStyleClass().add("btn");
         Optional<String> result = dialog.showAndWait();
         if (result.isEmpty()) {
             return;
@@ -397,6 +423,26 @@ public class OverviewController implements Refreshable {
         folder.setName(name);
         try {
             accountFolderRepository.create(folder);
+            refresh();
+        } catch (RuntimeException e) {
+            showError(e);
+        }
+    }
+
+    private void deleteFolder(AccountFolder folder) {
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Delete folder");
+        confirm.setHeaderText(null);
+        confirm.setContentText("Delete folder \"" + folder.getName() + "\"? Accounts in it will become unassigned.");
+        confirm.getDialogPane().getStylesheets().add(
+                Objects.requireNonNull(getClass().getResource("/css/base.css")).toExternalForm());
+        confirm.getDialogPane().lookupButton(ButtonType.OK).getStyleClass().addAll("btn", "btn--danger");
+        confirm.getDialogPane().lookupButton(ButtonType.CANCEL).getStyleClass().add("btn");
+        if (confirm.showAndWait().filter(r -> r == ButtonType.OK).isEmpty()) {
+            return;
+        }
+        try {
+            accountFolderRepository.delete(folder);
             refresh();
         } catch (RuntimeException e) {
             showError(e);
@@ -468,7 +514,7 @@ public class OverviewController implements Refreshable {
 
         Button confirm = new Button();
         confirm.setGraphic(new HeroIcon(HeroIcon.Icon.CHECK));
-        confirm.getStyleClass().addAll("btn", "btn--transparent");
+        confirm.getStyleClass().addAll("btn", "btn--transparent", "btn--mini", "nearest__btn");
         confirm.setTooltip(new Tooltip("Confirm"));
         confirm.setOnAction(_ -> confirmPayment(payment));
 
@@ -503,7 +549,7 @@ public class OverviewController implements Refreshable {
     private Button deleteButton(NearestPayment payment) {
         Button delete = new Button();
         delete.setGraphic(new HeroIcon(HeroIcon.Icon.X_MARK));
-        delete.getStyleClass().addAll("btn", "btn--danger-transparent");
+        delete.getStyleClass().addAll("btn", "btn--danger-transparent", "btn--mini", "nearest__btn");
         delete.setTooltip(new Tooltip("Delete"));
         delete.setOnAction(_ -> deletePayment(payment));
         return delete;
@@ -574,6 +620,9 @@ public class OverviewController implements Refreshable {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setHeaderText(null);
         alert.setContentText(e.getMessage());
+        alert.getDialogPane().getStylesheets().add(
+                Objects.requireNonNull(getClass().getResource("/css/base.css")).toExternalForm());
+        alert.getDialogPane().lookupButton(ButtonType.OK).getStyleClass().addAll("btn", "btn--primary");
         alert.showAndWait();
     }
 

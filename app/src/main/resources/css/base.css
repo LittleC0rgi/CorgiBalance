@@ -99,7 +99,6 @@
 
 .btn:pressed {
     -fx-background-color: #0e0f13;
-    -fx-padding: 8 17 6 19;
 }
 
 .btn:disabled {
@@ -111,7 +110,6 @@
     -fx-background-color: white;
     -fx-text-fill: #272932;
     -fx-border-color: rgba(39, 41, 50, 0.3);
-    -fx-padding: 6;
 }
 
 .btn--transparent .hero_icon {
@@ -162,7 +160,6 @@
 .btn--danger {
     -fx-background-color: #CA2E55;
     -fx-text-fill: white;
-    -fx-padding: 6;
 }
 
 .btn--danger:hover {
@@ -187,7 +184,6 @@
     -fx-background-color: transparent;
     -fx-text-fill: #272932;
     -fx-border-color: rgba(202, 46, 85, 0.30);
-    -fx-padding: 6;
 }
 
 .btn--danger-transparent .hero_icon {
@@ -345,6 +341,100 @@
     -fx-font-size: 12px;
     -fx-background-radius: 6;
     -fx-padding: 4 8;
+}
+
+/* ============================================
+   Context Menu
+   ============================================ */
+.context-menu {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-border-color: #EFEFF2;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-padding: 4;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 8, 0, 0, 2);
+}
+
+.menu-item {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.menu-item .label {
+    -fx-text-fill: #272932;
+    -fx-font-size: 13px;
+    -fx-padding: 6 10;
+}
+
+.menu-item:hover,
+.menu-item:focused {
+    -fx-background-color: #F5F5F6;
+    -fx-background-radius: 6;
+}
+
+.menu-item:hover .label,
+.menu-item:focused .label {
+    -fx-text-fill: #272932;
+}
+
+.menu-item:disabled .label {
+    -fx-text-fill: #8B8D99;
+}
+
+.context-menu .separator {
+    -fx-padding: 4 0;
+}
+
+.context-menu .separator .line {
+    -fx-border-color: #EFEFF2;
+    -fx-border-width: 1 0 0 0;
+}
+
+/* ============================================
+   Dialogs
+   ============================================ */
+.dialog-pane {
+    -fx-background-color: white;
+    -fx-border-color: #EFEFF2;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: white;
+    -fx-background-radius: 12 12 0 0;
+}
+
+.dialog-pane .header-panel .label {
+    -fx-text-fill: #272932;
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+}
+
+.dialog-pane .content.label {
+    -fx-text-fill: #5A5C66;
+    -fx-font-size: 13px;
+}
+
+.dialog-pane .text-input {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-border-color: #EFEFF2;
+    -fx-border-radius: 8;
+    -fx-padding: 7 12;
+    -fx-font-size: 13px;
+    -fx-text-fill: #272932;
+}
+
+.dialog-pane .text-input:focused {
+    -fx-border-color: #F3A712;
+    -fx-effect: dropshadow(gaussian, rgba(243, 167, 18, 0.35), 6, 0, 0, 0);
+}
+
+.dialog-pane .button-bar {
+    -fx-padding: 8 16 16 16;
 }
 
 /* ============================================

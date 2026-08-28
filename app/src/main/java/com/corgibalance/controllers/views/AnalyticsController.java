@@ -88,7 +88,7 @@ public class AnalyticsController implements Refreshable {
 
         ProfitLossReport.Data data = ProfitLossReport.compute(
                 transactionRepository, tagRepository, converter, baseCurrencyId, year, month);
-        ProfitLossReport.populate(reportGrid, data, converter, baseCurrencyId);
+        ProfitLossReport.populate(reportGrid, data, converter, baseCurrencyId, true);
     }
 
     private Long defaultBaseCurrencyId() {

@@ -66,12 +66,13 @@ public final class ProfitLossReport {
         return new Data(rows, totalIncome, totalExpense, totalIncome - totalExpense);
     }
 
-    public static void populate(GridPane grid, Data data, CurrencyConverter converter, Long baseCurrencyId) {
+    public static void populate(GridPane grid, Data data, CurrencyConverter converter, Long baseCurrencyId,
+                                boolean showTotal) {
         grid.getChildren().clear();
         int row = 0;
         grid.add(headerCell("Category"), 0, 0);
-        grid.add(headerCell("Income"), 1, 0);
-        grid.add(headerCell("Expense"), 2, 0);
+        grid.add(valueHeaderCell("Income"), 1, 0);
+        grid.add(valueHeaderCell("Expense"), 2, 0);
 
         for (Row r : data.rows()) {
             row++;
@@ -80,18 +81,20 @@ public final class ProfitLossReport {
             grid.add(valueCell(converter.format(r.expense(), baseCurrencyId), "report__expense", false), 2, row);
         }
 
-        row++;
-        Region separator = new Region();
-        separator.getStyleClass().add("report__separator");
-        separator.setMaxWidth(Double.MAX_VALUE);
-        GridPane.setHgrow(separator, Priority.ALWAYS);
-        GridPane.setColumnSpan(separator, 3);
-        grid.add(separator, 0, row);
+        if (showTotal) {
+            row++;
+            Region separator = new Region();
+            separator.getStyleClass().add("report__separator");
+            separator.setMaxWidth(Double.MAX_VALUE);
+            GridPane.setHgrow(separator, Priority.ALWAYS);
+            GridPane.setColumnSpan(separator, 3);
+            grid.add(separator, 0, row);
 
-        row++;
-        grid.add(nameCell("Total", true), 0, row);
-        grid.add(valueCell(converter.format(data.totalIncome(), baseCurrencyId), "report__income", true), 1, row);
-        grid.add(valueCell(converter.format(data.totalExpense(), baseCurrencyId), "report__expense", true), 2, row);
+            row++;
+            grid.add(nameCell("Total", true), 0, row);
+            grid.add(valueCell(converter.format(data.totalIncome(), baseCurrencyId), "report__income", true), 1, row);
+            grid.add(valueCell(converter.format(data.totalExpense(), baseCurrencyId), "report__expense", true), 2, row);
+        }
 
         row++;
         boolean profit = data.profit() >= 0;
@@ -129,6 +132,13 @@ public final class ProfitLossReport {
     private static Label headerCell(String text) {
         Label label = new Label(text);
         label.getStyleClass().add("report__header");
+        label.setMaxWidth(Double.MAX_VALUE);
+        return label;
+    }
+
+    private static Label valueHeaderCell(String text) {
+        Label label = headerCell(text);
+        label.getStyleClass().add("report__header-value");
         return label;
     }
 
@@ -136,6 +146,7 @@ public final class ProfitLossReport {
         Label label = new Label(name);
         label.getStyleClass().add("report__cell");
         label.getStyleClass().add("report__name");
+        label.setMaxWidth(Double.MAX_VALUE);
         if (bold) {
             label.getStyleClass().add("report__total");
         }

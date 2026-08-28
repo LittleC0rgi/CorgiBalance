@@ -2,19 +2,27 @@
    Profit & Loss Report
    ============================================ */
 .report__grid {
-    -fx-hgap: 16;
-    -fx-vgap: 6;
+    -fx-hgap: 1;
+    -fx-vgap: 1;
+    -fx-padding: 1;
 }
 
 .report__header {
     -fx-font-size: 12px;
     -fx-font-weight: 600;
     -fx-text-fill: #8B8D99;
+    -fx-padding: 8 12;
+}
+
+.report__header-value {
+    -fx-alignment: CENTER_RIGHT;
 }
 
 .report__cell {
     -fx-font-size: 14px;
     -fx-text-fill: #272932;
+    /*-fx-background-color: white;*/
+    -fx-padding: 6 12;
 }
 
 .report__name {

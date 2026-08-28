@@ -88,6 +88,7 @@ public class App extends Application {
         scene.getStylesheets().add(Objects.requireNonNull(App.class.getResource("/css/overview.css")).toExternalForm());
         scene.getStylesheets().add(Objects.requireNonNull(App.class.getResource("/css/table.css")).toExternalForm());
         scene.getStylesheets().add(Objects.requireNonNull(App.class.getResource("/css/calendar.css")).toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(App.class.getResource("/css/analytics.css")).toExternalForm());
     }
 
     @Override

@@ -59,7 +59,7 @@ public class MainController {
         navigation.register("Calendar", calendar, calendarController);
         navigation.register("Accounts", accounts, null);
         navigation.register("Budgets", budgets, budgetsController);
-        navigation.register("Analytics", analytics, null);
+        navigation.register("Analytics", analytics, analyticsController);
         navigation.register("Settings", settings, null);
 
         overviewController.setNavigationHandler(sidebar::selectView);

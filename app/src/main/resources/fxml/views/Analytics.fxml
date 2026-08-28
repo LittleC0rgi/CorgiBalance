@@ -1,9 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <VBox xmlns:fx="http://javafx.com/fxml/1"
       xmlns="http://javafx.com/javafx/25"
-      fx:controller="com.corgibalance.controllers.views.AnalyticsController">
-    <Label text="Analytics" styleClass="title"/>
+      fx:controller="com.corgibalance.controllers.views.AnalyticsController" spacing="12.0" maxWidth="1200">
+    <HBox alignment="CENTER_LEFT" spacing="6.0">
+        <Label text="Profit &amp; Loss" styleClass="title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label text="Report for" styleClass="card__label"/>
+        <ComboBox fx:id="monthCombo" styleClass="overview__combo"/>
+        <ComboBox fx:id="yearCombo" styleClass="overview__combo"/>
+    </HBox>
+    <VBox styleClass="card" spacing="8.0">
+        <GridPane fx:id="reportGrid" styleClass="report__grid">
+            <columnConstraints>
+                <ColumnConstraints hgrow="ALWAYS" maxWidth="Infinity"/>
+                <ColumnConstraints/>
+                <ColumnConstraints/>
+            </columnConstraints>
+            <Label text="Category" styleClass="report__header" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <Label text="Income" styleClass="report__header" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+            <Label text="Expense" styleClass="report__header" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+        </GridPane>
+    </VBox>
 </VBox>

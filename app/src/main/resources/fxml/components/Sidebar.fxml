@@ -1,13 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import com.corgibalance.components.HeroIcon?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ToggleButton?>
-<?import javafx.scene.control.ToggleGroup?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
-<?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.layout.VBox?>
+<?import com.corgibalance.components.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <fx:root xmlns:fx="http://javafx.com/fxml/1"
          type="javafx.scene.layout.VBox"
          xmlns="http://javafx.com/javafx/25"
@@ -52,11 +47,11 @@
             <HeroIcon icon="BUDGETS"/>
         </graphic>
     </ToggleButton>
-    <!--    <ToggleButton text="Analytics" toggleGroup="$navGroup" styleClass="sidebar__btn">-->
-    <!--        <graphic>-->
-    <!--            <HeroIcon icon="ANALYTICS"/>-->
-    <!--        </graphic>-->
-    <!--    </ToggleButton>-->
+    <ToggleButton text="Analytics" toggleGroup="$navGroup" styleClass="sidebar__btn">
+        <graphic>
+            <HeroIcon icon="ANALYTICS"/>
+        </graphic>
+    </ToggleButton>
 
     <Region VBox.vgrow="ALWAYS"/>
 

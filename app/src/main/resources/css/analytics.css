@@ -1,0 +1,58 @@
+/* ============================================
+   Profit & Loss Report
+   ============================================ */
+.report__grid {
+    -fx-hgap: 16;
+    -fx-vgap: 6;
+}
+
+.report__header {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #8B8D99;
+}
+
+.report__cell {
+    -fx-font-size: 14px;
+    -fx-text-fill: #272932;
+}
+
+.report__name {
+    -fx-font-weight: 600;
+}
+
+.report__income {
+    -fx-text-fill: #72A276;
+}
+
+.report__expense {
+    -fx-text-fill: #CA2E55;
+}
+
+.report__total {
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+}
+
+.report__profit {
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #72A276;
+}
+
+.report__loss {
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #CA2E55;
+}
+
+.report__profit-name {
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+}
+
+.report__separator {
+    -fx-min-height: 1;
+    -fx-max-height: 1;
+    -fx-background-color: #EFEFF2;
+}

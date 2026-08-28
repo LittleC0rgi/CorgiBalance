@@ -1,13 +1,14 @@
 package com.corgibalance.controllers.views;
 
 import com.corgibalance.App;
+import com.corgibalance.components.HeroCheckBox;
 import com.corgibalance.repositories.SettingsRepository;
 import com.corgibalance.services.Database;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 
@@ -23,7 +24,9 @@ public class SettingsController {
     @FXML
     private VBox root;
     @FXML
-    private CheckBox showExpensesByTagCheckBox;
+    private HeroCheckBox showExpensesByTagCheckBox;
+    @FXML
+    private Label showExpensesByTagLabel;
 
     private SettingsRepository settingsRepository;
 
@@ -31,6 +34,9 @@ public class SettingsController {
     private void initialize() {
         settingsRepository = new SettingsRepository();
         showExpensesByTagCheckBox.setSelected(isShowExpensesByTag());
+        showExpensesByTagCheckBox.selectedProperty().addListener((_, _, _) -> toggleShowExpensesByTag());
+        showExpensesByTagLabel.setOnMouseClicked(_ ->
+                showExpensesByTagCheckBox.setSelected(!showExpensesByTagCheckBox.isSelected()));
     }
 
     private boolean isShowExpensesByTag() {

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.corgibalance.components.HeroCheckBox?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
@@ -26,8 +26,10 @@
 
     <VBox spacing="6" styleClass="card">
         <Label text="Overview" styleClass="card__label"/>
-        <CheckBox fx:id="showExpensesByTagCheckBox" text="Show Profit &amp; Loss report on Overview"
-                  onAction="#toggleShowExpensesByTag"/>
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <HeroCheckBox fx:id="showExpensesByTagCheckBox"/>
+            <Label fx:id="showExpensesByTagLabel" text="Show Profit &amp; Loss report on Overview"/>
+        </HBox>
     </VBox>
 
     <VBox spacing="6" VBox.vgrow="ALWAYS">

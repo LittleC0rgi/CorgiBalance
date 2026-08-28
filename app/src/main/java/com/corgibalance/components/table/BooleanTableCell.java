@@ -1,23 +1,25 @@
 package com.corgibalance.components.table;
 
+import com.corgibalance.components.HeroCheckBox;
 import com.corgibalance.models.BaseModel;
 import javafx.geometry.Pos;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.TableCell;
 
 import java.util.function.BiConsumer;
 
 public class BooleanTableCell<T extends BaseModel> extends TableCell<T, Boolean> {
 
-    private final CheckBox checkBox = new CheckBox();
-    private final BiConsumer<T, Boolean> onChange;
+    private final HeroCheckBox checkBox = new HeroCheckBox();
+    private boolean updating;
 
     public BooleanTableCell(BiConsumer<T, Boolean> onChange) {
-        this.onChange = onChange;
-        checkBox.setOnAction(_ -> {
+        checkBox.selectedProperty().addListener((_, _, on) -> {
+            if (updating) {
+                return;
+            }
             T item = getTableRow() == null ? null : getTableRow().getItem();
             if (item != null) {
-                onChange.accept(item, checkBox.isSelected());
+                onChange.accept(item, on);
             }
         });
     }
@@ -31,7 +33,9 @@ public class BooleanTableCell<T extends BaseModel> extends TableCell<T, Boolean>
         } else {
             setAlignment(Pos.CENTER);
             setGraphic(checkBox);
+            updating = true;
             checkBox.setSelected(value != null && value);
+            updating = false;
         }
     }
 }

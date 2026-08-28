@@ -11,4 +11,5 @@ public class Account extends BaseModel {
     private long initialBalance;
     private Long currencyId;
     private Long folderId;
+    private boolean hidden;
 }

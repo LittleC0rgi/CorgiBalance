@@ -15,5 +15,6 @@
         <TableColumn fx:id="folder" text="Folder"/>
         <TableColumn fx:id="initialBalance" text="Initial Balance"/>
         <TableColumn fx:id="balance" text="Actual balance"/>
+        <TableColumn fx:id="hidden" text="Hidden"/>
     </columns>
 </TableView>

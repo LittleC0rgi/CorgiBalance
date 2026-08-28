@@ -1,6 +1,7 @@
 package com.corgibalance.controllers.tables;
 
 import com.corgibalance.components.table.AmountTableCell;
+import com.corgibalance.components.table.BooleanTableCell;
 import com.corgibalance.components.table.SelectTableCell;
 import com.corgibalance.components.table.TextTableCell;
 import com.corgibalance.models.Account;
@@ -34,6 +35,8 @@ public class AccountTableController extends BaseTableController<Account, Account
     private TableColumn<Account, Long> initialBalance;
     @FXML
     private TableColumn<Account, Long> balance;
+    @FXML
+    private TableColumn<Account, Boolean> hidden;
 
     public AccountTableController() {
         super(new AccountRepository());
@@ -71,6 +74,9 @@ public class AccountTableController extends BaseTableController<Account, Account
                         : currencyFormatter.format(value, account.getCurrencyId()));
             }
         });
+
+        hidden.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().isHidden()));
+        hidden.setCellFactory(_ -> new BooleanTableCell<>((account, value) -> commit(account, a -> a.setHidden(value), false)));
     }
 
     private void onNameCommitted(TableColumn.CellEditEvent<Account, String> event) {

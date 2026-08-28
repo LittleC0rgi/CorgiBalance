@@ -19,11 +19,11 @@ import lombok.RequiredArgsConstructor;
 public class AccountRepository implements CrudRepository<Account> {
 
     private static final String FIND_ALL_SQL =
-            "SELECT id, name, initial_balance, currency_id, folder_id, created_at, updated_at FROM accounts ORDER BY name COLLATE NOCASE";
+            "SELECT id, name, initial_balance, currency_id, folder_id, is_hidden, created_at, updated_at FROM accounts ORDER BY name COLLATE NOCASE";
     private static final String INSERT_SQL =
-            "INSERT INTO accounts (name, initial_balance, currency_id, folder_id) VALUES (?, ?, ?, ?)";
+            "INSERT INTO accounts (name, initial_balance, currency_id, folder_id, is_hidden) VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_SQL =
-            "UPDATE accounts SET name = ?, initial_balance = ?, currency_id = ?, folder_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+            "UPDATE accounts SET name = ?, initial_balance = ?, currency_id = ?, folder_id = ?, is_hidden = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
     private static final String DELETE_SQL =
             "DELETE FROM accounts WHERE id = ?";
     private static final String CURRENT_BALANCE_SQL =
@@ -78,6 +78,7 @@ public class AccountRepository implements CrudRepository<Account> {
                 statement.setLong(2, account.getInitialBalance());
                 statement.setLong(3, account.getCurrencyId());
                 setNullableLong(statement, 4, account.getFolderId());
+                statement.setBoolean(5, account.isHidden());
                 statement.executeUpdate();
                 try (ResultSet keys = statement.getGeneratedKeys()) {
                     if (keys.next()) {
@@ -99,7 +100,8 @@ public class AccountRepository implements CrudRepository<Account> {
                 statement.setLong(2, account.getInitialBalance());
                 statement.setLong(3, account.getCurrencyId());
                 setNullableLong(statement, 4, account.getFolderId());
-                statement.setLong(5, account.getId());
+                statement.setBoolean(5, account.isHidden());
+                statement.setLong(6, account.getId());
                 statement.executeUpdate();
             }
         } catch (SQLException e) {
@@ -128,6 +130,7 @@ public class AccountRepository implements CrudRepository<Account> {
         account.setCurrencyId(resultSet.wasNull() ? null : currencyId);
         long folderId = resultSet.getLong("folder_id");
         account.setFolderId(resultSet.wasNull() ? null : folderId);
+        account.setHidden(resultSet.getBoolean("is_hidden"));
         account.setCreatedAt(toLocalDateTime(resultSet.getTimestamp("created_at")));
         account.setUpdatedAt(toLocalDateTime(resultSet.getTimestamp("updated_at")));
         return account;

@@ -198,6 +198,9 @@ public class OverviewController implements Refreshable {
 
         long totalBalance = 0;
         for (Account account : accountRepository.findAll()) {
+            if (account.isHidden()) {
+                continue;
+            }
             long balance = accountRepository.currentBalance(account.getId());
             totalBalance += converter.convert(balance, account.getCurrencyId(), baseCurrencyId);
         }
@@ -261,7 +264,9 @@ public class OverviewController implements Refreshable {
 
     private void renderAccountList() {
         accountList.getChildren().clear();
-        List<Account> accounts = accountRepository.findAll();
+        List<Account> accounts = accountRepository.findAll().stream()
+                .filter(account -> !account.isHidden())
+                .toList();
         List<AccountFolder> folders = accountFolderRepository.findAll();
         Set<Long> folderIds = folders.stream().map(AccountFolder::getId).collect(java.util.stream.Collectors.toSet());
 

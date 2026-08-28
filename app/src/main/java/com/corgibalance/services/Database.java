@@ -41,6 +41,8 @@ public final class Database {
             "PRAGMA table_info(accounts)";
     private static final String ADD_FOLDER_ID_COLUMN_SQL =
             "ALTER TABLE accounts ADD COLUMN folder_id INTEGER REFERENCES account_folders(id) ON DELETE SET NULL";
+    private static final String ADD_HIDDEN_COLUMN_SQL =
+            "ALTER TABLE accounts ADD COLUMN is_hidden INTEGER NOT NULL DEFAULT 0";
     private static final String ACCOUNT_FOLDERS_COLUMNS_SQL =
             "PRAGMA table_info(account_folders)";
     private static final String ADD_FOLDER_EXPANDED_COLUMN_SQL =
@@ -234,6 +236,17 @@ public final class Database {
         migrateAccountFolders();
         migrateAccountFolderExpanded();
         migrateAccountFolderParentId();
+        migrateAccountHidden();
+    }
+
+    private void migrateAccountHidden() throws SQLException {
+        if (accountColumnNames().contains("is_hidden")) {
+            return;
+        }
+        logger.info("Adding is_hidden column to accounts table");
+        try (Statement statement = connection.createStatement()) {
+            statement.execute(ADD_HIDDEN_COLUMN_SQL);
+        }
     }
 
     private void migrateAccountFolders() throws SQLException {

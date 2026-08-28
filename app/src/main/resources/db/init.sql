@@ -125,6 +125,11 @@ CREATE TABLE IF NOT EXISTS accounts (
     folder_id INTEGER,
 
 
+    -- Whether the account is hidden from the Overview.
+    is_hidden INTEGER NOT NULL DEFAULT 0
+        CHECK (is_hidden IN (0, 1)),
+
+
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

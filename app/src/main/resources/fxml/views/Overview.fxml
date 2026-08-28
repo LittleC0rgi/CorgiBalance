@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import com.corgibalance.components.HeroIcon?>
-<?import javafx.scene.chart.PieChart?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <VBox xmlns:fx="http://javafx.com/fxml/1"
@@ -76,8 +75,14 @@
 
             <VBox fx:id="tagExpenseCard" styleClass="card" spacing="6.0" GridPane.columnIndex="3" GridPane.rowIndex="0"
                   GridPane.rowSpan="2" GridPane.vgrow="ALWAYS">
-                <Label text="Expenses by tags" styleClass="card__label"/>
-                <PieChart fx:id="tagExpenseChart" styleClass="tag-chart" VBox.vgrow="ALWAYS" legendVisible="false"/>
+                <Label text="Profit &amp; Loss" styleClass="card__label"/>
+                <GridPane fx:id="profitLossReport" styleClass="report__grid" VBox.vgrow="ALWAYS">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS" maxWidth="Infinity"/>
+                        <ColumnConstraints/>
+                        <ColumnConstraints/>
+                    </columnConstraints>
+                </GridPane>
             </VBox>
         </GridPane>
 

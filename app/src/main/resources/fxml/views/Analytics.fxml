@@ -19,9 +19,6 @@
                 <ColumnConstraints/>
                 <ColumnConstraints/>
             </columnConstraints>
-            <Label text="Category" styleClass="report__header" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-            <Label text="Income" styleClass="report__header" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-            <Label text="Expense" styleClass="report__header" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
         </GridPane>
     </VBox>
 </VBox>

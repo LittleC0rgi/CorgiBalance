@@ -26,7 +26,7 @@
 
     <VBox spacing="6" styleClass="card">
         <Label text="Overview" styleClass="card__label"/>
-        <CheckBox fx:id="showExpensesByTagCheckBox" text="Show expenses by tag on Overview"
+        <CheckBox fx:id="showExpensesByTagCheckBox" text="Show Profit &amp; Loss report on Overview"
                   onAction="#toggleShowExpensesByTag"/>
     </VBox>
 

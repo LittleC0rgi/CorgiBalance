@@ -1,10 +1,12 @@
 package com.corgibalance.components.table;
 
 import com.corgibalance.models.BaseModel;
+import com.corgibalance.services.AmountExpressionParser;
 import com.corgibalance.services.CurrencyFormatter;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
 
+import java.math.BigDecimal;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -109,7 +111,11 @@ public class AmountTableCell<T extends BaseModel> extends TableCell<T, Long> {
             return;
         }
         try {
-            long minorUnits = formatter.toMinorUnits(formatter.parse(textField.getText()), currencyId());
+            String text = textField.getText().trim();
+            BigDecimal value = text.startsWith("=")
+                    ? AmountExpressionParser.evaluate(text.substring(1))
+                    : formatter.parse(text);
+            long minorUnits = formatter.toMinorUnits(value, currencyId());
             commitEdit(minorUnits);
         } catch (NumberFormatException e) {
             cancelEdit();

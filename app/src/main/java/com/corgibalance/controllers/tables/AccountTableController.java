@@ -42,6 +42,10 @@ public class AccountTableController extends BaseTableController<Account, Account
         super(new AccountRepository());
     }
 
+    public void reload() {
+        table.refresh();
+    }
+
     @Override
     protected void configureColumns() {
         name.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getName()));

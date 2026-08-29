@@ -1,7 +1,7 @@
 package com.corgibalance;
 
-import com.corgibalance.controllers.views.OverviewController;
-import com.corgibalance.controllers.views.OverviewController.NearestPayment;
+import com.corgibalance.services.NearestPaymentService;
+import com.corgibalance.services.NearestPaymentService.NearestPayment;
 import com.corgibalance.models.PlannedTransaction;
 import com.corgibalance.models.RecurringTransaction;
 import com.corgibalance.models.TransactionType;
@@ -37,7 +37,7 @@ public class NearestPaymentsTest {
         List<PlannedTransaction> planned = List.of(planned(today.plusDays(3)), planned(today.plusDays(1)));
         List<RecurringTransaction> recurring = List.of(recurring(today.plusDays(2)), recurring(today.plusDays(4)));
 
-        List<NearestPayment> result = OverviewController.nearestPayments(planned, recurring, today, 5);
+        List<NearestPayment> result = NearestPaymentService.nearestPayments(planned, recurring, today, 5);
 
         assertEquals(4, result.size());
         assertEquals(List.of(today.plusDays(1), today.plusDays(2), today.plusDays(3), today.plusDays(4)),
@@ -53,7 +53,7 @@ public class NearestPaymentsTest {
                 planned(today.minusDays(2)), planned(today.minusDays(5)));
         List<RecurringTransaction> recurring = List.of(recurring(today.minusDays(1)));
 
-        List<NearestPayment> result = OverviewController.nearestPayments(planned, recurring, today, 5);
+        List<NearestPayment> result = NearestPaymentService.nearestPayments(planned, recurring, today, 5);
 
         assertEquals(8, result.size());
         List<LocalDate> dates = result.stream().map(NearestPayment::date).toList();
@@ -68,7 +68,7 @@ public class NearestPaymentsTest {
     @Test
     public void emptyWhenNothingDue() {
         LocalDate today = LocalDate.of(2026, 8, 20);
-        List<NearestPayment> result = OverviewController.nearestPayments(List.of(), List.of(), today, 5);
+        List<NearestPayment> result = NearestPaymentService.nearestPayments(List.of(), List.of(), today, 5);
         assertTrue(result.isEmpty());
     }
 }

@@ -20,6 +20,8 @@ public class AccountFolderRepository implements CrudRepository<AccountFolder> {
 
     private static final String FIND_ALL_SQL =
             "SELECT id, name, is_expanded, parent_id, created_at, updated_at FROM account_folders ORDER BY name COLLATE NOCASE";
+    private static final String FIND_BY_ID_SQL =
+            "SELECT id, name, is_expanded, parent_id, created_at, updated_at FROM account_folders WHERE id = ?";
     private static final String INSERT_SQL =
             "INSERT INTO account_folders (name, parent_id) VALUES (?, ?)";
     private static final String UPDATE_SQL =
@@ -49,6 +51,20 @@ public class AccountFolderRepository implements CrudRepository<AccountFolder> {
             throw new RuntimeException("Failed to load account folders", e);
         }
         return folders;
+    }
+
+    public AccountFolder findById(long id) {
+        try {
+            Connection connection = database.getConnection();
+            try (PreparedStatement statement = connection.prepareStatement(FIND_BY_ID_SQL)) {
+                statement.setLong(1, id);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    return resultSet.next() ? mapRow(resultSet) : null;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to load account folder", e);
+        }
     }
 
     public AccountFolder create(AccountFolder folder) {

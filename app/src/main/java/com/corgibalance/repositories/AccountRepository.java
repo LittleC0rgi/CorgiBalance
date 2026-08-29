@@ -20,6 +20,8 @@ public class AccountRepository implements CrudRepository<Account> {
 
     private static final String FIND_ALL_SQL =
             "SELECT id, name, initial_balance, currency_id, folder_id, is_hidden, created_at, updated_at FROM accounts ORDER BY name COLLATE NOCASE";
+    private static final String FIND_BY_ID_SQL =
+            "SELECT id, name, initial_balance, currency_id, folder_id, is_hidden, created_at, updated_at FROM accounts WHERE id = ?";
     private static final String INSERT_SQL =
             "INSERT INTO accounts (name, initial_balance, currency_id, folder_id, is_hidden) VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_SQL =
@@ -53,6 +55,20 @@ public class AccountRepository implements CrudRepository<Account> {
             throw new RuntimeException("Failed to load accounts", e);
         }
         return accounts;
+    }
+
+    public Account findById(long id) {
+        try {
+            Connection connection = database.getConnection();
+            try (PreparedStatement statement = connection.prepareStatement(FIND_BY_ID_SQL)) {
+                statement.setLong(1, id);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    return resultSet.next() ? mapRow(resultSet) : null;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to load account", e);
+        }
     }
 
     public long currentBalance(long accountId) {

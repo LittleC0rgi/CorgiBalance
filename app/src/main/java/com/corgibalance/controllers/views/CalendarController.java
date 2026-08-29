@@ -66,12 +66,7 @@ public class CalendarController implements Refreshable {
     }
 
     public static LocalDate nextOccurrence(LocalDate date, RecurrenceInterval interval) {
-        return switch (interval) {
-            case DAILY -> date.plusDays(1);
-            case WEEKLY -> date.plusWeeks(1);
-            case MONTHLY -> date.plusMonths(1);
-            case YEARLY -> date.plusYears(1);
-        };
+        return interval.next(date);
     }
 
     @FXML

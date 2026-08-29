@@ -13,6 +13,8 @@
         <TableColumn fx:id="name" text="Name"/>
         <TableColumn fx:id="tag" text="Tag"/>
         <TableColumn fx:id="plannedAmount" text="Planned"/>
+        <TableColumn fx:id="spent" text="Spent"/>
+        <TableColumn fx:id="spentPercent" text="Spent %"/>
         <TableColumn fx:id="startDate" text="Start"/>
         <TableColumn fx:id="endDate" text="End"/>
     </columns>

@@ -7,9 +7,12 @@ import com.corgibalance.components.table.TextTableCell;
 import com.corgibalance.models.Budget;
 import com.corgibalance.models.Currency;
 import com.corgibalance.models.Tag;
+import com.corgibalance.models.TransactionType;
 import com.corgibalance.repositories.BudgetRepository;
 import com.corgibalance.repositories.SettingsRepository;
 import com.corgibalance.repositories.TagRepository;
+import com.corgibalance.repositories.TransactionRepository;
+import com.corgibalance.services.CurrencyConverter;
 import com.corgibalance.services.CurrencyFormatter;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
@@ -18,6 +21,7 @@ import javafx.scene.control.TableColumn;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class BudgetTableController extends BaseTableController<Budget, BudgetRepository> {
@@ -25,6 +29,8 @@ public class BudgetTableController extends BaseTableController<Budget, BudgetRep
     private static final String BASE_CURRENCY_KEY = "overview.baseCurrencyId";
 
     private final CurrencyFormatter currencyFormatter = new CurrencyFormatter();
+    private final CurrencyConverter currencyConverter = new CurrencyConverter();
+    private final TransactionRepository transactionRepository = new TransactionRepository();
     private final Long currencyId;
     private List<Tag> tags;
     @FXML
@@ -33,6 +39,10 @@ public class BudgetTableController extends BaseTableController<Budget, BudgetRep
     private TableColumn<Budget, Long> tag;
     @FXML
     private TableColumn<Budget, Long> plannedAmount;
+    @FXML
+    private TableColumn<Budget, Long> spent;
+    @FXML
+    private TableColumn<Budget, String> spentPercent;
     @FXML
     private TableColumn<Budget, LocalDate> startDate;
     @FXML
@@ -63,6 +73,13 @@ public class BudgetTableController extends BaseTableController<Budget, BudgetRep
         plannedAmount.setCellFactory(_ -> new AmountTableCell<>(_ -> currencyId));
         plannedAmount.setOnEditCommit(this::onAmountCommitted);
 
+        spent.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(spent(cell.getValue())));
+        spent.setEditable(false);
+        spent.setCellFactory(_ -> new AmountTableCell<>(_ -> currencyId));
+
+        spentPercent.setCellValueFactory(cell -> new SimpleStringProperty(percent(cell.getValue())));
+        spentPercent.setEditable(false);
+        
         startDate.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getStartDate()));
         startDate.setCellFactory(_ -> new DateTableCell<>());
         startDate.setOnEditCommit(this::onStartDateCommitted);
@@ -97,6 +114,30 @@ public class BudgetTableController extends BaseTableController<Budget, BudgetRep
             return;
         }
         commit(budget, b -> b.setPlannedAmount(event.getNewValue()), false);
+    }
+
+    private long spent(Budget budget) {
+        if (budget.getId() == null || budget.getTagId() == null) {
+            return 0;
+        }
+        Map<Long, Long> totals = transactionRepository.sumByCurrency(
+                TransactionType.EXPENSE, budget.getTagId(), budget.getStartDate(), budget.getEndDate());
+        long total = 0;
+        for (Map.Entry<Long, Long> entry : totals.entrySet()) {
+            total += currencyConverter.convert(Math.abs(entry.getValue()), entry.getKey(), currencyId);
+        }
+        return total;
+    }
+
+    private String percent(Budget budget) {
+        if (budget.getId() == null) {
+            return "";
+        }
+        long planned = budget.getPlannedAmount();
+        if (planned <= 0) {
+            return "-";
+        }
+        return Math.round((double) spent(budget) / planned * 100) + "%";
     }
 
     private void onStartDateCommitted(TableColumn.CellEditEvent<Budget, LocalDate> event) {

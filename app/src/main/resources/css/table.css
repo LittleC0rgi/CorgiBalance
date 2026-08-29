@@ -30,10 +30,6 @@
     -fx-padding: 10 10;
 }
 
-.table .column-header .label:hover {
-    -fx-text-fill: #F3A712;
-}
-
 .table .column-header .column-header__title {
     -fx-padding: 0 6 0 0;
 }

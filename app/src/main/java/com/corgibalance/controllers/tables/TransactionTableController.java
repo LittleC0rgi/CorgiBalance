@@ -76,6 +76,11 @@ public class TransactionTableController extends PagedTableController<Transaction
 
     @Override
     protected void configureColumns() {
+        table.getColumns().forEach(column -> {
+            column.setReorderable(false);
+            column.setSortable(false);
+        });
+
         date.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getTransactionDate()));
         date.setCellFactory(_ -> new DateTableCell<>());
         date.setOnEditCommit(this::onDateCommitted);

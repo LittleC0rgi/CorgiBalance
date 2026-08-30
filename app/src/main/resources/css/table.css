@@ -194,6 +194,18 @@
     -fx-cursor: hand;
 }
 
+.pagination__btn .hero_icon {
+    -fx-stroke: #272932;
+}
+
+.pagination__btn:hover .hero_icon {
+    -fx-stroke: white;
+}
+
+.pagination__btn:disabled .hero_icon {
+    -fx-stroke: #272932;
+}
+
 .pagination__btn:hover {
     -fx-background-color: #F3A712;
     -fx-text-fill: white;

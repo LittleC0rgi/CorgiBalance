@@ -16,9 +16,13 @@ public class PaginationBar extends HBox {
     private static final Integer[] PAGE_SIZES = {25, 50, 100, 200, 500};
 
     @FXML
+    private Button firstButton;
+    @FXML
     private Button prevButton;
     @FXML
     private Button nextButton;
+    @FXML
+    private Button lastButton;
     @FXML
     private Label infoLabel;
     @FXML
@@ -50,6 +54,20 @@ public class PaginationBar extends HBox {
         pageSizeCombo.valueProperty().addListener((_, _, value) -> {
             if (!updating && value != null) {
                 pageSize = value;
+                onPageChange.run();
+            }
+        });
+        firstButton.setGraphic(new HeroIcon(HeroIcon.Icon.SKIP_LEFT));
+        lastButton.setGraphic(new HeroIcon(HeroIcon.Icon.SKIP_RIGHT));
+        firstButton.setOnAction(_ -> {
+            if (currentPage > 1) {
+                currentPage = 1;
+                onPageChange.run();
+            }
+        });
+        lastButton.setOnAction(_ -> {
+            if (currentPage < pageCount) {
+                currentPage = pageCount;
                 onPageChange.run();
             }
         });
@@ -88,6 +106,11 @@ public class PaginationBar extends HBox {
                 infoLabel.setText("Showing " + from + "\u2013" + to + " of " + totalItems);
             }
             pageLabel.setText("Page " + this.currentPage + " of " + pageCount);
+            boolean jumpable = pageCount > 3;
+            firstButton.setVisible(jumpable);
+            lastButton.setVisible(jumpable);
+            firstButton.setDisable(this.currentPage <= 1);
+            lastButton.setDisable(this.currentPage >= pageCount);
             prevButton.setDisable(this.currentPage <= 1);
             nextButton.setDisable(this.currentPage >= pageCount);
         } finally {

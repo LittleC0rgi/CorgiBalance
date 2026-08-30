@@ -33,6 +33,8 @@ public class BudgetTableController extends BaseTableController<Budget, BudgetRep
     private final TransactionRepository transactionRepository = new TransactionRepository();
     private final Long currencyId;
     private List<Tag> tags;
+    private LocalDate lastEnteredStartDate;
+    private LocalDate lastEnteredEndDate;
     @FXML
     private TableColumn<Budget, String> name;
     @FXML
@@ -56,6 +58,7 @@ public class BudgetTableController extends BaseTableController<Budget, BudgetRep
 
     public void reload() {
         this.tags = new TagRepository().findAll();
+        tag.setCellFactory(_ -> new SelectTableCell<>(tagIds(), this::tagName));
         table.refresh();
     }
 
@@ -108,17 +111,12 @@ public class BudgetTableController extends BaseTableController<Budget, BudgetRep
     }
 
     private void onAmountCommitted(TableColumn.CellEditEvent<Budget, Long> event) {
-        Budget budget = event.getRowValue();
-        if (isPlaceholder(budget)) {
-            refresh();
-            return;
-        }
-        commit(budget, b -> b.setPlannedAmount(event.getNewValue()), false);
+        commit(event.getRowValue(), b -> b.setPlannedAmount(event.getNewValue()), false);
     }
 
-    private long spent(Budget budget) {
+    private Long spent(Budget budget) {
         if (budget.getId() == null || budget.getTagId() == null) {
-            return 0;
+            return null;
         }
         Map<Long, Long> totals = transactionRepository.sumByCurrency(
                 TransactionType.EXPENSE, budget.getTagId(), budget.getStartDate(), budget.getEndDate());
@@ -141,21 +139,13 @@ public class BudgetTableController extends BaseTableController<Budget, BudgetRep
     }
 
     private void onStartDateCommitted(TableColumn.CellEditEvent<Budget, LocalDate> event) {
-        Budget budget = event.getRowValue();
-        if (isPlaceholder(budget)) {
-            refresh();
-            return;
-        }
-        commit(budget, b -> b.setStartDate(event.getNewValue()), false);
+        commit(event.getRowValue(), b -> b.setStartDate(event.getNewValue()), false);
+        lastEnteredStartDate = event.getNewValue();
     }
 
     private void onEndDateCommitted(TableColumn.CellEditEvent<Budget, LocalDate> event) {
-        Budget budget = event.getRowValue();
-        if (isPlaceholder(budget)) {
-            refresh();
-            return;
-        }
-        commit(budget, b -> b.setEndDate(event.getNewValue()), false);
+        commit(event.getRowValue(), b -> b.setEndDate(event.getNewValue()), false);
+        lastEnteredEndDate = event.getNewValue();
     }
 
     private List<Long> tagIds() {
@@ -190,8 +180,8 @@ public class BudgetTableController extends BaseTableController<Budget, BudgetRep
             budget.setTagId(tags.getFirst().getId());
         }
         LocalDate now = LocalDate.now();
-        budget.setStartDate(now.withDayOfMonth(1));
-        budget.setEndDate(now.withDayOfMonth(now.lengthOfMonth()));
+        budget.setStartDate(lastEnteredStartDate != null ? lastEnteredStartDate : now.withDayOfMonth(1));
+        budget.setEndDate(lastEnteredEndDate != null ? lastEnteredEndDate : now.withDayOfMonth(now.lengthOfMonth()));
         return budget;
     }
 

@@ -73,7 +73,7 @@ public class AmountTableCell<T extends BaseModel> extends TableCell<T, Long> {
             setGraphic(null);
             getStyleClass().remove(PLACEHOLDER_STYLE_CLASS);
         } else {
-            setText(formatter.format(displayValue(value, item), currencyIdOf.apply(item)));
+            setText(value == null ? "" : formatter.format(displayValue(value, item), currencyIdOf.apply(item)));
             setGraphic(null);
             toggleStyleClass(ZERO_STYLE_CLASS, highlight.test(item));
             toggleStyleClass(PLACEHOLDER_STYLE_CLASS, item.getId() == null);

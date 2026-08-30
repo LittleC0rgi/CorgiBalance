@@ -21,7 +21,9 @@ import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -118,11 +120,15 @@ public class CalendarController implements Refreshable {
 
     @FXML
     private void openAddRecurringDialog() {
+        openAddRecurringDialog(LocalDate.now());
+    }
+
+    private void openAddRecurringDialog(LocalDate date) {
         List<Account> accounts = new AccountRepository().findAll();
         if (accounts.isEmpty()) {
             return;
         }
-        RecurringTransactionDialog dialog = new RecurringTransactionDialog(accounts, LocalDate.now());
+        RecurringTransactionDialog dialog = new RecurringTransactionDialog(accounts, date);
         dialog.showAndWait();
         if (dialog.isCreated()) {
             reloadData();
@@ -203,6 +209,11 @@ public class CalendarController implements Refreshable {
         }
         cell.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         cell.setOnMouseClicked(_ -> openAddPlannedDialog(date));
+        cell.setOnContextMenuRequested(e -> {
+            ContextMenu menu = createContextMenu(date);
+            menu.show(cell, e.getScreenX(), e.getScreenY());
+            e.consume();
+        });
 
         Label number = new Label(String.valueOf(date.getDayOfMonth()));
         number.getStyleClass().add("calendar__day__number");
@@ -216,6 +227,14 @@ public class CalendarController implements Refreshable {
 
         cell.getChildren().addAll(number, plans);
         return cell;
+    }
+
+    private ContextMenu createContextMenu(LocalDate date) {
+        MenuItem addPlanned = new MenuItem("Add planned");
+        addPlanned.setOnAction(_ -> openAddPlannedDialog(date));
+        MenuItem addRecurring = new MenuItem("Add recurring");
+        addRecurring.setOnAction(_ -> openAddRecurringDialog(date));
+        return new ContextMenu(addPlanned, addRecurring);
     }
 
     private void addPlannedRows(VBox plans, List<PlannedTransaction> dayPlans) {

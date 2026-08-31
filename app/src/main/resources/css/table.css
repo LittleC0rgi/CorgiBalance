@@ -135,11 +135,11 @@
    Suggestion List (autocomplete dropdown)
    ============================================ */
 .suggestion-list {
+    -fx-effect: null;
     -fx-background-color: white;
     -fx-background-radius: 8;
     -fx-border-color: #EFEFF2;
     -fx-border-radius: 8;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.12), 12, 0, 0, 3);
 }
 
 .suggestion-list .list-cell {
@@ -147,6 +147,8 @@
     -fx-text-fill: #272932;
     -fx-font-size: 13px;
     -fx-padding: 4 8;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
 }
 
 .suggestion-list .list-cell:hover {

@@ -76,6 +76,7 @@ public abstract class TransactionDialog extends Dialog<Void> {
         configureType();
         configureTags();
         suggestions = new TransactionSuggestionSupport(
+                formatter,
                 q -> new TransactionRepository().findByDescriptionLike(q, 5),
                 this::tagColorOf,
                 this::currencyIdOf,

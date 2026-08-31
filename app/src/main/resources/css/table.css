@@ -146,7 +146,7 @@
     -fx-background-color: white;
     -fx-text-fill: #272932;
     -fx-font-size: 13px;
-    -fx-padding: 8 10;
+    -fx-padding: 4 8;
 }
 
 .suggestion-list .list-cell:hover {

@@ -131,15 +131,13 @@ public class TransactionRepository implements CrudRepository<Transaction> {
 
     public List<Transaction> findByDescriptionLike(String query, int limit) {
         List<Transaction> transactions = new ArrayList<>();
-        try {
-            Connection connection = database.getConnection();
-            try (PreparedStatement statement = connection.prepareStatement(FIND_BY_DESCRIPTION_LIKE_SQL)) {
-                statement.setString(1, "%" + query + "%");
-                statement.setInt(2, limit);
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    while (resultSet.next()) {
-                        transactions.add(mapRow(resultSet));
-                    }
+        try (Connection connection = database.newConnection();
+             PreparedStatement statement = connection.prepareStatement(FIND_BY_DESCRIPTION_LIKE_SQL)) {
+            statement.setString(1, "%" + query + "%");
+            statement.setInt(2, limit);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    transactions.add(mapRow(resultSet));
                 }
             }
         } catch (SQLException e) {

@@ -1,6 +1,7 @@
 package com.corgibalance.components.table;
 
 import com.corgibalance.models.Transaction;
+import com.corgibalance.services.CurrencyFormatter;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
 
@@ -16,8 +17,10 @@ public class DescriptionTemplateTableCell extends TableCell<Transaction, String>
     private final BiConsumer<Transaction, Transaction> applyTemplate;
     private final TextField textField = new TextField();
     private final TransactionSuggestionSupport suggestions;
+    private Transaction lastItem;
 
     public DescriptionTemplateTableCell(String placeholderText,
+                                        CurrencyFormatter formatter,
                                         Function<String, List<Transaction>> searchFor,
                                         BiConsumer<Transaction, Transaction> applyTemplate,
                                         Function<Long, String> tagColorOf,
@@ -25,7 +28,7 @@ public class DescriptionTemplateTableCell extends TableCell<Transaction, String>
                                         Function<Long, String> accountNameOf) {
         this.placeholderText = placeholderText;
         this.applyTemplate = applyTemplate;
-        this.suggestions = new TransactionSuggestionSupport(searchFor, tagColorOf, currencyIdOf, accountNameOf) {
+        this.suggestions = new TransactionSuggestionSupport(formatter, searchFor, tagColorOf, currencyIdOf, accountNameOf) {
             @Override
             protected void apply(Transaction template) {
                 Transaction target = currentItem();
@@ -58,7 +61,7 @@ public class DescriptionTemplateTableCell extends TableCell<Transaction, String>
         if (!isEditing()) {
             return;
         }
-        Transaction first = suggestions.firstSuggestion();
+        Transaction first = suggestions.selectedSuggestion();
         if (first != null && suggestions.isPopupShowing()) {
             suggestions.apply(first);
             return;
@@ -70,6 +73,10 @@ public class DescriptionTemplateTableCell extends TableCell<Transaction, String>
     protected void updateItem(String value, boolean empty) {
         super.updateItem(value, empty);
         Transaction item = currentItem();
+        if (item != lastItem) {
+            lastItem = item;
+            suggestions.hidePopup();
+        }
         if (empty || item == null) {
             setText(null);
             setGraphic(null);

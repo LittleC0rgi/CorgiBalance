@@ -124,6 +124,7 @@ public class TransactionTableController extends PagedTableController<Transaction
 
         description.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getDescription()));
         description.setCellFactory(_ -> new DescriptionTemplateTableCell("+ Add transaction",
+                currencyFormatter,
                 q -> repository.findByDescriptionLike(q, 5),
                 this::applyDescriptionTemplate,
                 this::tagColor,

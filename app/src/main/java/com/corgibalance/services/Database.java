@@ -103,6 +103,10 @@ public final class Database {
         return connection;
     }
 
+    public Connection newConnection() throws SQLException {
+        return DriverManager.getConnection("jdbc:sqlite:" + dbPath());
+    }
+
     private void connect() throws SQLException {
         Path dbPath = dbPath();
         logger.info("Connecting to database: " + dbPath.toAbsolutePath());

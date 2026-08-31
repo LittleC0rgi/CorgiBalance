@@ -48,6 +48,7 @@ public abstract class TransactionSuggestionSupport {
         this.accountNameOf = accountNameOf;
 
         suggestions.getStyleClass().add("suggestion-list");
+        suggestions.getStylesheets().add(SUGGESTION_CSS);
         suggestions.setMaxHeight(220);
         suggestions.setCellFactory(_ -> suggestionCell());
         suggestions.setOnMouseClicked(_ -> {
@@ -61,7 +62,6 @@ public abstract class TransactionSuggestionSupport {
         popup.setAutoHide(true);
         popup.setAutoFix(true);
         popup.getContent().add(suggestions);
-        popup.setOnShown(_ -> popup.getScene().getStylesheets().add(SUGGESTION_CSS));
     }
 
     public void bind(TextField textField) {

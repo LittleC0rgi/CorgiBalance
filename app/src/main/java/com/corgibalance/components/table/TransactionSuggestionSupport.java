@@ -8,10 +8,12 @@ import javafx.application.Platform;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -76,10 +78,49 @@ public abstract class TransactionSuggestionSupport {
         popup.getContent().add(suggestions);
     }
 
+    private static void setVisibleManaged(Node node, boolean visible) {
+        node.setVisible(visible);
+        node.setManaged(visible);
+    }
+
     public void bind(TextField textField) {
         this.field = textField;
         searchDelay.setOnFinished(_ -> showSuggestions());
         textField.textProperty().addListener((_, _, _) -> searchDelay.playFromStart());
+        textField.sceneProperty().addListener((_, _, _) -> onSceneChanged());
+        popup.sceneProperty().addListener((_, _, _) -> onSceneChanged());
+        onSceneChanged();
+    }
+
+    private void onSceneChanged() {
+        Scene fieldScene = field.getScene();
+        if (fieldScene != null) {
+            fieldScene.addEventFilter(KeyEvent.KEY_PRESSED, this::handleKey);
+        }
+        Scene popupScene = popup.getScene();
+        if (popupScene != null) {
+            popupScene.addEventFilter(KeyEvent.KEY_PRESSED, this::handleKey);
+        }
+    }
+
+    private void handleKey(KeyEvent event) {
+        if (!popup.isShowing() || suggestions.getItems().isEmpty()) {
+            return;
+        }
+        switch (event.getCode()) {
+            case ENTER -> {
+                Transaction selected = selectedSuggestion();
+                if (selected != null) {
+                    popup.hide();
+                    apply(selected);
+                    event.consume();
+                }
+            }
+            case ESCAPE -> {
+                popup.hide();
+                event.consume();
+            }
+        }
     }
 
     protected abstract void apply(Transaction template);
@@ -171,11 +212,6 @@ public abstract class TransactionSuggestionSupport {
         };
     }
 
-    private static void setVisibleManaged(Node node, boolean visible) {
-        node.setVisible(visible);
-        node.setManaged(visible);
-    }
-
     private Color tagColor(Long tagId) {
         if (tagId == null) {
             return null;
@@ -194,7 +230,7 @@ public abstract class TransactionSuggestionSupport {
     private String formatAmount(Transaction transaction) {
         long display = transaction.getTransactionType() == TransactionType.EXPENSE
                 || (transaction.getTransactionType() == TransactionType.TRANSFER
-                        && transaction.getDirection() == Transaction.DIRECTION_OUTGOING)
+                && transaction.getDirection() == Transaction.DIRECTION_OUTGOING)
                 ? -Math.abs(transaction.getAmount())
                 : transaction.getAmount();
         return formatter.format(display, currencyIdOf.apply(transaction.getAccountId()));

@@ -49,13 +49,13 @@ jlink {
 
     jpackage {
         imageName = "CorgiBalance"
-        installerName = "Corgi Balance"
-        description = "Corgi Balance is an open-source desktop application for personal finance management."
+        installerName = "CorgiBalance"
         installerType = "rpm"
-        appVersion = "0.1.0"
+        appVersion = "1.0.0"
         vendor = "Kirill Vasiliev"
         icon = "src/main/resources/icons/img.png"
         installerOptions = listOf(
+            "--description", "CorgiBalance is an open-source desktop application for personal finance management.",
             "--linux-shortcut",
             "--linux-menu-group", "Utility"
         )

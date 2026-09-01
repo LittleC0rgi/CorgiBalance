@@ -61,6 +61,6 @@
         </graphic>
     </ToggleButton>
     <VBox styleClass="sidebar__footer">
-        <Label text="v0.1.0 - Beta" styleClass="sidebar__version"/>
+        <Label text="v1.0.0 - Beta" styleClass="sidebar__version"/>
     </VBox>
 </fx:root>

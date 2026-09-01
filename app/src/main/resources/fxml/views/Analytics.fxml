@@ -8,6 +8,10 @@
     <HBox alignment="CENTER_LEFT" spacing="6.0">
         <Label text="Profit &amp; Loss" styleClass="title"/>
         <Region HBox.hgrow="ALWAYS"/>
+        <Label text="by" styleClass="card__label"/>
+        <ComboBox fx:id="accountCombo" styleClass="overview__combo"/>
+        <Label fx:id="currencyLabel" text="in" visible="false" managed="false" styleClass="card__label"/>
+        <ComboBox fx:id="currencyCombo" styleClass="overview__combo" visible="false" managed="false"/>
         <Label text="Report for" styleClass="card__label"/>
         <ComboBox fx:id="monthCombo" styleClass="overview__combo"/>
         <ComboBox fx:id="yearCombo" styleClass="overview__combo"/>

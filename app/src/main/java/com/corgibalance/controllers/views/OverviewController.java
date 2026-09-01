@@ -229,7 +229,7 @@ public class OverviewController implements Refreshable {
                 grid.getColumnConstraints().get(i).setMinWidth(0);
             }
             ProfitLossReport.Data data = ProfitLossReport.compute(
-                    transactionRepository, tagRepository, converter, baseCurrencyId, year, month);
+                    transactionRepository, tagRepository, converter, baseCurrencyId, null, year, month);
             ProfitLossReport.populate(profitLossReport, data, converter, baseCurrencyId, false);
         } else {
             for (int i = 0; i < 3; i++) {

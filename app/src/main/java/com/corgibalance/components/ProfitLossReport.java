@@ -29,15 +29,46 @@ public final class ProfitLossReport {
     }
 
     public static Data compute(TransactionRepository transactions, TagRepository tags,
-                               CurrencyConverter converter, Long baseCurrencyId, int year, int month) {
-        long totalIncome = sumForPeriod(transactions, converter, baseCurrencyId, TransactionType.INCOME, year, month);
-        long totalExpense = sumForPeriod(transactions, converter, baseCurrencyId, TransactionType.EXPENSE, year, month);
+                               CurrencyConverter converter, Long displayCurrencyId,
+                               Long accountId, int year, int month) {
+        long totalIncome;
+        long totalExpense;
+        Map<Long, Map<Long, Long>> incomeByTag;
+        Map<Long, Map<Long, Long>> expenseByTag;
+
+        boolean allMonths = month == 0;
+
+        if (accountId != null) {
+            totalIncome = allMonths
+                    ? sumForPeriod(transactions, converter, displayCurrencyId, TransactionType.INCOME, year, accountId)
+                    : sumForPeriod(transactions, converter, displayCurrencyId, TransactionType.INCOME, year, month, accountId);
+            totalExpense = allMonths
+                    ? sumForPeriod(transactions, converter, displayCurrencyId, TransactionType.EXPENSE, year, accountId)
+                    : sumForPeriod(transactions, converter, displayCurrencyId, TransactionType.EXPENSE, year, month, accountId);
+            incomeByTag = allMonths
+                    ? transactions.sumByTagForYear(TransactionType.INCOME, year, accountId)
+                    : transactions.sumByTag(TransactionType.INCOME, year, month, accountId);
+            expenseByTag = allMonths
+                    ? transactions.sumByTagForYear(TransactionType.EXPENSE, year, accountId)
+                    : transactions.sumByTag(TransactionType.EXPENSE, year, month, accountId);
+        } else {
+            totalIncome = allMonths
+                    ? sumForPeriod(transactions, converter, displayCurrencyId, TransactionType.INCOME, year)
+                    : sumForPeriod(transactions, converter, displayCurrencyId, TransactionType.INCOME, year, month);
+            totalExpense = allMonths
+                    ? sumForPeriod(transactions, converter, displayCurrencyId, TransactionType.EXPENSE, year)
+                    : sumForPeriod(transactions, converter, displayCurrencyId, TransactionType.EXPENSE, year, month);
+            incomeByTag = allMonths
+                    ? transactions.sumByTagForYear(TransactionType.INCOME, year)
+                    : transactions.sumByTag(TransactionType.INCOME, year, month);
+            expenseByTag = allMonths
+                    ? transactions.sumByTagForYear(TransactionType.EXPENSE, year)
+                    : transactions.sumByTag(TransactionType.EXPENSE, year, month);
+        }
 
         Map<Long, long[]> tagTotals = new HashMap<>();
-        fillTagTotals(tagTotals, transactions.sumByTag(TransactionType.INCOME, year, month),
-                converter, baseCurrencyId, 0);
-        fillTagTotals(tagTotals, transactions.sumByTag(TransactionType.EXPENSE, year, month),
-                converter, baseCurrencyId, 1);
+        fillTagTotals(tagTotals, incomeByTag, converter, displayCurrencyId, 0);
+        fillTagTotals(tagTotals, expenseByTag, converter, displayCurrencyId, 1);
 
         long taggedIncome = 0;
         long taggedExpense = 0;
@@ -111,6 +142,35 @@ public final class ProfitLossReport {
                                      Long baseCurrencyId, TransactionType type, int year, int month) {
         long result = 0;
         for (Map.Entry<Long, Long> entry : transactions.sumByCurrency(type, year, month).entrySet()) {
+            result += converter.convert(Math.abs(entry.getValue()), entry.getKey(), baseCurrencyId);
+        }
+        return result;
+    }
+
+    private static long sumForPeriod(TransactionRepository transactions, CurrencyConverter converter,
+                                     Long baseCurrencyId, TransactionType type, int year) {
+        long result = 0;
+        for (Map.Entry<Long, Long> entry : transactions.sumByCurrencyForYear(type, year).entrySet()) {
+            result += converter.convert(Math.abs(entry.getValue()), entry.getKey(), baseCurrencyId);
+        }
+        return result;
+    }
+
+    private static long sumForPeriod(TransactionRepository transactions, CurrencyConverter converter,
+                                     Long baseCurrencyId, TransactionType type, int year, int month,
+                                     long accountId) {
+        long result = 0;
+        for (Map.Entry<Long, Long> entry : transactions.sumByCurrency(type, year, month, accountId).entrySet()) {
+            result += converter.convert(Math.abs(entry.getValue()), entry.getKey(), baseCurrencyId);
+        }
+        return result;
+    }
+
+    private static long sumForPeriod(TransactionRepository transactions, CurrencyConverter converter,
+                                     Long baseCurrencyId, TransactionType type, int year,
+                                     long accountId) {
+        long result = 0;
+        for (Map.Entry<Long, Long> entry : transactions.sumByCurrencyForYear(type, year, accountId).entrySet()) {
             result += converter.convert(Math.abs(entry.getValue()), entry.getKey(), baseCurrencyId);
         }
         return result;

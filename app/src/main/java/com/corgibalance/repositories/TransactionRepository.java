@@ -71,6 +71,41 @@ public class TransactionRepository implements CrudRepository<Transaction> {
             + "WHERE t.transaction_type = ? AND substr(t.transaction_date, 1, 7) = ? "
             + "AND t.tag_id IS NOT NULL "
             + "GROUP BY t.tag_id, a.currency_id";
+    private static final String SUM_BY_CURRENCY_BY_ACCOUNT_SQL =
+            "SELECT a.currency_id AS currency_id, SUM(t.amount) AS total "
+            + "FROM transactions t JOIN accounts a ON a.id = t.account_id "
+            + "WHERE t.transaction_type = ? AND substr(t.transaction_date, 1, 7) = ? "
+            + "AND a.id = ? "
+            + "GROUP BY a.currency_id";
+    private static final String SUM_GROUP_BY_TAG_BY_ACCOUNT_SQL =
+            "SELECT t.tag_id AS tag_id, a.currency_id AS currency_id, SUM(t.amount) AS total "
+            + "FROM transactions t JOIN accounts a ON a.id = t.account_id "
+            + "WHERE t.transaction_type = ? AND substr(t.transaction_date, 1, 7) = ? "
+            + "AND t.tag_id IS NOT NULL AND a.id = ? "
+            + "GROUP BY t.tag_id, a.currency_id";
+    private static final String SUM_BY_CURRENCY_BY_YEAR_SQL =
+            "SELECT a.currency_id AS currency_id, SUM(t.amount) AS total "
+            + "FROM transactions t JOIN accounts a ON a.id = t.account_id "
+            + "WHERE t.transaction_type = ? AND substr(t.transaction_date, 1, 4) = ? "
+            + "GROUP BY a.currency_id";
+    private static final String SUM_GROUP_BY_TAG_BY_YEAR_SQL =
+            "SELECT t.tag_id AS tag_id, a.currency_id AS currency_id, SUM(t.amount) AS total "
+            + "FROM transactions t JOIN accounts a ON a.id = t.account_id "
+            + "WHERE t.transaction_type = ? AND substr(t.transaction_date, 1, 4) = ? "
+            + "AND t.tag_id IS NOT NULL "
+            + "GROUP BY t.tag_id, a.currency_id";
+    private static final String SUM_BY_CURRENCY_BY_ACCOUNT_BY_YEAR_SQL =
+            "SELECT a.currency_id AS currency_id, SUM(t.amount) AS total "
+            + "FROM transactions t JOIN accounts a ON a.id = t.account_id "
+            + "WHERE t.transaction_type = ? AND substr(t.transaction_date, 1, 4) = ? "
+            + "AND a.id = ? "
+            + "GROUP BY a.currency_id";
+    private static final String SUM_GROUP_BY_TAG_BY_ACCOUNT_BY_YEAR_SQL =
+            "SELECT t.tag_id AS tag_id, a.currency_id AS currency_id, SUM(t.amount) AS total "
+            + "FROM transactions t JOIN accounts a ON a.id = t.account_id "
+            + "WHERE t.transaction_type = ? AND substr(t.transaction_date, 1, 4) = ? "
+            + "AND t.tag_id IS NOT NULL AND a.id = ? "
+            + "GROUP BY t.tag_id, a.currency_id";
     private static final String AVAILABLE_YEARS_SQL =
             "SELECT DISTINCT substr(transaction_date, 1, 4) AS year FROM transactions ORDER BY year DESC";
     private static final String LATEST_YEAR_MONTH_SQL =
@@ -195,6 +230,139 @@ public class TransactionRepository implements CrudRepository<Transaction> {
             try (PreparedStatement statement = connection.prepareStatement(SUM_GROUP_BY_TAG_SQL)) {
                 statement.setString(1, type.toString());
                 statement.setString(2, monthPrefix);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        long tagId = resultSet.getLong("tag_id");
+                        long currencyId = resultSet.getLong("currency_id");
+                        totals.computeIfAbsent(tagId, _ -> new HashMap<>())
+                                .put(currencyId, resultSet.getLong("total"));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to load transaction sums by tag", e);
+        }
+        return totals;
+    }
+
+    public Map<Long, Long> sumByCurrency(TransactionType type, int year, int month, long accountId) {
+        Map<Long, Long> totals = new HashMap<>();
+        String monthPrefix = String.format("%04d-%02d", year, month);
+        try {
+            Connection connection = database.getConnection();
+            try (PreparedStatement statement = connection.prepareStatement(SUM_BY_CURRENCY_BY_ACCOUNT_SQL)) {
+                statement.setString(1, type.toString());
+                statement.setString(2, monthPrefix);
+                statement.setLong(3, accountId);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        totals.put(resultSet.getLong("currency_id"), resultSet.getLong("total"));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to load transaction sums", e);
+        }
+        return totals;
+    }
+
+    public Map<Long, Map<Long, Long>> sumByTag(TransactionType type, int year, int month, long accountId) {
+        Map<Long, Map<Long, Long>> totals = new HashMap<>();
+        String monthPrefix = String.format("%04d-%02d", year, month);
+        try {
+            Connection connection = database.getConnection();
+            try (PreparedStatement statement = connection.prepareStatement(SUM_GROUP_BY_TAG_BY_ACCOUNT_SQL)) {
+                statement.setString(1, type.toString());
+                statement.setString(2, monthPrefix);
+                statement.setLong(3, accountId);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        long tagId = resultSet.getLong("tag_id");
+                        long currencyId = resultSet.getLong("currency_id");
+                        totals.computeIfAbsent(tagId, _ -> new HashMap<>())
+                                .put(currencyId, resultSet.getLong("total"));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to load transaction sums by tag", e);
+        }
+        return totals;
+    }
+
+    public Map<Long, Long> sumByCurrencyForYear(TransactionType type, int year) {
+        Map<Long, Long> totals = new HashMap<>();
+        String yearStr = String.valueOf(year);
+        try {
+            Connection connection = database.getConnection();
+            try (PreparedStatement statement = connection.prepareStatement(SUM_BY_CURRENCY_BY_YEAR_SQL)) {
+                statement.setString(1, type.toString());
+                statement.setString(2, yearStr);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        totals.put(resultSet.getLong("currency_id"), resultSet.getLong("total"));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to load transaction sums", e);
+        }
+        return totals;
+    }
+
+    public Map<Long, Map<Long, Long>> sumByTagForYear(TransactionType type, int year) {
+        Map<Long, Map<Long, Long>> totals = new HashMap<>();
+        String yearStr = String.valueOf(year);
+        try {
+            Connection connection = database.getConnection();
+            try (PreparedStatement statement = connection.prepareStatement(SUM_GROUP_BY_TAG_BY_YEAR_SQL)) {
+                statement.setString(1, type.toString());
+                statement.setString(2, yearStr);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        long tagId = resultSet.getLong("tag_id");
+                        long currencyId = resultSet.getLong("currency_id");
+                        totals.computeIfAbsent(tagId, _ -> new HashMap<>())
+                                .put(currencyId, resultSet.getLong("total"));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to load transaction sums by tag", e);
+        }
+        return totals;
+    }
+
+    public Map<Long, Long> sumByCurrencyForYear(TransactionType type, int year, long accountId) {
+        Map<Long, Long> totals = new HashMap<>();
+        String yearStr = String.valueOf(year);
+        try {
+            Connection connection = database.getConnection();
+            try (PreparedStatement statement = connection.prepareStatement(SUM_BY_CURRENCY_BY_ACCOUNT_BY_YEAR_SQL)) {
+                statement.setString(1, type.toString());
+                statement.setString(2, yearStr);
+                statement.setLong(3, accountId);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        totals.put(resultSet.getLong("currency_id"), resultSet.getLong("total"));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to load transaction sums", e);
+        }
+        return totals;
+    }
+
+    public Map<Long, Map<Long, Long>> sumByTagForYear(TransactionType type, int year, long accountId) {
+        Map<Long, Map<Long, Long>> totals = new HashMap<>();
+        String yearStr = String.valueOf(year);
+        try {
+            Connection connection = database.getConnection();
+            try (PreparedStatement statement = connection.prepareStatement(SUM_GROUP_BY_TAG_BY_ACCOUNT_BY_YEAR_SQL)) {
+                statement.setString(1, type.toString());
+                statement.setString(2, yearStr);
+                statement.setLong(3, accountId);
                 try (ResultSet resultSet = statement.executeQuery()) {
                     while (resultSet.next()) {
                         long tagId = resultSet.getLong("tag_id");

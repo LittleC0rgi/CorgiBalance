@@ -5,7 +5,6 @@ import com.corgibalance.components.table.DateTableCell;
 import com.corgibalance.components.table.SelectTableCell;
 import com.corgibalance.components.table.TextTableCell;
 import com.corgibalance.models.Budget;
-import com.corgibalance.models.Currency;
 import com.corgibalance.models.Tag;
 import com.corgibalance.models.TransactionType;
 import com.corgibalance.repositories.BudgetRepository;
@@ -13,7 +12,6 @@ import com.corgibalance.repositories.SettingsRepository;
 import com.corgibalance.repositories.TagRepository;
 import com.corgibalance.repositories.TransactionRepository;
 import com.corgibalance.services.CurrencyConverter;
-import com.corgibalance.services.CurrencyFormatter;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
@@ -22,15 +20,11 @@ import javafx.scene.control.TableColumn;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class BudgetTableController extends BaseTableController<Budget, BudgetRepository> {
 
-    private static final String BASE_CURRENCY_KEY = "overview.baseCurrencyId";
-
-    private final CurrencyFormatter currencyFormatter = new CurrencyFormatter();
-    private final CurrencyConverter currencyConverter = new CurrencyConverter();
     private final TransactionRepository transactionRepository = new TransactionRepository();
+    private final CurrencyConverter currencyConverter = new CurrencyConverter();
     private final Long currencyId;
     private List<Tag> tags;
     private LocalDate lastEnteredStartDate;
@@ -165,12 +159,7 @@ public class BudgetTableController extends BaseTableController<Budget, BudgetRep
     }
 
     private Long defaultCurrencyId() {
-        Optional<Long> saved = new SettingsRepository().getLong(BASE_CURRENCY_KEY);
-        if (saved.isPresent() && currencyFormatter.currency(saved.get()) != null) {
-            return saved.get();
-        }
-        List<Currency> currencies = currencyFormatter.currencies();
-        return currencies.isEmpty() ? null : currencies.getFirst().getId();
+        return currencyConverter.baseCurrencyId(new SettingsRepository());
     }
 
     @Override

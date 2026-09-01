@@ -4,6 +4,7 @@ import com.corgibalance.models.Currency;
 import com.corgibalance.models.ExchangeRate;
 import com.corgibalance.repositories.CurrencyRepository;
 import com.corgibalance.repositories.ExchangeRateRepository;
+import com.corgibalance.repositories.SettingsRepository;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -13,6 +14,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public class CurrencyConverter {
+
+    public static final String BASE_CURRENCY_KEY = "overview.baseCurrencyId";
 
     private static final int CONVERSION_SCALE = 12;
 
@@ -75,5 +78,14 @@ public class CurrencyConverter {
 
     public String format(long minorUnits, Long currencyId) {
         return formatter.format(minorUnits, currencyId);
+    }
+
+    public Long baseCurrencyId(SettingsRepository settings) {
+        Optional<Long> saved = settings.getLong(BASE_CURRENCY_KEY);
+        if (saved.isPresent() && currency(saved.get()) != null) {
+            return saved.get();
+        }
+        List<Currency> list = currencies();
+        return list.isEmpty() ? null : list.getFirst().getId();
     }
 }

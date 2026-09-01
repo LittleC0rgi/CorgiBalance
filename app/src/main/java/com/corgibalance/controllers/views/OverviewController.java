@@ -2,6 +2,7 @@ package com.corgibalance.controllers.views;
 
 import com.corgibalance.components.AccountListComponent;
 import com.corgibalance.components.BudgetListComponent;
+import com.corgibalance.components.MonthYearPicker;
 import com.corgibalance.components.NearestPaymentsComponent;
 import com.corgibalance.components.ProfitLossReport;
 import com.corgibalance.controllers.tables.RecentTransactionsTableController;
@@ -26,17 +27,11 @@ import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import lombok.Setter;
 
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.format.TextStyle;
 import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
 import java.util.function.Consumer;
 
 public class OverviewController implements Refreshable {
 
-    private static final String BASE_CURRENCY_KEY = "overview.baseCurrencyId";
     private static final String SHOW_EXPENSES_BY_TAG_KEY = "overview.showExpensesByTag";
 
     @FXML
@@ -82,6 +77,7 @@ public class OverviewController implements Refreshable {
     private AccountListComponent accountListComponent;
     private BudgetListComponent budgetListComponent;
     private NearestPaymentsComponent nearestPaymentsComponent;
+    private MonthYearPicker period;
 
     @Setter
     private Consumer<String> navigationHandler;
@@ -100,15 +96,14 @@ public class OverviewController implements Refreshable {
         budgetListComponent = new BudgetListComponent(overviewService, converter);
         nearestPaymentsComponent = new NearestPaymentsComponent(nearestPaymentService, converter, this::refresh);
 
-        monthCombo.getItems().setAll(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
-        monthCombo.setCellFactory(monthCellFactory());
-        monthCombo.setButtonCell(monthCellFactory().call(null));
+        period = new MonthYearPicker(monthCombo, yearCombo, false);
+        period.initialize();
 
         baseCurrencyCombo.setCellFactory(currencyCellFactory());
         baseCurrencyCombo.setButtonCell(currencyCellFactory().call(null));
 
         loadCurrencies();
-        selectSavedBaseCurrency();
+        baseCurrencyCombo.setValue(converter.baseCurrencyId(settingsRepository));
         loadPeriod(true);
 
         allAccountsLink.setOnAction(event -> onAllAccounts());
@@ -116,12 +111,11 @@ public class OverviewController implements Refreshable {
 
         baseCurrencyCombo.valueProperty().addListener((obs, oldValue, newValue) -> {
             if (newValue != null) {
-                settingsRepository.setLong(BASE_CURRENCY_KEY, newValue);
+                settingsRepository.setLong(CurrencyConverter.BASE_CURRENCY_KEY, newValue);
             }
             refresh();
         });
-        monthCombo.valueProperty().addListener((obs, oldValue, newValue) -> refresh());
-        yearCombo.valueProperty().addListener((obs, oldValue, newValue) -> refresh());
+        period.setOnChange(this::refresh);
 
         refresh();
     }
@@ -162,42 +156,14 @@ public class OverviewController implements Refreshable {
         }
     }
 
-    private void selectSavedBaseCurrency() {
-        Optional<Long> saved = settingsRepository.getLong(BASE_CURRENCY_KEY);
-        if (saved.isPresent() && converter.currency(saved.get()) != null) {
-            baseCurrencyCombo.setValue(saved.get());
-        } else if (!baseCurrencyCombo.getItems().isEmpty()) {
-            baseCurrencyCombo.setValue(baseCurrencyCombo.getItems().getFirst());
-        }
-    }
-
     private void loadPeriod(boolean applyDefaults) {
-        List<Integer> years = transactionRepository.availableYears();
-        String latest = transactionRepository.latestYearMonth();
-        int defaultYear = latest == null ? LocalDate.now().getYear() : Integer.parseInt(latest.substring(0, 4));
-        int defaultMonth = latest == null ? LocalDate.now().getMonthValue() : Integer.parseInt(latest.substring(5, 7));
-
-        boolean multiYear = years.size() > 1;
-        yearCombo.setVisible(multiYear);
-        yearCombo.setManaged(multiYear);
-        if (multiYear) {
-            Integer selected = yearCombo.getValue();
-            yearCombo.getItems().setAll(years);
-            yearCombo.setValue(selected != null && years.contains(selected) ? selected : defaultYear);
-        } else {
-            yearCombo.setValue(years.isEmpty() ? LocalDate.now().getYear() : years.getFirst());
-        }
-        if (applyDefaults) {
-            monthCombo.setValue(defaultMonth);
-        } else if (monthCombo.getValue() == null) {
-            monthCombo.setValue(defaultMonth);
-        }
+        period.load(transactionRepository.availableYears(), transactionRepository.latestYearMonth(), applyDefaults);
     }
 
     private void refresh() {
         Long baseCurrencyId = baseCurrencyCombo.getValue();
-        int year = yearCombo.getValue() == null ? LocalDate.now().getYear() : yearCombo.getValue();
-        int month = monthCombo.getValue() == null ? LocalDate.now().getMonthValue() : monthCombo.getValue();
+        int year = period.year();
+        int month = period.month();
 
         balanceValue.setText(converter.format(overviewService.totalBalance(baseCurrencyId), baseCurrencyId));
 
@@ -251,16 +217,6 @@ public class OverviewController implements Refreshable {
         } else if (!label.getStyleClass().contains(styleClass)) {
             label.getStyleClass().add(styleClass);
         }
-    }
-
-    private Callback<ListView<Integer>, ListCell<Integer>> monthCellFactory() {
-        return list -> new ListCell<>() {
-            @Override
-            protected void updateItem(Integer month, boolean empty) {
-                super.updateItem(month, empty);
-                setText(empty || month == null ? "" : Month.of(month).getDisplayName(TextStyle.FULL, Locale.ENGLISH));
-            }
-        };
     }
 
     private Callback<ListView<Long>, ListCell<Long>> currencyCellFactory() {

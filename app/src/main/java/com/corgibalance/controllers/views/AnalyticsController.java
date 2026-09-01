@@ -1,5 +1,6 @@
 package com.corgibalance.controllers.views;
 
+import com.corgibalance.components.MonthYearPicker;
 import com.corgibalance.components.ProfitLossReport;
 import com.corgibalance.models.Account;
 import com.corgibalance.models.Currency;
@@ -16,24 +17,17 @@ import javafx.scene.control.ListView;
 import javafx.scene.layout.GridPane;
 import javafx.util.Callback;
 
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
 
 public class AnalyticsController implements Refreshable {
-
-    private static final String BASE_CURRENCY_KEY = "overview.baseCurrencyId";
 
     @FXML
     private ComboBox<Integer> monthCombo;
     @FXML
     private ComboBox<Integer> yearCombo;
     @FXML
-    private ComboBox<Object> accountCombo;
+    private ComboBox<Account> accountCombo;
     @FXML
     private Label currencyLabel;
     @FXML
@@ -46,13 +40,13 @@ public class AnalyticsController implements Refreshable {
     private final TagRepository tagRepository = new TagRepository();
     private final AccountRepository accountRepository = new AccountRepository();
     private final SettingsRepository settingsRepository = new SettingsRepository();
+    private MonthYearPicker period;
     private Long baseCurrencyId;
 
     @FXML
     private void initialize() {
-        monthCombo.setCellFactory(monthCellFactory());
-        monthCombo.setButtonCell(monthCellFactory().call(null));
-        monthCombo.getItems().setAll(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
+        period = new MonthYearPicker(monthCombo, yearCombo, true);
+        period.initialize();
 
         accountCombo.setCellFactory(accountCellFactory());
         accountCombo.setButtonCell(accountCellFactory().call(null));
@@ -65,61 +59,43 @@ public class AnalyticsController implements Refreshable {
         currencyCombo.setButtonCell(currencyCellFactory().call(null));
         currencyCombo.valueProperty().addListener((obs, old, val) -> refresh());
 
-        baseCurrencyId = defaultBaseCurrencyId();
+        baseCurrencyId = converter.baseCurrencyId(settingsRepository);
         loadAccounts();
         loadPeriod();
-        monthCombo.valueProperty().addListener((obs, oldValue, newValue) -> refresh());
-        yearCombo.valueProperty().addListener((obs, oldValue, newValue) -> refresh());
+        period.setOnChange(this::refresh);
         refresh();
     }
 
     @Override
     public void onShow() {
         converter.reload();
-        baseCurrencyId = defaultBaseCurrencyId();
+        baseCurrencyId = converter.baseCurrencyId(settingsRepository);
         loadAccounts();
         loadPeriod();
         refresh();
     }
 
     private void loadAccounts() {
-        List<Object> items = new ArrayList<>();
-        items.add("All");
+        List<Account> items = new ArrayList<>();
+        items.add(null);
         for (Account account : accountRepository.findAll()) {
             if (!account.isHidden()) {
                 items.add(account);
             }
         }
-        Object selected = accountCombo.getValue();
+        Account selected = accountCombo.getValue();
         accountCombo.getItems().setAll(items);
-        accountCombo.setValue(selected != null && items.contains(selected) ? selected : items.getFirst());
+        accountCombo.setValue(selected != null && items.contains(selected) ? selected : null);
     }
 
     private void loadPeriod() {
-        List<Integer> years = transactionRepository.availableYears();
-        String latest = transactionRepository.latestYearMonth();
-        int defaultYear = latest == null ? LocalDate.now().getYear() : Integer.parseInt(latest.substring(0, 4));
-        int defaultMonth = latest == null ? LocalDate.now().getMonthValue() : Integer.parseInt(latest.substring(5, 7));
-
-        boolean multiYear = years.size() > 1;
-        yearCombo.setVisible(multiYear);
-        yearCombo.setManaged(multiYear);
-        if (multiYear) {
-            Integer selected = yearCombo.getValue();
-            yearCombo.getItems().setAll(years);
-            yearCombo.setValue(selected != null && years.contains(selected) ? selected : defaultYear);
-        } else {
-            yearCombo.setValue(years.isEmpty() ? LocalDate.now().getYear() : years.getFirst());
-        }
-        if (monthCombo.getValue() == null) {
-            monthCombo.setValue(defaultMonth);
-        }
+        period.load(transactionRepository.availableYears(), transactionRepository.latestYearMonth(), false);
     }
 
     private void updateCurrencySelector() {
-        Object selected = accountCombo.getValue();
-        if (selected instanceof Account account) {
-            Long accountCurrencyId = account.getCurrencyId();
+        Account selected = accountCombo.getValue();
+        if (selected != null) {
+            Long accountCurrencyId = selected.getCurrencyId();
             if (accountCurrencyId != null && !accountCurrencyId.equals(baseCurrencyId)) {
                 Currency accountCurrency = converter.currency(accountCurrencyId);
                 Currency baseCurrency = converter.currency(baseCurrencyId);
@@ -144,17 +120,17 @@ public class AnalyticsController implements Refreshable {
 
     private void refresh() {
         if (baseCurrencyId == null) {
-            baseCurrencyId = defaultBaseCurrencyId();
+            baseCurrencyId = converter.baseCurrencyId(settingsRepository);
         }
-        int year = yearCombo.getValue() == null ? LocalDate.now().getYear() : yearCombo.getValue();
-        int month = monthCombo.getValue() == null ? LocalDate.now().getMonthValue() : monthCombo.getValue();
+        int year = period.year();
+        int month = period.month();
 
         Long accountId = null;
         Long displayCurrencyId = baseCurrencyId;
 
-        Object selected = accountCombo.getValue();
-        if (selected instanceof Account account) {
-            accountId = account.getId();
+        Account selected = accountCombo.getValue();
+        if (selected != null) {
+            accountId = selected.getId();
             if (currencyCombo.isVisible() && currencyCombo.getValue() != null) {
                 displayCurrencyId = currencyCombo.getValue().getId();
             }
@@ -165,37 +141,12 @@ public class AnalyticsController implements Refreshable {
         ProfitLossReport.populate(reportGrid, data, converter, displayCurrencyId, true);
     }
 
-    private Long defaultBaseCurrencyId() {
-        Optional<Long> saved = settingsRepository.getLong(BASE_CURRENCY_KEY);
-        if (saved.isPresent() && converter.currency(saved.get()) != null) {
-            return saved.get();
-        }
-        List<Currency> currencies = converter.currencies();
-        return currencies.isEmpty() ? null : currencies.getFirst().getId();
-    }
-
-    private Callback<ListView<Integer>, ListCell<Integer>> monthCellFactory() {
+    private Callback<ListView<Account>, ListCell<Account>> accountCellFactory() {
         return list -> new ListCell<>() {
             @Override
-            protected void updateItem(Integer month, boolean empty) {
-                super.updateItem(month, empty);
-                setText(empty || month == null ? "" : month == 0 ? "All" : Month.of(month).getDisplayName(TextStyle.FULL, Locale.ENGLISH));
-            }
-        };
-    }
-
-    private Callback<ListView<Object>, ListCell<Object>> accountCellFactory() {
-        return list -> new ListCell<>() {
-            @Override
-            protected void updateItem(Object item, boolean empty) {
+            protected void updateItem(Account item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else if (item instanceof Account account) {
-                    setText(account.getName());
-                } else {
-                    setText(String.valueOf(item));
-                }
+                setText(empty || item == null ? "All" : item.getName());
             }
         };
     }

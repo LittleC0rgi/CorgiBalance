@@ -10,6 +10,7 @@
     -fx-table-cell-border-color: transparent;
     -fx-focus-color: transparent;
     -fx-faint-focus-color: transparent;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.06), 12, 0, 0, 3);
 }
 
 /* Column Headers */
